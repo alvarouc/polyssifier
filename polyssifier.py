@@ -12,7 +12,7 @@ from scipy.spatial.distance import pdist
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as pl
-from multiprocessing import Pool,Array,Process,Manager
+from multiprocessing import Pool,Array,Process,Manager,cpu_count
 import functools
 import seaborn as sb
 
@@ -40,7 +40,7 @@ import random as rndc
 # Number of folds for n-fold cross validation
 ksplit=10
 DATADIR='./' # directory where your labels and the data are
-PROCESSORS=75 # please set this number to no more than the number of cores on the machine you're going to be running it on but high enough to help the computation
+PROCESSORS=cpu_count()-int(0.07*cpu_count()) # Setting the number of parallel running processes to the number of cores minus 7% for breathing room
 
 fdata = 'data.npy'
 flabels= 'labels.npy'
