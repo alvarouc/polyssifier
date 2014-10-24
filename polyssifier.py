@@ -60,8 +60,10 @@ import sys
 # going to be running it on but high enough to help the computation
 PROCESSORS=20
 seed = rndc.SystemRandom().seed()
-NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree",
-         "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
+#NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree",
+#         "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
+
+NAMES = ["Decision Tree", "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
 
 def make_classifiers(data_shape, ksplit):
     """
@@ -76,40 +78,41 @@ def make_classifiers(data_shape, ksplit):
 
     Returns:
     classifiers, params
-        classifiers is the set of classifiers to be used.
-        params is a list of list of dictionaries (WHY?) of the corresponding params for each classifier.
+        classifiers is the dictionary of classifiers to be used.
+        params is a dictionary of list of dictionaries of the corresponding params for each classifier.
     """
 
     assert len(data_shape) == 2, "Only 2-d data allowed (samples by dimension)."
 
-    classifiers = [
-        KNeighborsClassifier(3),
-        SVC(kernel='linear', C=1, probability=True),
-        SVC(gamma=2, C=1, probability=True),
-        DecisionTreeClassifier(max_depth=None, max_features='auto'),
-        RandomForestClassifier(max_depth=None,
-                               n_estimators=10,
-                               max_features='auto',
-                               n_jobs=PROCESSORS/ksplit),
-        LogisticRegression(),
-        GaussianNB(),
-        LDA()]
-    params = [
-        [{'n_neighbors': [1, 5, 10, 20]}],                             # KNN
-        [{'kernel': ['linear'],'C': [1]}],                          # linearSVM
-        [{'kernel': ['rbf'],
-          'gamma': np.arange(0.1,1,0.1).tolist()+range(1,10),
-          'C': np.logspace(-2,2,5).tolist()}],                      # rbf SVM
-        [],                                                         # decision tree
-        [{'n_estimators': range(5,20)}],                            # random forest
-        [{'C': np.logspace(0.1,3,7).tolist()}],                     # logistic regression
-        [],                                                         # Naive Bayes
-        [{'n_components': [np.int(0.1*data_shape[0]),
-                           np.int(0.2*data_shape[0]),
-                           np.int(0.3*data_shape[0]),
-                           np.int(0.5*data_shape[0]),
-                           np.int(0.7*data_shape[0])]}],             # LDA
-    ]
+    classifiers = {
+        "Nearest Neighbors": KNeighborsClassifier(3),
+        "Linear SVM": SVC(kernel='linear', C=1, probability=True),
+        "RBF SVM": SVC(gamma=2, C=1, probability=True),
+        "Decision Tree": DecisionTreeClassifier(max_depth=None, max_features='auto'),
+        "Random Forest": RandomForestClassifier(max_depth=None,
+                                                n_estimators=10,
+                                                max_features='auto',
+                                                n_jobs=PROCESSORS/ksplit),
+        "Logistic Regression": LogisticRegression(),
+        "Naive Bayes": GaussianNB(),
+        "LDA": LDA()}
+
+    params = {
+        "Nearest Neighbors": [{'n_neighbors': [1, 5, 10, 20]}],
+        "Linear SVM": [{'kernel': ['linear'],'C': [1]}],
+        "RBF SVM": [{'kernel': ['rbf'],
+                     'gamma': np.arange(0.1,1,0.1).tolist()+range(1,10),
+                     'C': np.logspace(-2,2,5).tolist()}],
+        "Decision Tree": [],                             
+        "Random Forest": [{'n_estimators': range(5,20)}],
+        "Logistic Regression": [{'C': np.logspace(0.1,3,7).tolist()}],
+        "Naive Bayes": [],
+        "LDA": [{'n_components': [np.int(0.1*data_shape[0]),
+                                  np.int(0.2*data_shape[0]),
+                                  np.int(0.3*data_shape[0]),
+                                  np.int(0.5*data_shape[0]),
+                                  np.int(0.7*data_shape[0])]}],
+        }
     return classifiers, params
 
 def get_score(data, labels, idx, ksplit, name, mdl, param, fld):
@@ -140,7 +143,7 @@ def get_score(data, labels, idx, ksplit, name, mdl, param, fld):
     print 'Tuning %s hyper-parameters' %(name)
     # Redefine the parameters to be used for RBF SVM (dependent on
     # training data)
-    if name == 'RBF SVM':
+    if name == "RBF SVM":
         #Euclidean distances between samples
         dist = pdist(data[fld[0],:], 'euclidean').ravel()
         #Estimates for sigma (10th, 50th and 90th percentile)
@@ -148,11 +151,11 @@ def get_score(data, labels, idx, ksplit, name, mdl, param, fld):
         #Estimates for gamma (= -1/(2*sigma^2))
         gamma = 1./(2*sigest**2)
         #Set SVM parameters with these values
-        param = [{'kernel': ['rbf'],
-                  'gamma': gamma.tolist(),
-                  'C': np.logspace(-2,2,5).tolist()}]
+        param = [{"kernel": ['rbf'],
+                  "gamma": gamma.tolist(),
+                  "C": np.logspace(-2,2,5).tolist()}]
 
-        #Run Grid Search with parallel processing
+    #Run Grid Search with parallel processing
     if name == "Decision Tree" or name == "Naive Bayes":
         clf = mdl
     else:
@@ -239,7 +242,9 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
 
     score={}
     dscore=[]
-    for name, mdl, param, fld in zip(NAMES, classifiers, params, idx):
+    for name, fld in zip(NAMES, idx):
+        mdl = classifiers[name]
+        param = params[name]
         clf, fScore = get_score(data, labels, idx, ksplit, name,
                            mdl, param, fld)
 
