@@ -60,10 +60,8 @@ import sys
 # going to be running it on but high enough to help the computation
 PROCESSORS=20
 seed = rndc.SystemRandom().seed()
-#NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree",
-#         "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
-
-NAMES = ["Decision Tree", "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
+NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree",
+         "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
 
 def make_classifiers(data_shape, ksplit):
     """
@@ -115,7 +113,8 @@ def make_classifiers(data_shape, ksplit):
         }
     return classifiers, params
 
-def get_score(data, labels, idx, ksplit, name, mdl, param, fld):
+def get_score(data, labels, fold_pairs,
+              name, model, param):
     """
     Function to get score for a classifier.
 
@@ -125,27 +124,59 @@ def get_score(data, labels, idx, ksplit, name, mdl, param, fld):
         Data from which to derive score.
     labels: array-like or list.
         Corresponding labels for each sample.
-    idx: list of ints
-        Indices for fold.
-    ksplit: int
-        Number of folds.
+    fold_pairs: list of pairs of array-like
+        A list of train/test indicies for each fold (Why can't we just use the KFold object?)
     name: string
         Name of classifier.
-    mdl: TODO
-    param: TODO
+    model: WRITEME
+    param: WRITEME
         Parameters for the classifier.
-    fld: TODO
     """
 
+    ksplit = len(fold_pairs)
     if name not in NAMES:
         raise ValueError("Classifier %s not supported. Did you enter it properly?" % name)
 
-    print 'Tuning %s hyper-parameters' %(name)
     # Redefine the parameters to be used for RBF SVM (dependent on
     # training data)
+
+    if True:  #better identifier here
+        fScore = []
+        for i, fold_pair in enumerate(fold_pairs):
+            print "Classifying a %s the %d-th out of %d folds..." % (name, i+1, len(fold_pairs))
+            classifier = get_classifier(data, model, param, data[fold_pair[0], :])
+            area = classify(data, labels, fold_pair, classifier)
+            fScore.append(area)
+    else:
+        raise NotImplementedError("No multiprocessing yet.")
+        #pool=MemmapingPool(processes=min(ksplit, PROCESSORS))
+        #fScore = pool.map(functools.partial(,
+        #                                    data,
+        #                                    labels,
+        #                                    fold_pairs,
+        #                                    clf=clf),
+        #                  fold_pairs)
+        #pool.close()
+        #pool.join()
+
+    return classifier, fScore
+
+def get_classifier(name, model, param, data=None):
+    """
+    Returns the classifier for the model.
+
+    Parameters
+    ----------
+    WRITEME
+
+    Returns
+    -------
+    WRITEME
+    """
     if name == "RBF SVM":
+        assert data is not None
         #Euclidean distances between samples
-        dist = pdist(data[fld[0],:], 'euclidean').ravel()
+        dist = pdist(data, 'euclidean').ravel()
         #Estimates for sigma (10th, 50th and 90th percentile)
         sigest = np.asarray(np.percentile(dist,[10,50,90]))
         #Estimates for gamma (= -1/(2*sigma^2))
@@ -154,35 +185,32 @@ def get_score(data, labels, idx, ksplit, name, mdl, param, fld):
         param = [{"kernel": ['rbf'],
                   "gamma": gamma.tolist(),
                   "C": np.logspace(-2,2,5).tolist()}]
+    if name not in ["Decision Tree", "Naive Bayes"]:
+        # why 5?
+        model = GridSearchCV(model, param, cv=5, scoring="f1", n_jobs=PROCESSORS)
+    return model
 
-    #Run Grid Search with parallel processing
-    if name == "Decision Tree" or name == "Naive Bayes":
-        clf = mdl
-    else:
-        clf = GridSearchCV(mdl, param, cv=5, scoring='f1', n_jobs=PROCESSORS)
-
-    if True:  #better identifier here
-        fScore = []
-        for fold in range(ksplit):
-            fScore.append(wrapper_clf(fold, data, labels, idx, clf=clf))
-    else:
-        pool=MemmapingPool(processes=min(ksplit, PROCESSORS))
-        fScore = pool.map(functools.partial(wrapper_clf, data, labels, idx, clf=clf),
-                          range(ksplit))
-        pool.close()
-        pool.join()
-
-    return clf, fScore
-
-def wrapper_clf(fold, data, labels, idx, clf=None):
+def classify(data, labels, (train_idx, test_idx), classifier=None):
     """
-    TODO
+    Classifies given a fold and a model.
+
+    Parameters
+    ----------
+    WRITEME
+
+    Returns
+    -------
+    WRITEME
     """
-    id = idx[fold]
-    clf.fit(data[id[0], :], labels[id[0]])
-    fpr, tpr, thresholds = rc(labels[id[1]],
-                              clf.predict_proba(data[id[1], :])[:, 1])
-    return auc(fpr,tpr)
+
+    assert classifier is not None, "Why would you pass not classifier?"    
+
+    classifier.fit(data[train_idx, :], labels[train_idx])
+    
+    fpr, tpr, thresholds = rc(labels[test_idx],
+                              classifier.predict_proba(data[test_idx, :])[:, 1])
+
+    return auc(fpr, tpr)
 
 def load_data(source_dir, data_pattern):
     data_files = glob(path.join(source_dir, data_pattern))
@@ -226,34 +254,43 @@ def load_labels(source_dir, label_pattern):
     return np.load(label_files[0]).flatten()
 
 def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
-    #load activations and labels
+    # Load input and labels.
     data = load_data(source_dir, data_pattern)
     labels = load_labels(source_dir, label_pattern)
 
-    # Get classifiers and params
+    # Get classifiers and params.
     classifiers, params = make_classifiers(data.shape, ksplit)
 
-    # preprocess dataset, split into training and test part
+    # preprocess dataset, split into training and test part.
     X, y = data, labels
     X = StandardScaler().fit_transform(X)
+
+    # Make the folds.
     kf = StratifiedKFold(labels,
                          n_folds=ksplit)
-    idx = [(tr,ts) for (tr, ts) in kf]
 
+    # Extract the training and testing indices from the k-fold object,
+    # which stores fold pairs of indices.
+    fold_pairs = [(tr, ts) for (tr, ts) in kf]
+    assert len(fold_pairs) == ksplit
+    
     score={}
     dscore=[]
-    for name, fld in zip(NAMES, idx):
+    for name in NAMES:
         mdl = classifiers[name]
         param = params[name]
-        clf, fScore = get_score(data, labels, idx, ksplit, name,
-                           mdl, param, fld)
+
+        # Get the scores.
+        clf, fScores = get_score(data, labels,
+                                fold_pairs, name,
+                                mdl, param)
 
         if out_dir is not None:
-            with open(path.join(out_dir, name + "%.2f.pkl" % (np.mean(fScore))), "wb") as f:
+            with open(path.join(out_dir, name + "%.2f.pkl" % (np.mean(fScores))), "wb") as f:
                 pickle.dump(clf,f)
 
-        dscore.append(fScore)
-        score[name] = (np.mean(fScore), np.std(fScore))
+        dscore.append(fScores)
+        score[name] = (np.mean(fScores), np.std(fScores))
 
     dscore = np.asarray(dscore)
 
