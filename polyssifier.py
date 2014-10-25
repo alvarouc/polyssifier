@@ -148,16 +148,20 @@ def get_score(data, labels, fold_pairs,
             area = classify(data, labels, fold_pair, classifier)
             fScore.append(area)
     else:
-        raise NotImplementedError("No multiprocessing yet.")
-        #pool=MemmapingPool(processes=min(ksplit, PROCESSORS))
-        #fScore = pool.map(functools.partial(,
-        #                                    data,
-        #                                    labels,
-        #                                    fold_pairs,
-        #                                    clf=clf),
-        #                  fold_pairs)
-        #pool.close()
-        #pool.join()
+        warnings.warn("Multiprocessing splits not tested yet.")
+        pool = Pool(processes=min(ksplit, PROCESSORS))
+        classify_func = lambda f : classify(
+            data,
+            labels,
+            fold_pairs[f],
+            classifier=get_classifier(
+                name,
+                model,
+                param,
+                data=data[fold_pairs[f][0], :]))
+        fScore = pool.map(functools.partial(classify_func, xrange(ksplit))
+        pool.close()
+        pool.join()
 
     return classifier, fScore
 
