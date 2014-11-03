@@ -159,7 +159,7 @@ def get_score(data, labels, fold_pairs,
                 model,
                 param,
                 data=data[fold_pairs[f][0], :]))
-        fScore = pool.map(functools.partial(classify_func, xrange(ksplit))
+        fScore = pool.map(functools.partial(classify_func, xrange(ksplit)))
         pool.close()
         pool.join()
 
