@@ -1,4 +1,4 @@
 polyssifier
 ===========
 
-run a multitude of classifiers on you data and get an AUC report
+run a multitude of classifiers on your data and get an AUC report
