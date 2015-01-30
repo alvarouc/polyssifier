@@ -101,7 +101,7 @@ def make_classifiers(data_shape, ksplit):
         "RBF SVM": [{'kernel': ['rbf'],
                      'gamma': np.arange(0.1,1,0.1).tolist()+range(1,10),
                      'C': np.logspace(-2,2,5).tolist()}],
-        "Decision Tree": [],                             
+        "Decision Tree": [],
         "Random Forest": [{'n_estimators': range(5,20)}],
         "Logistic Regression": [{'C': np.logspace(0.1,3,7).tolist()}],
         "Naive Bayes": [],
@@ -144,7 +144,7 @@ def get_score(data, labels, fold_pairs,
         fScore = []
         for i, fold_pair in enumerate(fold_pairs):
             print "Classifying a %s the %d-th out of %d folds..." % (name, i+1, len(fold_pairs))
-            classifier = get_classifier(data, model, param, data[fold_pair[0], :])
+            classifier = get_classifier(name, model, param, data[fold_pair[0], :])
             area = classify(data, labels, fold_pair, classifier)
             fScore.append(area)
     else:
@@ -177,6 +177,8 @@ def get_classifier(name, model, param, data=None):
     -------
     WRITEME
     """
+    assert isinstance(name, str)
+
     if name == "RBF SVM":
         assert data is not None
         #Euclidean distances between samples
@@ -207,10 +209,10 @@ def classify(data, labels, (train_idx, test_idx), classifier=None):
     WRITEME
     """
 
-    assert classifier is not None, "Why would you pass not classifier?"    
+    assert classifier is not None, "Why would you pass not classifier?"
 
     classifier.fit(data[train_idx, :], labels[train_idx])
-    
+
     fpr, tpr, thresholds = rc(labels[test_idx],
                               classifier.predict_proba(data[test_idx, :])[:, 1])
 
@@ -219,7 +221,8 @@ def classify(data, labels, (train_idx, test_idx), classifier=None):
 def load_data(source_dir, data_pattern):
     data_files = glob(path.join(source_dir, data_pattern))
     if len(data_files) == 0:
-        raise ValueError("No data files found with pattern %s" % data_pattern)
+        raise ValueError("No data files found with pattern %s in %s"
+                         % (data_pattern, source_dir))
 
     data = None
     for data_file in data_files:
@@ -239,14 +242,14 @@ def load_labels(source_dir, label_pattern):
     Parameters
     ----------
     source_dir: string
-	Source directory of labels
+        Source directory of labels
     label_pattern: string
-	unix regex for label files.
+        unix regex for label files.
 
     Returns
     -------
     labels: array-like
-	A numpy vector of the labels.
+        A numpy vector of the labels.
     """
 
     label_files = glob(path.join(source_dir, label_pattern))
@@ -277,7 +280,7 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
     # which stores fold pairs of indices.
     fold_pairs = [(tr, ts) for (tr, ts) in kf]
     assert len(fold_pairs) == ksplit
-    
+
     score={}
     dscore=[]
     for name in NAMES:
