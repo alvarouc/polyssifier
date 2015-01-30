@@ -325,7 +325,10 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
                                 mdl, param)
 
         if out_dir is not None:
-            with open(path.join(out_dir, name + "%.2f.pkl" % (np.mean(fScores))), "wb") as f:
+            save_path = path.join(out_dir,
+                                  name + "%.2f.pkl" % (np.mean(fScores)))
+            logger.info("Saving classifier to %s" % save_path)
+            with open(save_path, "wb") as f:
                 pickle.dump(clf,f)
 
         dscore.append(fScores)
