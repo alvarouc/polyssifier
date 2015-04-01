@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 
 # please set this number to no more than the number of cores on the machine you're
 # going to be running it on but high enough to help the computation
-PROCESSORS=20
+PROCESSORS=8
 seed = rndc.SystemRandom().seed()
 NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree",
          "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
@@ -97,7 +97,7 @@ def make_classifiers(data_shape, ksplit):
         "Random Forest": RandomForestClassifier(max_depth=None,
                                                 n_estimators=10,
                                                 max_features='auto',
-                                                n_jobs=np.max([PROCESSORS/ksplit,1]),
+                                                n_jobs=PROCESSORS),
         "Logistic Regression": LogisticRegression(),
         "Naive Bayes": GaussianNB(),
         "LDA": LDA()}
@@ -223,7 +223,12 @@ def classify(data, labels, (train_idx, test_idx), classifier=None):
 
     Parameters
     ----------
-    WRITEME
+    data: 2d matrix of observations vs variables
+    labels: 1d vector of labels for each data observation
+    (train_idx, test_idx) : set of indices for splitting data into
+                            train and test
+    classifier: initialized classifier with "fit" and "predict_proba"
+                methods.
 
     Returns
     -------
@@ -232,10 +237,16 @@ def classify(data, labels, (train_idx, test_idx), classifier=None):
 
     assert classifier is not None, "Why would you pass not classifier?"
 
-    classifier.fit(data[train_idx, :], labels[train_idx])
+    # Data scaling based on training set
+    scaler = StandardScaler()
+    scaler.fit(data[train_idx])  
+    data_train = scaler.transform(data[train_idx])
+    data_test = scaler.transform(data[test_idx])
+    
+    classifier.fit(data_train, labels[train_idx])
 
     fpr, tpr, thresholds = rc(labels[test_idx],
-                              classifier.predict_proba(data[test_idx, :])[:, 1])
+                              classifier.predict_proba(data_test)[:, 1])
 
     return auc(fpr, tpr)
 
@@ -299,10 +310,6 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
     # Get classifiers and params.
     classifiers, params = make_classifiers(data.shape, ksplit)
 
-    # preprocess dataset, split into training and test part.
-    X, y = data, labels
-    X = StandardScaler().fit_transform(X)
-
     # Make the folds.
     logger.info("Making %d folds" % ksplit)
     kf = StratifiedKFold(labels,
@@ -343,7 +350,7 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
     ax.set_xticks(np.arange(len(NAMES)))
     ax.set_xticklabels(NAMES, rotation=30)
     ax.set_ylabel('classification AUC')
-    ax.set_title('Using features: '+str(action_features))
+    #ax.set_title('Using features: '+str(action_features))
     pl.subplots_adjust(bottom=0.18)
     #pl.draw()
     if out_dir is not None:
