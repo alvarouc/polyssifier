@@ -97,7 +97,7 @@ def make_classifiers(data_shape, ksplit):
         "Random Forest": RandomForestClassifier(max_depth=None,
                                                 n_estimators=10,
                                                 max_features='auto',
-                                                n_jobs=PROCESSORS/ksplit),
+                                                n_jobs=np.max([PROCESSORS/ksplit,1]),
         "Logistic Regression": LogisticRegression(),
         "Naive Bayes": GaussianNB(),
         "LDA": LDA()}
