@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 
 # please set this number to no more than the number of cores on the machine you're
 # going to be running it on but high enough to help the computation
-PROCESSORS=8
+PROCESSORS = 8
 seed = rndc.SystemRandom().seed()
 NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree",
          "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
@@ -122,25 +122,29 @@ def make_classifiers(data_shape, ksplit):
     logger.info("Using classifiers %r with params %r" % (classifiers, params))
     return classifiers, params
 
-def get_score(data, labels, fold_pairs,
-              name, model, param):
+def get_score(data, labels, fold_pairs, name, model, param):
     """
     Function to get score for a classifier.
 
     Parameters
     ----------
-    data: array-like
+    data: array_like
         Data from which to derive score.
-    labels: array-like or list.
+    labels: array_like or list
         Corresponding labels for each sample.
-    fold_pairs: list of pairs of array-like
+    fold_pairs: list of pairs of array_like
         A list of train/test indicies for each fold
-        (Why can't we just use the KFold object?)
-    name: string
+        dhjelm(Why can't we just use the KFold object?)
+    name: str
         Name of classifier.
     model: WRITEME
     param: WRITEME
         Parameters for the classifier.
+
+    Returns
+    -------
+    classifier: WRITEME
+    fScore: WRITEME
     """
     assert isinstance(name, str)
     logger.info("Classifying %s" % name)
@@ -159,11 +163,12 @@ def get_score(data, labels, fold_pairs,
         for i, fold_pair in enumerate(fold_pairs):
             print ("Classifying a %s the %d-th out of %d folds..."
                    % (name, i+1, len(fold_pairs)))
-            classifier = get_classifier(name, model, param, data[fold_pair[0], :])
+            classifier = get_classifier(
+                name, model, param, data[fold_pair[0], :])
             area = classify(data, labels, fold_pair, classifier)
             fScore.append(area)
     else:
-        warnings.warn("Multiprocessing splits not tested yet.")
+        logger.warn("Multiprocessing splits not tested yet.")
         pool = Pool(processes=min(ksplit, PROCESSORS))
         classify_func = lambda f : classify(
             data,
@@ -186,7 +191,11 @@ def get_classifier(name, model, param, data=None):
 
     Parameters
     ----------
-    WRITEME
+    name: str
+        Classifier name.
+    model: WRITEME
+    param: WRITEME
+    data: array_like, optional
 
     Returns
     -------
@@ -195,7 +204,7 @@ def get_classifier(name, model, param, data=None):
     assert isinstance(name, str)
 
     if name == "RBF SVM":
-        logger.info("RBF SVM requires some preprocessing. "
+        logger.info("RBF SVM requires some preprocessing."
                     "This may take a while")
         assert data is not None
         #Euclidean distances between samples
@@ -223,12 +232,14 @@ def classify(data, labels, (train_idx, test_idx), classifier=None):
 
     Parameters
     ----------
-    data: 2d matrix of observations vs variables
-    labels: 1d vector of labels for each data observation
-    (train_idx, test_idx) : set of indices for splitting data into
-                            train and test
-    classifier: initialized classifier with "fit" and "predict_proba"
-                methods.
+    data: array_like
+        2d matrix of observations vs variables
+    labels: list or array_like
+        1d vector of labels for each data observation
+    (train_idx, test_idx) : list
+        set of indices for splitting data into train and test
+    classifier: sklearn classifier object
+        initialized classifier with "fit" and "predict_proba" methods.
 
     Returns
     -------
@@ -239,10 +250,10 @@ def classify(data, labels, (train_idx, test_idx), classifier=None):
 
     # Data scaling based on training set
     scaler = StandardScaler()
-    scaler.fit(data[train_idx])  
+    scaler.fit(data[train_idx])
     data_train = scaler.transform(data[train_idx])
     data_test = scaler.transform(data[test_idx])
-    
+
     classifier.fit(data_train, labels[train_idx])
 
     fpr, tpr, thresholds = rc(labels[test_idx],
@@ -253,6 +264,15 @@ def classify(data, labels, (train_idx, test_idx), classifier=None):
 def load_data(source_dir, data_pattern):
     """
     Loads the data from multiple sources if provided.
+
+    Parameters
+    ----------
+    source_dir: str
+    data_pattern: str
+
+    Returns
+    -------
+    data: array_like
     """
     logger.info("Loading data from %s with pattern %s"
                 % (source_dir, data_pattern))
@@ -279,14 +299,14 @@ def load_labels(source_dir, label_pattern):
 
     Parameters
     ----------
-    source_dir: string
+    source_dir: str
         Source directory of labels
-    label_pattern: string
+    label_pattern: str
         unix regex for label files.
 
     Returns
     -------
-    labels: array-like
+    labels: array_like
         A numpy vector of the labels.
     """
 
@@ -303,6 +323,19 @@ def load_labels(source_dir, label_pattern):
     return labels
 
 def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
+    """
+    Main function for polyssifier.
+
+    Parameters
+    ----------
+    source_dir: str
+    ksplit: int
+    out_dir: str
+    data_pattern: str
+        POSIX-type regex string for list of paths.
+    label_pattern: str
+        POSIX-type regex string for list of paths.
+    """
     # Load input and labels.
     data = load_data(source_dir, data_pattern)
     labels = load_labels(source_dir, label_pattern)
@@ -312,8 +345,7 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
 
     # Make the folds.
     logger.info("Making %d folds" % ksplit)
-    kf = StratifiedKFold(labels,
-                         n_folds=ksplit)
+    kf = StratifiedKFold(labels, n_folds=ksplit)
 
 
     # Extract the training and testing indices from the k-fold object,
@@ -343,7 +375,6 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
 
     dscore = np.asarray(dscore)
 
-    #plot bar charts for the various classifiers
     pl.figure(figsize=[10,6])
     ax=pl.gca()
     sb.barplot(np.array(NAMES), dscore, palette="Paired")
@@ -352,7 +383,6 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
     ax.set_ylabel('classification AUC')
     #ax.set_title('Using features: '+str(action_features))
     pl.subplots_adjust(bottom=0.18)
-    #pl.draw()
     if out_dir is not None:
         # change the file you're saving it to
         pl.savefig(path.join(out_dir, "classifiers.png"))
@@ -365,16 +395,22 @@ def make_argument_parser():
     sys.argv
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("data_directory", help="Directory where the data files live.")
+    parser.add_argument("data_directory",
+                        help="Directory where the data files live.")
     parser.add_argument("out", help="Output directory of files.")
-    parser.add_argument("--folds", default=10, help="Number of folds for n-fold cross validation")
-    parser.add_argument("--data_pattern", default="data.npy", help="Pattern for data files")
-    parser.add_argument("--label_pattern", default="labels.npy", help="Pattern for label files")
+    parser.add_argument("--folds", default=10,
+                        help="Number of folds for n-fold cross validation")
+    parser.add_argument("--data_pattern", default="data.npy",
+                        help="Pattern for data files")
+    parser.add_argument("--label_pattern", default="labels.npy",
+                        help="Pattern for label files")
     return parser
 
 if __name__ == "__main__":
     CPUS = multiprocessing.cpu_count()
-    if CPUS < PROCESSORS: raise ValueError("Number of PROCESSORS exceed available CPUs, please edits this in the script and come again!")
+    if CPUS < PROCESSORS:
+        raise ValueError("Number of PROCESSORS exceed available CPUs, "
+                         "please edit this in the script and come again!")
 
     parser = make_argument_parser()
     args = parser.parse_args()
