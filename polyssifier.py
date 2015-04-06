@@ -1,8 +1,6 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-"""
-This module computes the baseline results by applying various classifiers.
+"""This module computes the baseline results by applying various classifiers.
+The classifiers used here are nearest neighbors, linear SVM, RBF SVM, decision
+tree, random forest, logistic regression, naive bayes, and LDA.
 """
 
 __author__ = "Sergey Plis"
@@ -30,7 +28,7 @@ else:
     from multiprocessing import Array
 
 import matplotlib as mpl
-mpl.use('Agg')
+mpl.use("Agg")
 import matplotlib.pyplot as pl
 import multiprocessing
 import numpy as np
@@ -71,58 +69,61 @@ logger = logging.getLogger(__name__)
 # going to be running it on but high enough to help the computation
 PROCESSORS = 8
 seed = rndc.SystemRandom().seed()
-NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree",
-         "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
+NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree", "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
 
-def make_classifiers(data_shape, ksplit):
-    """
-    Function that makes classifiers each with a number of folds.
+def make_classifiers(data_shape, ksplit) :
+    """Function that makes classifiers each with a number of folds.
+
+    Returns two dictionaries for the classifiers and their parameters, using `data_shape` and `ksplit` in construction of classifiers.
 
     Parameters
-    ---------------
-    data_shape: tuple of ints
+    ----------
+    data_shape : tuple of int
         Shape of the data.  Must be a pair of integers.
-    ksplit: int
+    ksplit : int
         Number of folds.
 
-    Returns:
-    classifiers, params
-        classifiers is the dictionary of classifiers to be used.
-        params is a dictionary of list of dictionaries of the corresponding
+    Returns
+    -------
+    classifiers: dict
+        The dictionary of classifiers to be used.
+    params: dict
+        A dictionary of list of dictionaries of the corresponding
         params for each classifier.
     """
 
-    assert len(data_shape) == 2, "Only 2-d data allowed (samples by dimension)."
+    if len(data_shape) != 2:
+        raise ValueError("Only 2-d data allowed (samples by dimension).")
 
     classifiers = {
         "Nearest Neighbors": KNeighborsClassifier(3),
-        "Linear SVM": SVC(kernel='linear', C=1, probability=True),
+        "Linear SVM": SVC(kernel="linear", C=1, probability=True),
         "RBF SVM": SVC(gamma=2, C=1, probability=True),
         "Decision Tree": DecisionTreeClassifier(max_depth=None,
-                                                max_features='auto'),
+                                                max_features="auto"),
         "Random Forest": RandomForestClassifier(max_depth=None,
                                                 n_estimators=10,
-                                                max_features='auto',
+                                                max_features="auto",
                                                 n_jobs=PROCESSORS),
         "Logistic Regression": LogisticRegression(),
         "Naive Bayes": GaussianNB(),
         "LDA": LDA()}
 
     params = {
-        "Nearest Neighbors": [{'n_neighbors': [1, 5, 10, 20]}],
-        "Linear SVM": [{'kernel': ['linear'],'C': [1]}],
-        "RBF SVM": [{'kernel': ['rbf'],
-                     'gamma': np.arange(0.1,1,0.1).tolist()+range(1,10),
-                     'C': np.logspace(-2,2,5).tolist()}],
+        "Nearest Neighbors": [{"n_neighbors": [1, 5, 10, 20]}],
+        "Linear SVM": [{"kernel": ["linear"],"C": [1]}],
+        "RBF SVM": [{"kernel": ["rbf"],
+                     "gamma": np.arange(0.1, 1, 0.1).tolist() + range(1, 10),
+                     "C": np.logspace(-2, 2, 5).tolist()}],
         "Decision Tree": [],
-        "Random Forest": [{'n_estimators': range(5,20)}],
-        "Logistic Regression": [{'C': np.logspace(0.1,3,7).tolist()}],
+        "Random Forest": [{"n_estimators": range(5,20)}],
+        "Logistic Regression": [{"C": np.logspace(0.1, 3, 7).tolist()}],
         "Naive Bayes": [],
-        "LDA": [{'n_components': [np.int(0.1*data_shape[0]),
-                                  np.int(0.2*data_shape[0]),
-                                  np.int(0.3*data_shape[0]),
-                                  np.int(0.5*data_shape[0]),
-                                  np.int(0.7*data_shape[0])]}],
+        "LDA": [{"n_components": [np.int(0.1 * data_shape[0]),
+                                  np.int(0.2 * data_shape[0]),
+                                  np.int(0.3 * data_shape[0]),
+                                  np.int(0.5 * data_shape[0]),
+                                  np.int(0.7 * data_shape[0])]}],
         }
 
     logger.info("Using classifiers %r with params %r" % (classifiers, params))
@@ -214,13 +215,13 @@ def get_classifier(name, model, param, data=None):
                     "This may take a while")
         assert data is not None
         #Euclidean distances between samples
-        dist = pdist(data, 'euclidean').ravel()
+        dist = pdist(data, "euclidean").ravel()
         #Estimates for sigma (10th, 50th and 90th percentile)
         sigest = np.asarray(np.percentile(dist,[10,50,90]))
         #Estimates for gamma (= -1/(2*sigma^2))
         gamma = 1./(2*sigest**2)
         #Set SVM parameters with these values
-        param = [{"kernel": ['rbf'],
+        param = [{"kernel": ["rbf"],
                   "gamma": gamma.tolist(),
                   "C": np.logspace(-2,2,5).tolist()}]
     if name not in ["Decision Tree", "Naive Bayes"]:
@@ -386,8 +387,8 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
     sb.barplot(np.array(NAMES), dscore, palette="Paired")
     ax.set_xticks(np.arange(len(NAMES)))
     ax.set_xticklabels(NAMES, rotation=30)
-    ax.set_ylabel('classification AUC')
-    #ax.set_title('Using features: '+str(action_features))
+    ax.set_ylabel("classification AUC")
+    #ax.set_title("Using features: "+str(action_features))
     pl.subplots_adjust(bottom=0.18)
     if out_dir is not None:
         # change the file you're saving it to
