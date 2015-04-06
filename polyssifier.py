@@ -2,9 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-This module computes the baseline results by applying various
-ML classifiers such as SVM, LDA, Naive bayes, K-NN.
+This module computes the baseline results by applying various classifiers.
 """
+
+__author__ = "Sergey Plis"
+__copyright__ = "Copyright 2015, Mind Research Network"
+__credits__ = ["Sergey Plis, Devon Hjelm, Alvaro Ulloa"]
+__licence__ = "3-clause BSD"
+__email__ = "splis@gmail.com"
+__maintainer__ = "Sergey Plis"
 
 # We may want to load memmaps eventually, so here's a flag to control this.
 
