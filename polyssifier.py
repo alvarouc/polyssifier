@@ -107,7 +107,8 @@ def make_classifiers(data_shape, ksplit) :
                                                 n_jobs=PROCESSORS),
         "Logistic Regression": LogisticRegression(),
         "Naive Bayes": GaussianNB(),
-        "LDA": LDA()}
+        "LDA": LDA()
+        }
 
     params = {
         "Nearest Neighbors": [{"n_neighbors": [1, 5, 10, 20]}],
@@ -384,7 +385,8 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
 
     pl.figure(figsize=[10,6])
     ax=pl.gca()
-    sb.barplot(np.array(NAMES), dscore, palette="Paired")
+    ds = pd.DataFrame(dscore.T, columns=np.array(NAMES))
+    sb.barplot(data=ds, palette="Paired")
     ax.set_xticks(np.arange(len(NAMES)))
     ax.set_xticklabels(NAMES, rotation=30)
     ax.set_ylabel("classification AUC")
