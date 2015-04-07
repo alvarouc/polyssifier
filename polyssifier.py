@@ -74,7 +74,8 @@ NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree", "Random
 def make_classifiers(data_shape, ksplit) :
     """Function that makes classifiers each with a number of folds.
 
-    Returns two dictionaries for the classifiers and their parameters, using `data_shape` and `ksplit` in construction of classifiers.
+    Returns two dictionaries for the classifiers and their parameters, using
+    `data_shape` and `ksplit` in construction of classifiers.
 
     Parameters
     ----------
@@ -322,7 +323,7 @@ def load_labels(source_dir, label_pattern):
     label_files = glob(path.join(source_dir, label_pattern))
     if len(label_files) == 0:
         raise ValueError("No label files found with pattern %s"
-                         % data_pattern)
+                         % label_pattern)
     if len(label_files) > 1:
         raise ValueError("Only one label file supported ATM.")
     labels = np.load(label_files[0]).flatten()
