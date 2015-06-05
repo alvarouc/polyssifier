@@ -382,6 +382,10 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
         dscore.append(fScores)
         score[name] = (np.mean(fScores), np.std(fScores))
 
+    # save results from all folds for estimating AUC std
+    with open(path.join(out_dir, 'auc_score.pkl'),'wb') as f:
+        f.dump(score, f)
+        
     dscore = np.asarray(dscore)
 
     pl.figure(figsize=[10,6])
