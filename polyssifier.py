@@ -382,12 +382,17 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
         dscore.append(fScores)
         score[name] = (np.mean(fScores), np.std(fScores))
 
+    # save results from all folds for estimating AUC std
+    with open(path.join(out_dir, 'auc_score.pkl'),'wb') as f:
+        pickle.dump(score, f)
+        
     dscore = np.asarray(dscore)
 
     pl.figure(figsize=[10,6])
     ax=pl.gca()
-    ds = pd.DataFrame(dscore.T, columns=np.array(NAMES))
-    sb.barplot(data=ds, palette="Paired")
+    ds = pd.DataFrame(dscore.T, columns=NAMES)
+    ds_long =pd.melt(ds)
+    sb.barplot(x='variable', y='value', data=ds_long, palette="Paired")
     ax.set_xticks(np.arange(len(NAMES)))
     ax.set_xticklabels(NAMES, rotation=30)
     ax.set_ylabel("classification AUC")
