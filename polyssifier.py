@@ -384,7 +384,7 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
 
     # save results from all folds for estimating AUC std
     with open(path.join(out_dir, 'auc_score.pkl'),'wb') as f:
-        f.dump(score, f)
+        pickle.dump(score, f)
         
     dscore = np.asarray(dscore)
 
