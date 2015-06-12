@@ -69,7 +69,8 @@ logger = logging.getLogger(__name__)
 # going to be running it on but high enough to help the computation
 PROCESSORS = 8
 seed = rndc.SystemRandom().seed()
-NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree", "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
+NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree",
+         "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
 
 def make_classifiers(data_shape, ksplit) :
     """Function that makes classifiers each with a number of folds.
@@ -330,7 +331,7 @@ def load_labels(source_dir, label_pattern):
     logger.info("Label loading complete. Shape is %r" % (labels.shape,))
     return labels
 
-def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
+def main(source_dir, ksplit, out_dir, data_pattern, label_pattern, test_mode):
     """
     Main function for polyssifier.
 
@@ -343,6 +344,7 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
         POSIX-type regex string for list of paths.
     label_pattern: str
         POSIX-type regex string for list of paths.
+    test_mode: bool
     """
     # Load input and labels.
     data = load_data(source_dir, data_pattern)
@@ -351,16 +353,23 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
     # Get classifiers and params.
     classifiers, params = make_classifiers(data.shape, ksplit)
 
+    if test_mode:
+        NAMES = ["Nearest Neighbors", "Linear SVM", "Decision Tree",
+                 "Logistic Regression", "Naive Bayes", "LDA"]
+        classifiers = dict((k, classifiers[k]) for k in NAMES)
+        params = dict((k, params[k]) for k in NAMES)
+        kplit = 3
+
     # Make the folds.
     logger.info("Making %d folds" % ksplit)
     kf = StratifiedKFold(labels, n_folds=ksplit)
-
 
     # Extract the training and testing indices from the k-fold object,
     # which stores fold pairs of indices.
     fold_pairs = [(tr, ts) for (tr, ts) in kf]
     assert len(fold_pairs) == ksplit
 
+    #dhjelm: were we planning on using this dict?
     score={}
     dscore=[]
     for name in NAMES:
@@ -406,6 +415,9 @@ def make_argument_parser():
     parser.add_argument("data_directory",
                         help="Directory where the data files live.")
     parser.add_argument("out", help="Output directory of files.")
+    parser.add_argument("-t", "--test", action="store_true",
+                        help=("Test mode, avoids slow classifiers and uses"
+                              " 3 folds"))
     parser.add_argument("--folds", default=10,
                         help="Number of folds for n-fold cross validation")
     parser.add_argument("--data_pattern", default="data.npy",
@@ -424,4 +436,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG)
     main(args.data_directory, out_dir=args.out, ksplit=int(args.folds),
-         data_pattern=args.data_pattern, label_pattern=args.label_pattern)
+         data_pattern=args.data_pattern, label_pattern=args.label_pattern,
+         test_mode=args.test)
