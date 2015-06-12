@@ -67,7 +67,7 @@ logger = logging.getLogger(__name__)
 
 # please set this number to no more than the number of cores on the machine you're
 # going to be running it on but high enough to help the computation
-PROCESSORS = 8
+PROCESSORS = 20
 seed = rndc.SystemRandom().seed()
 NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree",
          "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
@@ -353,6 +353,7 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern, test_mode):
 
     # Get classifiers and params.
     classifiers, params = make_classifiers(data.shape, ksplit)
+    global NAMES
 
     if test_mode:
         NAMES = ["Nearest Neighbors", "Linear SVM", "Decision Tree",
