@@ -69,10 +69,17 @@ logger = logging.getLogger(__name__)
 # going to be running it on but high enough to help the computation
 PROCESSES = 8
 seed = rndc.SystemRandom().seed()
-NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree", "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
+NAMES = ['Nearest Neighbors',
+         'Linear SVM',
+         'RBF SVM',
+         'Decision Tree',
+         'Random Forest',
+         'Logistic Regression',
+         'Naive Bayes',
+         'LDA']
 
 def make_classifiers(data_shape, ksplit) :
-    """Function that makes classifiers each with a number of folds.
+    '''Function that makes classifiers each with a number of folds.
 
     Returns two dictionaries for the classifiers and their parameters, using
     `data_shape` and `ksplit` in construction of classifiers.
@@ -91,48 +98,48 @@ def make_classifiers(data_shape, ksplit) :
     params: dict
         A dictionary of list of dictionaries of the corresponding
         params for each classifier.
-    """
+    '''
 
     if len(data_shape) != 2:
-        raise ValueError("Only 2-d data allowed (samples by dimension).")
+        raise ValueError('Only 2-d data allowed (samples by dimension).')
 
     classifiers = {
-        "Nearest Neighbors": KNeighborsClassifier(3),
-        "Linear SVM": SVC(kernel="linear", C=1, probability=True),
-        "RBF SVM": SVC(gamma=2, C=1, probability=True),
-        "Decision Tree": DecisionTreeClassifier(max_depth=None,
-                                                max_features="auto"),
-        "Random Forest": RandomForestClassifier(max_depth=None,
+        'Nearest Neighbors': KNeighborsClassifier(3),
+        'Linear SVM': SVC(kernel='linear', C=1, probability=True),
+        'RBF SVM': SVC(gamma=2, C=1, probability=True),
+        'Decision Tree': DecisionTreeClassifier(max_depth=None,
+                                                max_features='auto'),
+        'Random Forest': RandomForestClassifier(max_depth=None,
                                                 n_estimators=10,
-                                                max_features="auto",
+                                                max_features='auto',
                                                 n_jobs=PROCESSORS),
-        "Logistic Regression": LogisticRegression(),
-        "Naive Bayes": GaussianNB(),
-        "LDA": LDA()
+        'Logistic Regression': LogisticRegression(),
+        'Naive Bayes': GaussianNB(),
+        'LDA': LDA()
         }
 
     params = {
-        "Nearest Neighbors": [{"n_neighbors": [1, 5, 10, 20]}],
-        "Linear SVM": [{"kernel": ["linear"],"C": [1]}],
-        "RBF SVM": [{"kernel": ["rbf"],
-                     "gamma": np.arange(0.1, 1, 0.1).tolist() + range(1, 10),
-                     "C": np.logspace(-2, 2, 5).tolist()}],
-        "Decision Tree": [],
-        "Random Forest": [{"n_estimators": range(5,20)}],
-        "Logistic Regression": [{"C": np.logspace(0.1, 3, 7).tolist()}],
-        "Naive Bayes": [],
-        "LDA": [{"n_components": [np.int(0.1 * data_shape[0]),
+        'Nearest Neighbors': [{'n_neighbors': [1, 5, 10, 20]}],
+        'Linear SVM': [{'kernel': ['linear'],'C': [1]}],
+        'RBF SVM': [{'kernel': ['rbf'],
+                     'gamma': np.arange(0.1, 1, 0.1).tolist() + range(1, 10),
+                     'C': np.logspace(-2, 2, 5).tolist()}],
+        'Decision Tree': [],
+        'Random Forest': [{'n_estimators': range(5,20)}],
+        'Logistic Regression': [{'C': np.logspace(0.1, 3, 7).tolist()}],
+        'Naive Bayes': [],
+        'LDA': [{'n_components': [np.int(0.1 * data_shape[0]),
                                   np.int(0.2 * data_shape[0]),
                                   np.int(0.3 * data_shape[0]),
                                   np.int(0.5 * data_shape[0]),
                                   np.int(0.7 * data_shape[0])]}],
         }
 
-    logger.info("Using classifiers %r with params %r" % (classifiers, params))
+    logger.info('Using classifiers %r with params %r' % (classifiers, params))
     return classifiers, params
 
 def get_score(data, labels, fold_pairs, name, model, param):
-    """
+    '''
     Function to get score for a classifier.
 
     Parameters
@@ -154,30 +161,30 @@ def get_score(data, labels, fold_pairs, name, model, param):
     -------
     classifier: WRITEME
     fScore: WRITEME
-    """
+    '''
     assert isinstance(name, str)
-    logger.info("Classifying %s" % name)
+    logger.info('Classifying %s' % name)
 
     ksplit = len(fold_pairs)
     if name not in NAMES:
-        raise ValueError("Classifier %s not supported. "
-                         "Did you enter it properly?" % name)
+        raise ValueError('Classifier %s not supported. '
+                         'Did you enter it properly?' % name)
 
     # Redefine the parameters to be used for RBF SVM (dependent on
     # training data)
 
     if True:  #better identifier here
-        logger.info("Attempting to use grid search...")
+        logger.info('Attempting to use grid search...')
         fScore = []
         for i, fold_pair in enumerate(fold_pairs):
-            print ("Classifying a %s the %d-th out of %d folds..."
+            print ('Classifying a %s the %d-th out of %d folds...'
                    % (name, i+1, len(fold_pairs)))
             classifier = get_classifier(
                 name, model, param, data[fold_pair[0], :])
             area = classify(data, labels, fold_pair, classifier)
             fScore.append(area)
     else:
-        logger.warn("Multiprocessing splits not tested yet.")
+        logger.warn('Multiprocessing splits not tested yet.')
         pool = Pool(processes=min(ksplit, PROCESSORS))
         classify_func = lambda f : classify(
             data,
@@ -195,7 +202,7 @@ def get_score(data, labels, fold_pairs, name, model, param):
     return classifier, fScore
 
 def get_classifier(name, model, param, data=None):
-    """
+    '''
     Returns the classifier for the model.
 
     Parameters
@@ -209,34 +216,34 @@ def get_classifier(name, model, param, data=None):
     Returns
     -------
     WRITEME
-    """
+    '''
     assert isinstance(name, str)
 
-    if name == "RBF SVM":
-        logger.info("RBF SVM requires some preprocessing."
-                    "This may take a while")
+    if name == 'RBF SVM':
+        logger.info('RBF SVM requires some preprocessing.'
+                    'This may take a while')
         assert data is not None
         #Euclidean distances between samples
-        dist = pdist(data, "euclidean").ravel()
+        dist = pdist(data, 'euclidean').ravel()
         #Estimates for sigma (10th, 50th and 90th percentile)
         sigest = np.asarray(np.percentile(dist,[10,50,90]))
         #Estimates for gamma (= -1/(2*sigma^2))
         gamma = 1./(2*sigest**2)
         #Set SVM parameters with these values
-        param = [{"kernel": ["rbf"],
-                  "gamma": gamma.tolist(),
-                  "C": np.logspace(-2,2,5).tolist()}]
-    if name not in ["Decision Tree", "Naive Bayes"]:
+        param = [{'kernel': ['rbf'],
+                  'gamma': gamma.tolist(),
+                  'C': np.logspace(-2,2,5).tolist()}]
+    if name not in ['Decision Tree', 'Naive Bayes']:
         # why 5?
-        logger.info("Using grid search for %s" % name)
-        model = GridSearchCV(model, param, cv=5, scoring="f1",
+        logger.info('Using grid search for %s' % name)
+        model = GridSearchCV(model, param, cv=5, scoring='f1',
                              n_jobs=PROCESSORS)
     else:
-        logger.info("Not using grid search for %s" % name)
+        logger.info('Not using grid search for %s' % name)
     return model
 
 def classify(data, labels, (train_idx, test_idx), classifier=None):
-    """
+    '''
     Classifies given a fold and a model.
 
     Parameters
@@ -248,14 +255,14 @@ def classify(data, labels, (train_idx, test_idx), classifier=None):
     (train_idx, test_idx) : list
         set of indices for splitting data into train and test
     classifier: sklearn classifier object
-        initialized classifier with "fit" and "predict_proba" methods.
+        initialized classifier with 'fit' and 'predict_proba' methods.
 
     Returns
     -------
     WRITEME
-    """
+    '''
 
-    assert classifier is not None, "Why would you pass not classifier?"
+    assert classifier is not None, 'Why would you pass not classifier?'
 
     # Data scaling based on training set
     scaler = StandardScaler()
@@ -271,7 +278,7 @@ def classify(data, labels, (train_idx, test_idx), classifier=None):
     return auc(fpr, tpr)
 
 def load_data(source_dir, data_pattern):
-    """
+    '''
     Loads the data from multiple sources if provided.
 
     Parameters
@@ -282,12 +289,12 @@ def load_data(source_dir, data_pattern):
     Returns
     -------
     data: array_like
-    """
-    logger.info("Loading data from %s with pattern %s"
+    '''
+    logger.info('Loading data from %s with pattern %s'
                 % (source_dir, data_pattern))
     data_files = glob(path.join(source_dir, data_pattern))
     if len(data_files) == 0:
-        raise ValueError("No data files found with pattern %s in %s"
+        raise ValueError('No data files found with pattern %s in %s'
                          % (data_pattern, source_dir))
 
     data = None
@@ -299,11 +306,11 @@ def load_data(source_dir, data_pattern):
         else:
             data = d
 
-    logger.info("Data loading complete. Shape is %r" % (data.shape,))
+    logger.info('Data loading complete. Shape is %r' % (data.shape,))
     return data
 
 def load_labels(source_dir, label_pattern):
-    """
+    '''
     Function to load labels file.
 
     Parameters
@@ -317,22 +324,22 @@ def load_labels(source_dir, label_pattern):
     -------
     labels: array_like
         A numpy vector of the labels.
-    """
+    '''
 
-    logger.info("Loading labels from %s with pattern %s"
+    logger.info('Loading labels from %s with pattern %s'
                 % (source_dir, label_pattern))
     label_files = glob(path.join(source_dir, label_pattern))
     if len(label_files) == 0:
-        raise ValueError("No label files found with pattern %s"
+        raise ValueError('No label files found with pattern %s'
                          % label_pattern)
     if len(label_files) > 1:
-        raise ValueError("Only one label file supported ATM.")
+        raise ValueError('Only one label file supported ATM.')
     labels = np.load(label_files[0]).flatten()
-    logger.info("Label loading complete. Shape is %r" % (labels.shape,))
+    logger.info('Label loading complete. Shape is %r' % (labels.shape,))
     return labels
 
 def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
-    """
+    '''
     Main function for polyssifier.
 
     Parameters
@@ -344,7 +351,7 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
         POSIX-type regex string for list of paths.
     label_pattern: str
         POSIX-type regex string for list of paths.
-    """
+    '''
     # Load input and labels.
     data = load_data(source_dir, data_pattern)
     labels = load_labels(source_dir, label_pattern)
@@ -353,7 +360,7 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
     classifiers, params = make_classifiers(data.shape, ksplit)
 
     # Make the folds.
-    logger.info("Making %d folds" % ksplit)
+    logger.info('Making %d folds' % ksplit)
     kf = StratifiedKFold(labels, n_folds=ksplit)
 
 
@@ -374,9 +381,9 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
 
         if out_dir is not None:
             save_path = path.join(out_dir,
-                                  name + "%.2f.pkl" % (np.mean(fScores)))
-            logger.info("Saving classifier to %s" % save_path)
-            with open(save_path, "wb") as f:
+                                  name + '%.2f.pkl' % (np.mean(fScores)))
+            logger.info('Saving classifier to %s' % save_path)
+            with open(save_path, 'wb') as f:
                 pickle.dump(clf,f)
 
         dscore.append(fScores)
@@ -392,41 +399,41 @@ def main(source_dir, ksplit, out_dir, data_pattern, label_pattern):
     ax=pl.gca()
     ds = pd.DataFrame(dscore.T, columns=NAMES)
     ds_long =pd.melt(ds)
-    sb.barplot(x='variable', y='value', data=ds_long, palette="Paired")
+    sb.barplot(x='variable', y='value', data=ds_long, palette='Paired')
     ax.set_xticks(np.arange(len(NAMES)))
     ax.set_xticklabels(NAMES, rotation=30)
-    ax.set_ylabel("classification AUC")
-    #ax.set_title("Using features: "+str(action_features))
+    ax.set_ylabel('classification AUC')
+    #ax.set_title('Using features: '+str(action_features))
     pl.subplots_adjust(bottom=0.18)
     if out_dir is not None:
         # change the file you're saving it to
-        pl.savefig(path.join(out_dir, "classifiers.png"))
+        pl.savefig(path.join(out_dir, 'classifiers.png'))
     else:
         pl.show(True)
 
 def make_argument_parser():
-    """
+    '''
     Creates an ArgumentParser to read the options for this script from
     sys.argv
-    """
+    '''
     parser = argparse.ArgumentParser()
-    parser.add_argument("data_directory",
-                        help="Directory where the data files live.")
-    parser.add_argument("results_directory",
-                        help="Output directory of files.")
-    parser.add_argument("--folds", default=10,
-                        help="Number of folds for n-fold cross validation")
-    parser.add_argument("--data_pattern", default="data.npy",
-                        help="Pattern for data files")
-    parser.add_argument("--label_pattern", default="labels.npy",
-                        help="Pattern for label files")
+    parser.add_argument('data_directory',
+                        help='Directory where the data files live.')
+    parser.add_argument('results_directory',
+                        help='Output directory of files.')
+    parser.add_argument('--folds', default=10,
+                        help='Number of folds for n-fold cross validation')
+    parser.add_argument('--data_pattern', default='data.npy',
+                        help='Pattern for data files')
+    parser.add_argument('--label_pattern', default='labels.npy',
+                        help='Pattern for label files')
     return parser
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     CPUS = multiprocessing.cpu_count()
     if CPUS < PROCESSES:
-        raise ValueError("Number of PROCESSES exceed available CPUs, "
-                         "please edit this in the script and come again!")
+        raise ValueError('Number of PROCESSES exceed available CPUs, '
+                         'please edit this in the script and come again!')
 
     parser = make_argument_parser()
     args = parser.parse_args()
