@@ -37,7 +37,6 @@ from os import path
 import pandas as pd
 import pickle
 import random as rndc
-from scipy.io import savemat
 from scipy.spatial.distance import pdist
 import seaborn as sb
 
@@ -173,31 +172,16 @@ def get_score(data, labels, fold_pairs, name, model, param):
     # Redefine the parameters to be used for RBF SVM (dependent on
     # training data)
 
-    if True:  #better identifier here
-        logger.info('Attempting to use grid search...')
-        fScore = []
-        for i, fold_pair in enumerate(fold_pairs):
-            print ('Classifying a %s the %d-th out of %d folds...'
-                   % (name, i+1, len(fold_pairs)))
-            classifier = get_classifier(
-                name, model, param, data[fold_pair[0], :])
-            area = classify(data, labels, fold_pair, classifier)
-            fScore.append(area)
-    else:
-        logger.warn('Multiprocessing splits not tested yet.')
-        pool = Pool(processes=min(ksplit, PROCESSORS))
-        classify_func = lambda f : classify(
-            data,
-            labels,
-            fold_pairs[f],
-            classifier=get_classifier(
-                name,
-                model,
-                param,
-                data=data[fold_pairs[f][0], :]))
-        fScore = pool.map(functools.partial(classify_func, xrange(ksplit)))
-        pool.close()
-        pool.join()
+    
+    logger.info('Attempting to use grid search...')
+    fScore = []
+    for i, fold_pair in enumerate(fold_pairs):
+        print ('Classifying a %s the %d-th out of %d folds...'
+               % (name, i+1, len(fold_pairs)))
+        classifier = get_classifier(
+            name, model, param, data[fold_pair[0], :])
+        area = classify(data, labels, fold_pair, classifier)
+        fScore.append(area)
 
     return classifier, fScore
 
