@@ -67,7 +67,7 @@ logger = logging.getLogger(__name__)
 
 # please set this number to no more than the number of cores on the machine you're
 # going to be running it on but high enough to help the computation
-PROCESSORS = 8
+PROCESSES = 8
 seed = rndc.SystemRandom().seed()
 NAMES = ["Nearest Neighbors", "Linear SVM", "RBF SVM",  "Decision Tree", "Random Forest", "Logistic Regression", "Naive Bayes", "LDA"]
 
@@ -412,7 +412,8 @@ def make_argument_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("data_directory",
                         help="Directory where the data files live.")
-    parser.add_argument("out", help="Output directory of files.")
+    parser.add_argument("results_directory",
+                        help="Output directory of files.")
     parser.add_argument("--folds", default=10,
                         help="Number of folds for n-fold cross validation")
     parser.add_argument("--data_pattern", default="data.npy",
@@ -423,8 +424,8 @@ def make_argument_parser():
 
 if __name__ == "__main__":
     CPUS = multiprocessing.cpu_count()
-    if CPUS < PROCESSORS:
-        raise ValueError("Number of PROCESSORS exceed available CPUs, "
+    if CPUS < PROCESSES:
+        raise ValueError("Number of PROCESSES exceed available CPUs, "
                          "please edit this in the script and come again!")
 
     parser = make_argument_parser()
