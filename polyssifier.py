@@ -26,7 +26,7 @@ logging.basicConfig(format="[%(module)s:%(levelname)s]:%(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-PROCESSORS = int(multiprocessing.cpu_count() / 2)
+PROCESSORS = int(multiprocessing.cpu_count() * 3 / 4)
 
 CLASSIFIER_PARAMETER = {
 
