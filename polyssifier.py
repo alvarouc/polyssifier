@@ -16,6 +16,7 @@ import logging
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.metrics import f1_score
 from sklearn.grid_search import GridSearchCV
+from sklearn.preprocessing import StandardScaler as sc
 
 
 import pandas as pd
@@ -43,8 +44,8 @@ CLASSIFIER_PARAMETER = {
     'RBF SVM': {
         'clf': SVC(gamma=2, C=1, probability=True),
         'parameters': {'kernel': ['rbf'],
-                       'gamma': [0.1, 0.5, 1, 5, 10],
-                       'C': np.logspace(-2, 2, 5).tolist()}},
+                       'gamma': [0.1, 0.5, 1, 5],
+                       'C': np.logspace(-2, 2, 4).tolist()}},
 
     'Decision Tree': {
         'clf': DecisionTreeClassifier(max_depth=None,
@@ -68,13 +69,14 @@ CLASSIFIER_PARAMETER = {
 
 
 class Partition:
-        def __init__(self, data, label, n_folds=10):
+        def __init__(self, data, label, n_folds=10, scale=True):
             self.i = 0
             self.data = data
             self.label = label
             self.n_folds = n_folds
             self.kf = [(train, test) for train, test in
                        StratifiedKFold(label, n_folds=10)]
+            self.scale = scale
 
         def __iter__(self):
             self.i = 0
@@ -88,6 +90,11 @@ class Partition:
                          'y': self.label[train_index]}
                 test = {'X': self.data[test_index, :],
                         'y': self.label[test_index]}
+                if self.scale:
+                        scaler = sc()
+                        scaler.fit(train['X'])
+                        train['X'] = scaler.transform(train['X'])
+                        test['X'] = scaler.transform(test['X'])
                 self.i += 1
                 return(train, test)
             else:
@@ -96,9 +103,9 @@ class Partition:
 
 class Poly:
 
-    def __init__(self, data, label, n_folds=10):
-        self.n_folds = n_folds
-        self.data = Partition(data, label, self.n_folds)
+    def __init__(self, data, label, n_folds=10, scale=True):
+        self.n_folds = n_folds                
+        self.data = Partition(data, label, self.n_folds, scale)
         self.results = {}
         if len(np.unique(label)) > 2:
             self.scorer = lambda x, y: \
