@@ -18,6 +18,8 @@ from sklearn.metrics import f1_score
 from sklearn.grid_search import GridSearchCV
 from sklearn.preprocessing import StandardScaler as sc
 
+from mlp import MLP
+from copy import deepcopy
 
 import pandas as pd
 import seaborn as sb
@@ -30,6 +32,12 @@ logger.setLevel(logging.DEBUG)
 PROCESSORS = int(multiprocessing.cpu_count() * 3 / 4)
 
 CLASSIFIER_PARAMETER = {
+    'Multilayer Perceptron': {
+        'clf': MLP(verbose=0),
+        'parameters': {'n_hidden': [50, 100, 200],
+                       'n_deep': [2, 3],
+                       'l1_norm': [0, 0.001, 0.01],
+                       'patience': [10, 50]}},
 
     'Nearest Neighbors': {
         'clf': KNeighborsClassifier(3),
@@ -39,13 +47,13 @@ CLASSIFIER_PARAMETER = {
         'clf': SVC(kernel='linear',
                    C=1, probability=True),
         'parameters': {'kernel': ['linear'],
-                       'C': [0.1, 0.25, 0.5, 1]}},
+                       'C': [0.01, 0.1, 1]}},
 
     'RBF SVM': {
         'clf': SVC(gamma=2, C=1, probability=True),
         'parameters': {'kernel': ['rbf'],
                        'gamma': [0.1, 0.5, 1, 5],
-                       'C': np.logspace(-2, 2, 4).tolist()}},
+                       'C': [0.001, 0.01, 0.1]}},
 
     'Decision Tree': {
         'clf': DecisionTreeClassifier(max_depth=None,
@@ -60,7 +68,7 @@ CLASSIFIER_PARAMETER = {
 
     'Logistic Regression': {
         'clf': LogisticRegression(),
-        'parameters': {'C': np.logspace(0.1, 3, 7).tolist()}},
+        'parameters': {'C': np.logspace(0.1, 3, 5).tolist()}},
 
     'Naive Bayes': {
         'clf': GaussianNB(),
@@ -104,6 +112,7 @@ class Partition:
 class Poly:
 
     def __init__(self, data, label, n_folds=10, scale=True):
+
         self.n_folds = n_folds                
         self.data = Partition(data, label, self.n_folds, scale)
         self.results = {}
@@ -113,6 +122,8 @@ class Poly:
         else:
             self.scorer = lambda x, y: \
                 f1_score(x, y, average='binary')
+
+        self.classifiers = deepcopy(CLASSIFIER_PARAMETER)
 
     def cv(self, clf, parameters=None):
         if parameters:
@@ -133,7 +144,7 @@ class Poly:
         return(train_s, test_s)
 
     def run(self):
-        for key, value in CLASSIFIER_PARAMETER.items():
+        for key, value in self.classifiers.items():
             logger.info('Running {}...'.format(key))
             train_s, test_s = self.cv(**value)
             self.results[key] = test_s
