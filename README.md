@@ -2,6 +2,7 @@ polyssifier
 ===========
 
 Run a multitude of classifiers on your data and get an AUC report
+
 Example: 
 
 https://github.com/alvarouc/polyssifier/blob/master/sample/example.ipynb
