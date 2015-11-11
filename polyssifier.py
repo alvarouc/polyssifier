@@ -14,15 +14,16 @@ import numpy as np
 import multiprocessing
 import logging
 from sklearn.cross_validation import StratifiedKFold
-from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import f1_score
 from sklearn.preprocessing import StandardScaler as sc
 from sklearn.ensemble import VotingClassifier
 from mlp import MLP
-from copy import deepcopy
 
+from collections import OrderedDict
+import pickle
+import os
 import pandas as pd
-import seaborn as sb
 import matplotlib.pyplot as plt
 
 logging.basicConfig(format="[%(module)s:%(levelname)s]:%(message)s")
@@ -30,7 +31,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 PROCESSORS = int(multiprocessing.cpu_count() * 3 / 4)
-
 
 
 def make_argument_parser():
@@ -55,6 +55,8 @@ class Poly:
 
     def __init__(self, data, label, n_folds=10,
                  scale=True, verbose=10, exclude=[]):
+        if not os.path.exists('models'):
+            os.makedirs('models')
 
         self.classifiers = {
             'Multilayer Perceptron': {
@@ -97,6 +99,7 @@ class Poly:
         for key in exclude:
             if key in self.classifiers:
                 del self.classifiers[key]
+        self.exclude = exclude
         # build the voting classifier
         if 'Voting' not in exclude:
             estimators = []
@@ -110,6 +113,8 @@ class Poly:
             self.classifiers['Voting'] = {'clf': VotingClassifier(estimators),
                                           'parameters':
                                           {'voting': ['hard', 'soft']}}
+            self.classifiers = OrderedDict(self.classifiers)
+            self.classifiers.move_to_end('Voting')
 
         self.n_folds = n_folds
         self.scale = scale
@@ -120,20 +125,46 @@ class Poly:
 
     def run(self):
 
-        scores = {}
-        kf = StratifiedKFold(self.label, n_folds=self.n_folds)
-        for key, val in self.classifiers.items():
-            logger.info('Running {}'.format(key))
-            if val['parameters']:
-                clf = GridSearchCV(val['clf'], val['parameters'],
-                                   n_jobs=PROCESSORS, cv=5)
-            else:
-                clf = val['clf']
+        kf = StratifiedKFold(self.label, n_folds=self.n_folds,
+                             random_state=1988)
+        if len(np.unique(self.label)) == 2:
+            scores = self.run_bin(kf)
+        else:
+            scores = self.run_mul(kf)
+        return scores
 
-            scores[key] = cross_val_score(
-                clf, self.data, self.label,
-                scoring='f1_weighted', cv=kf,
-                n_jobs=1, verbose=self.verbose)
+    def run_bin(self, kf):
+        scores = {}
+        for key in self.classifiers:
+                scores[key] = []
+        for n, (train, test) in enumerate(kf):
+
+            logger.info('Fold {}'.format(n+1))
+
+            X_train, y_train = self.data[train, :], self.label[train]
+            X_test, y_test = self.data[test, :], self.label[test]
+
+            for key, val in self.classifiers.items():
+
+                file_name = 'models/{}_{}.p'.format(key, n+1)
+                if os.path.isfile(file_name):
+                    logger.info('Loading {}'.format(file_name))
+                    with open(file_name, 'rb') as fid:
+                        clf = pickle.load(fid)
+                else:
+                    logger.info('Running {}'.format(key))
+                    if val['parameters']:
+                        clf = GridSearchCV(val['clf'], val['parameters'],
+                                           n_jobs=PROCESSORS, cv=5)
+                    else:
+                        clf = val['clf']
+                    clf.fit(X_train, y_train)
+                    with open(file_name, 'wb') as fid:
+                        pickle.dump(clf, fid)
+
+                scores[key].append(f1_score(y_test,
+                                            clf.predict(X_test)))
+                logger.info('{}_{} : {}'.format(key, n+1, scores[key][-1]))
 
         self.scores = scores
         return scores
@@ -141,15 +172,16 @@ class Poly:
     def plot(self, file_name='temp'):
 
         fig = plt.figure(figsize=[10, 6])
-        ds = pd.DataFrame(self.scores)
-        print(ds)
-        ds.to_csv(file_name + '_results.csv')
-        ds_long = pd.melt(ds)
-        sb.barplot(x='variable', y='value',
-                   data=ds_long, palette='Paired')
-        plt.xticks(rotation=30)
-        plt.title('Classification AUC Mean +- SD')
-        plt.xlabel('')
+        df = pd.DataFrame(self.scores)
+
+        df = df.describe().T
+        df.sort('mean', ascending=True, inplace=True)
+
+        df.plot(kind='barh', y='mean', xerr='std', legend=False,
+                color=(0.2, 0.2, 0.7), fontsize=14, width=0.85, alpha=0.7),
+        plt.xlim(np.max([(df['mean'] - df['std']).min() - 0.05, 0]), 1)
+        plt.title('Classifiers Ranking')
+
         fig.subplots_adjust(bottom=0.2)
         plt.savefig(file_name + '.pdf')
 
