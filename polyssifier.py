@@ -21,7 +21,6 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
 from mlp import MLP
 
-from collections import OrderedDict
 import pickle
 import os
 import pandas as pd
@@ -114,6 +113,7 @@ class Poly:
         self.n_folds = n_folds
         self.scale = scale
         self.label = label
+        self.n_class = len(np.unique(label))
         self.verbose = verbose
         self.data = data
         self.scores = {}
@@ -153,9 +153,14 @@ class Poly:
                     with open(file_name, 'wb') as fid:
                         pickle.dump(clf, fid)
 
+                if self.n_class==2:
+                    average = 'binary'
+                else:
+                    average = 'weighted'
+                
                 scores[key].append(f1_score(y_test,
                                             clf.predict(X_test),
-                                            average='weighted'))
+                                            average=average))
                 estimators.append((key, clf))
                 logger.info('{}_{} : {}'.format(key, n+1, scores[key][-1]))
 
@@ -166,12 +171,12 @@ class Poly:
 
             scores['Hard Voting'].append(f1_score(y_test,
                                                   clf_hard.predict(X_test),
-                                                  average='weighted'))
+                                                  average=average))
             logger.info('{}_{} : {}'.format('Hard Voting', n+1,
                                             scores['Hard Voting'][-1]))
             scores['Soft Voting'].append(f1_score(y_test,
                                                   clf_soft.predict(X_test),
-                                                  average='weighted'))
+                                                  average=average))
             logger.info('{}_{} : {}'.format('Soft Voting', n+1,
                                             scores['Soft Voting'][-1]))
 
