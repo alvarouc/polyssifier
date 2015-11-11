@@ -127,16 +127,16 @@ class Poly:
 
         kf = StratifiedKFold(self.label, n_folds=self.n_folds,
                              random_state=1988)
-        if len(np.unique(self.label)) == 2:
-            scores = self.run_bin(kf)
-        else:
-            scores = self.run_mul(kf)
-        return scores
-
-    def run_bin(self, kf):
         scores = {}
         for key in self.classifiers:
                 scores[key] = []
+        if len(np.unique(self.label)) == 2:
+            scores = self.run_bin(kf, scores)
+        else:
+            scores = self.run_bin(kf, scores)
+        return scores
+
+    def run_bin(self, kf, scores):
         for n, (train, test) in enumerate(kf):
 
             logger.info('Fold {}'.format(n+1))
@@ -163,7 +163,8 @@ class Poly:
                         pickle.dump(clf, fid)
 
                 scores[key].append(f1_score(y_test,
-                                            clf.predict(X_test)))
+                                            clf.predict(X_test),
+                                            average='weighted'))
                 logger.info('{}_{} : {}'.format(key, n+1, scores[key][-1]))
 
         self.scores = scores
