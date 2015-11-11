@@ -130,13 +130,7 @@ class Poly:
         scores = {}
         for key in self.classifiers:
                 scores[key] = []
-        if len(np.unique(self.label)) == 2:
-            scores = self.run_bin(kf, scores)
-        else:
-            scores = self.run_bin(kf, scores)
-        return scores
 
-    def run_bin(self, kf, scores):
         for n, (train, test) in enumerate(kf):
 
             logger.info('Fold {}'.format(n+1))
