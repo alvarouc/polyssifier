@@ -17,6 +17,7 @@ from sklearn.cross_validation import StratifiedKFold
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import f1_score
 from sklearn.preprocessing import StandardScaler as sc
+from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
 from mlp import MLP
 
@@ -32,6 +33,15 @@ logger.setLevel(logging.DEBUG)
 
 PROCESSORS = int(multiprocessing.cpu_count() * 3 / 4)
 
+
+def make_voter(estimators, y, voting='hard'):
+    clf = VotingClassifier(estimators, voting)
+    clf.estimators_ = [estim for name, estim in estimators]
+    
+    clf.le_ = LabelEncoder()
+    clf.le_.fit(y)
+    clf.classes_ = clf.le_.classes_
+    return clf
 
 def make_argument_parser():
     '''
@@ -61,10 +71,10 @@ class Poly:
         self.classifiers = {
             'Multilayer Perceptron': {
                 'clf': MLP(verbose=0, patience=100),
-                'parameters': {'n_hidden': [50, 100, 200],
+                'parameters': {'n_hidden': [10],
                                'n_deep': [2, 3],
-                               'l1_norm': [0, 0.001, 0.01],
-                               'drop': [0, 0.2]}},
+                               'l1_norm': [0, 0.001],
+                               'drop': [0]}},
             'Nearest Neighbors': {
                 'clf': KNeighborsClassifier(3),
                 'parameters': {'n_neighbors': [1, 5, 10, 20]}},
@@ -100,21 +110,6 @@ class Poly:
             if key in self.classifiers:
                 del self.classifiers[key]
         self.exclude = exclude
-        # build the voting classifier
-        if 'Voting' not in exclude:
-            estimators = []
-            for key, val in self.classifiers.items():
-                if val['parameters']:
-                    clf = GridSearchCV(val['clf'], val['parameters'],
-                                       n_jobs=1, cv=5)
-                else:
-                    clf = val['clf']
-                estimators.append((key, clf))
-            self.classifiers['Voting'] = {'clf': VotingClassifier(estimators),
-                                          'parameters':
-                                          {'voting': ['hard', 'soft']}}
-            self.classifiers = OrderedDict(self.classifiers)
-            self.classifiers.move_to_end('Voting')
 
         self.n_folds = n_folds
         self.scale = scale
@@ -130,6 +125,8 @@ class Poly:
         scores = {}
         for key in self.classifiers:
                 scores[key] = []
+        scores['Hard Voting'] = []
+        scores['Soft Voting'] = []
 
         for n, (train, test) in enumerate(kf):
 
@@ -137,7 +134,7 @@ class Poly:
 
             X_train, y_train = self.data[train, :], self.label[train]
             X_test, y_test = self.data[test, :], self.label[test]
-
+            estimators = []
             for key, val in self.classifiers.items():
 
                 file_name = 'models/{}_{}.p'.format(key, n+1)
@@ -159,7 +156,24 @@ class Poly:
                 scores[key].append(f1_score(y_test,
                                             clf.predict(X_test),
                                             average='weighted'))
+                estimators.append((key, clf))
                 logger.info('{}_{} : {}'.format(key, n+1, scores[key][-1]))
+
+            # build the voting classifier
+            logger.info('Running Voting Classifier')
+            clf_hard = make_voter(estimators, y_train, 'hard')
+            clf_soft = make_voter(estimators, y_train, 'soft')
+
+            scores['Hard Voting'].append(f1_score(y_test,
+                                                  clf_hard.predict(X_test),
+                                                  average='weighted'))
+            logger.info('{}_{} : {}'.format('Hard Voting', n+1,
+                                            scores['Hard Voting'][-1]))
+            scores['Soft Voting'].append(f1_score(y_test,
+                                                  clf_soft.predict(X_test),
+                                                  average='weighted'))
+            logger.info('{}_{} : {}'.format('Soft Voting', n+1,
+                                            scores['Soft Voting'][-1]))
 
         self.scores = scores
         return scores
