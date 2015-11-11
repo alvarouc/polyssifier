@@ -20,9 +20,10 @@ The class Poly includes several classifiers:
 - Voting Classifier
 
 You can exclude some of this classfiers by provind a list of names as follows:
+```python
+from polyssifier import Poly
 
-    from polyssifier import Poly
+pol = Poly(data,label, n_folds=5, exclude=['Multilayer Perceptron'], verbose =1)
 
-    pol = Poly(data,label, n_folds=5, exclude=['Multilayer Perceptron'], verbose =1)
-
-    scores= pol.run()
+scores= pol.run()
+```
