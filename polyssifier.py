@@ -112,7 +112,7 @@ class Poly:
 
         self.n_folds = n_folds
         self.scale = scale
-        self.label = label
+        self.label = LabelEncoder().fit_transform(label)
         self.n_class = len(np.unique(label))
         self.verbose = verbose
         self.data = data
@@ -178,7 +178,7 @@ class Poly:
                 .append(f1_score(y_test, clf_soft.predict(X_test),
                                  average=average))
             logger.info('{}_{} : {}'.format('Soft Voting', n+1,
-                                            scores['Soft Voting'][-1]))
+                                            self.scores['Soft Voting'][-1]))
 
         return self.scores
 
