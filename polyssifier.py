@@ -122,7 +122,6 @@ class Poly:
 
         kf = StratifiedKFold(self.label, n_folds=self.n_folds,
                              random_state=1988)
-        self.scores = {}
         for key in self.classifiers:
                 self.scores[key] = []
         self.scores['Hard Voting'] = []
@@ -162,7 +161,8 @@ class Poly:
                                                  clf.predict(X_test),
                                                  average=average))
                 estimators.append((key, clf))
-                logger.info('{}_{} : {}'.format(key, n+1, scores[key][-1]))
+                logger.info('{}_{} : {}'.format(key, n+1,
+                                                self.scores[key][-1]))
 
             # build the voting classifier
             logger.info('Running Voting Classifier')
@@ -173,7 +173,7 @@ class Poly:
                 .append(f1_score(y_test, clf_hard.predict(X_test),
                                  average=average))
             logger.info('{}_{} : {}'.format('Hard Voting', n+1,
-                                            scores['Hard Voting'][-1]))
+                                            self.scores['Hard Voting'][-1]))
             self.scores['Soft Voting']\
                 .append(f1_score(y_test, clf_soft.predict(X_test),
                                  average=average))
