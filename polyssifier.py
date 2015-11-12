@@ -122,11 +122,11 @@ class Poly:
 
         kf = StratifiedKFold(self.label, n_folds=self.n_folds,
                              random_state=1988)
-        scores = {}
+        self.scores = {}
         for key in self.classifiers:
-                scores[key] = []
-        scores['Hard Voting'] = []
-        scores['Soft Voting'] = []
+                self.scores[key] = []
+        self.scores['Hard Voting'] = []
+        self.scores['Soft Voting'] = []
 
         for n, (train, test) in enumerate(kf):
 
