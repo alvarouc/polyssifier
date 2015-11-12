@@ -79,11 +79,13 @@ class Poly:
                 'parameters': {'n_neighbors': [1, 5, 10, 20]}},
             'Linear SVM': {
                 'clf': SVC(kernel='linear',
-                           C=1, probability=True),
+                           C=1, probability=True,
+                           cache_size=7000),
                 'parameters': {'kernel': ['linear'],
                                'C': [0.01, 0.1, 1]}},
             'RBF SVM': {
-                'clf': SVC(gamma=2, C=1, probability=True),
+                'clf': SVC(gamma=2, C=1, probability=True,
+                           cache_size=7000),
                 'parameters': {'kernel': ['rbf'],
                                'gamma': [0.1, 0.5, 1, 5],
                                'C': [0.001, 0.01, 0.1]}},
