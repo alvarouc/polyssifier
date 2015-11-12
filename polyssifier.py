@@ -144,8 +144,13 @@ class Poly:
                 else:
                     logger.info('Running {}'.format(key))
                     if val['parameters']:
+                        if key == 'Multilayer Perceptron':
+                            njobs = 1
+                            # multiple jobs for theano not yet supported
+                        else:
+                            njobs = PROCESSORS
                         clf = GridSearchCV(val['clf'], val['parameters'],
-                                           n_jobs=PROCESSORS, cv=5)
+                                           n_jobs=njobs, cv=5)
                     else:
                         clf = val['clf']
                     clf.fit(X_train, y_train)
