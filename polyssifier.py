@@ -36,11 +36,11 @@ PROCESSORS = int(multiprocessing.cpu_count() * 3 / 4)
 def make_voter(estimators, y, voting='hard'):
     clf = VotingClassifier(estimators, voting)
     clf.estimators_ = [estim for name, estim in estimators]
-    
     clf.le_ = LabelEncoder()
     clf.le_.fit(y)
     clf.classes_ = clf.le_.classes_
     return clf
+
 
 def make_argument_parser():
     '''
@@ -153,14 +153,14 @@ class Poly:
                     with open(file_name, 'wb') as fid:
                         pickle.dump(clf, fid)
 
-                if self.n_class==2:
+                if self.n_class == 2:
                     average = 'binary'
                 else:
                     average = 'weighted'
-                
-                scores[key].append(f1_score(y_test,
-                                            clf.predict(X_test),
-                                            average=average))
+
+                self.scores[key].append(f1_score(y_test,
+                                                 clf.predict(X_test),
+                                                 average=average))
                 estimators.append((key, clf))
                 logger.info('{}_{} : {}'.format(key, n+1, scores[key][-1]))
 
@@ -169,19 +169,18 @@ class Poly:
             clf_hard = make_voter(estimators, y_train, 'hard')
             clf_soft = make_voter(estimators, y_train, 'soft')
 
-            scores['Hard Voting'].append(f1_score(y_test,
-                                                  clf_hard.predict(X_test),
-                                                  average=average))
+            self.scores['Hard Voting']\
+                .append(f1_score(y_test, clf_hard.predict(X_test),
+                                 average=average))
             logger.info('{}_{} : {}'.format('Hard Voting', n+1,
                                             scores['Hard Voting'][-1]))
-            scores['Soft Voting'].append(f1_score(y_test,
-                                                  clf_soft.predict(X_test),
-                                                  average=average))
+            self.scores['Soft Voting']\
+                .append(f1_score(y_test, clf_soft.predict(X_test),
+                                 average=average))
             logger.info('{}_{} : {}'.format('Soft Voting', n+1,
                                             scores['Soft Voting'][-1]))
 
-        self.scores = scores
-        return scores
+        return self.scores
 
     def plot(self, file_name='temp'):
 
