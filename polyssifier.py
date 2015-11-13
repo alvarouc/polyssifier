@@ -19,9 +19,10 @@ from sklearn.metrics import f1_score
 from sklearn.preprocessing import StandardScaler as sc
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
+from sklearn.externals import joblib
 from mlp import MLP
 
-import pickle
+
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -34,6 +35,7 @@ PROCESSORS = int(multiprocessing.cpu_count() * 3 / 4)
 
 
 def make_voter(estimators, y, voting='hard'):
+    estimators = list(estimators.items())
     clf = VotingClassifier(estimators, voting)
     clf.estimators_ = [estim for name, estim in estimators]
     clf.le_ = LabelEncoder()
@@ -69,10 +71,10 @@ class Poly:
 
         self.classifiers = {
             'Multilayer Perceptron': {
-                'clf': MLP(verbose=0, patience=100),
+                'clf': MLP(verbose=0, patience=10, learning_rate=1),
                 'parameters': {'n_hidden': [10],
                                'n_deep': [2, 3],
-                               'l1_norm': [0, 0.001],
+                               'l1_norm': [0],
                                'drop': [0]}},
             'Nearest Neighbors': {
                 'clf': KNeighborsClassifier(3),
@@ -120,14 +122,77 @@ class Poly:
         self.data = data
         self.scores = {}
 
+        for key in self.classifiers:
+                self.scores[key] = {'train': [], 'test': []}
+        self.scores['Hard Voting'] = {'train': [], 'test': []}
+        self.scores['Soft Voting'] = {'train': [], 'test': []}
+
+    def fit(self, X, y, n=0):
+        # Fits data on all classifiers
+        # Checks if data was already fitted
+        if self.n_class == 2:
+            average = 'binary'
+        else:
+            average = 'weighted'
+
+        self.fitted_clfs = {}
+        for key, val in self.classifiers.items():
+            file_name = 'models/{}_{}.p'.format(key, n+1)
+            if os.path.isfile(file_name):
+                logger.info('Loading {}'.format(file_name))
+                clf = joblib.load(file_name)
+            else:
+                logger.info('Running {}'.format(key))
+                if val['parameters']:
+                    if key == 'Multilayer Perceptron':
+                        njobs = 1
+                    else:
+                        njobs = PROCESSORS
+                    clf = GridSearchCV(val['clf'],
+                                       val['parameters'],
+                                       n_jobs=njobs, cv=3,
+                                       iid=False)
+                else:
+                    clf = val['clf']
+                clf.fit(X, y)
+                joblib.dump(clf, file_name)
+
+            score = f1_score(y, clf.predict(X), average=average)
+            self.scores[key]['train'].append(score)
+
+            self.fitted_clfs[key] = clf
+            logger.info('{} : Train {}'.format(key, score))
+
+        # build the voting classifier
+        logger.info('Running Voting Classifier')
+        clf_hard = make_voter(self.fitted_clfs, y, 'hard')
+        clf_soft = make_voter(self.fitted_clfs, y, 'soft')
+
+        self.fitted_clfs['Hard Voting'] = clf_hard
+        self.fitted_clfs['Soft Voting'] = clf_soft
+
+        score = f1_score(y, clf_hard.predict(X), average=average)
+        self.scores['Hard Voting']['train'].append(score)
+        logger.info('{} : Train {}'.format('Hard Voting', score))
+        score = f1_score(y, clf_soft.predict(X), average=average)
+        self.scores['Soft Voting']['train'].append(score)
+        logger.info('{} : Train {}'.format('Soft Voting', score))
+
+    def test(self, X, y):
+        if self.n_class == 2:
+            average = 'binary'
+        else:
+            average = 'weighted'
+
+        for key, val in self.fitted_clfs.items():
+            score = f1_score(y, val.predict(X), average=average)
+            self.scores[key]['test'].append(score)
+            logger.info('{} : Test {}'.format(key, score))
+
     def run(self):
 
         kf = StratifiedKFold(self.label, n_folds=self.n_folds,
                              random_state=1988)
-        for key in self.classifiers:
-                self.scores[key] = []
-        self.scores['Hard Voting'] = []
-        self.scores['Soft Voting'] = []
 
         for n, (train, test) in enumerate(kf):
 
@@ -135,76 +200,39 @@ class Poly:
 
             X_train, y_train = self.data[train, :], self.label[train]
             X_test, y_test = self.data[test, :], self.label[test]
-            estimators = []
-            for key, val in self.classifiers.items():
-
-                file_name = 'models/{}_{}.p'.format(key, n+1)
-                if os.path.isfile(file_name):
-                    logger.info('Loading {}'.format(file_name))
-                    with open(file_name, 'rb') as fid:
-                        clf = pickle.load(fid)
-                else:
-                    logger.info('Running {}'.format(key))
-                    if val['parameters']:
-                        if key == 'Multilayer Perceptron':
-                            njobs = 1
-                            # multiple jobs for theano not yet supported
-                        else:
-                            njobs = PROCESSORS
-                        clf = GridSearchCV(val['clf'], val['parameters'],
-                                           n_jobs=njobs, cv=5)
-                    else:
-                        clf = val['clf']
-                    clf.fit(X_train, y_train)
-                    with open(file_name, 'wb') as fid:
-                        pickle.dump(clf, fid)
-
-                if self.n_class == 2:
-                    average = 'binary'
-                else:
-                    average = 'weighted'
-
-                self.scores[key].append(f1_score(y_test,
-                                                 clf.predict(X_test),
-                                                 average=average))
-                estimators.append((key, clf))
-                logger.info('{}_{} : {}'.format(key, n+1,
-                                                self.scores[key][-1]))
-
-            # build the voting classifier
-            logger.info('Running Voting Classifier')
-            clf_hard = make_voter(estimators, y_train, 'hard')
-            clf_soft = make_voter(estimators, y_train, 'soft')
-
-            self.scores['Hard Voting']\
-                .append(f1_score(y_test, clf_hard.predict(X_test),
-                                 average=average))
-            logger.info('{}_{} : {}'.format('Hard Voting', n+1,
-                                            self.scores['Hard Voting'][-1]))
-            self.scores['Soft Voting']\
-                .append(f1_score(y_test, clf_soft.predict(X_test),
-                                 average=average))
-            logger.info('{}_{} : {}'.format('Soft Voting', n+1,
-                                            self.scores['Soft Voting'][-1]))
-
+            self.fit(X_train, y_train, n)
+            self.test(X_test, y_test)
         return self.scores
 
     def plot(self, file_name='temp'):
 
-        fig = plt.figure(figsize=[10, 6])
-        df = pd.DataFrame(self.scores)
+        df = pd.DataFrame(
+            [(key, np.mean(score['train']), np.std(score['train']),
+              np.mean(score['test']), np.std(score['test']))
+             for key, score in self.scores.items()],
+            columns=['classifier', 'Train score',
+                     'Train std', 'Test score',
+                     'Test std'])
 
-        df = df.describe().T
-        df.sort('mean', ascending=True, inplace=True)
+        df.sort_values('Test mean', ascending=False, inplace=True)
+        df = df.set_index('classifier')
+        error = df[['Train std', 'Test std']]
+        error.columns = ['Train score', 'Test score']
+        data = df[['Train score', 'Test score']]
 
-        df.plot(kind='barh', y='mean', xerr='std', legend=False,
-                color=(0.2, 0.2, 0.7), fontsize=14, width=0.85, alpha=0.7),
-        plt.xlim(np.max([(df['mean'] - df['std']).min() - 0.05, 0]), 1)
-        plt.title('Classifiers Ranking')
+        ax1 = data.plot(kind='bar', yerr=error, colormap='Blues',
+                        figsize=(12, 5))
+        ax1.set_xticklabels([])
+        for n, rect in enumerate(ax1.patches):
+            ax1.text(rect.get_x()+rect.get_width()/2., 0.01,
+                     data.index[n], ha='center', va='bottom',
+                     rotation='90', color='black', fontsize=15)
+            if n > 9:
+                break
 
-        plt.gcf().subplots_adjust(left=0.4)
-        # plt.tight_layout()
+        ax1.set_ylim(0, 1)
         plt.savefig(file_name + '.pdf')
+        return ax1
 
 
 if __name__ == '__main__':
