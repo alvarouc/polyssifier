@@ -202,7 +202,7 @@ class Poly:
         plt.xlim(np.max([(df['mean'] - df['std']).min() - 0.05, 0]), 1)
         plt.title('Classifiers Ranking')
 
-        fig.subplots_adjust(bottom=0.2)
+        plt.gca().tight_layout()
         plt.savefig(file_name + '.pdf')
 
 
