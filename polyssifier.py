@@ -1,6 +1,7 @@
-import matplotlib
-matplotlib.use('Agg')
-
+#import matplotlib
+#matplotlib.use('Agg')
+import sys
+sys.setrecursionlimit(10000)
 import argparse
 
 from sklearn.neighbors import KNeighborsClassifier
@@ -16,12 +17,15 @@ import logging
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import f1_score
-from sklearn.preprocessing import StandardScaler as sc
+
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.pipeline import make_pipeline
+
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
 from sklearn.externals import joblib
 from mlp import MLP
-
+import time
 
 import os
 import pandas as pd
@@ -65,7 +69,8 @@ def make_argument_parser():
 class Poly:
 
     def __init__(self, data, label, n_folds=10,
-                 scale=True, verbose=10, exclude=[]):
+                 scale=True, verbose=10, exclude=[],
+                 feature_selection=True):
         if not os.path.exists('models'):
             os.makedirs('models')
 
@@ -94,7 +99,7 @@ class Poly:
             'Decision Tree': {
                 'clf': DecisionTreeClassifier(max_depth=None,
                                               max_features='auto'),
-                'parameters': None},
+                'parameters': {}},
             'Random Forest': {
                 'clf': RandomForestClassifier(max_depth=None,
                                               n_estimators=10,
@@ -102,10 +107,10 @@ class Poly:
                 'parameters': {'n_estimators': list(range(5, 20))}},
             'Logistic Regression': {
                 'clf': LogisticRegression(),
-                'parameters': {'C': np.logspace(0.1, 3, 5).tolist()}},
+                'parameters': {'C': np.logspace(0.1, 3, 5).astype('int').tolist()}},
             'Naive Bayes': {
                 'clf': GaussianNB(),
-                'parameters': None},
+                'parameters': {}},
         }
 
         # Remove classifiers that want to be excluded
@@ -113,6 +118,22 @@ class Poly:
             if key in self.classifiers:
                 del self.classifiers[key]
         self.exclude = exclude
+
+        if feature_selection:
+            anova_filter = SelectKBest(f_regression, k='all')
+            temp = int(np.round(data.shape[1]/5))
+            name = lambda x:\
+                x['clf']._final_estimator.__class__.__name__.lower()
+            for key, val in self.classifiers.items():
+                self.classifiers[key]['clf'] = make_pipeline(
+                    anova_filter, self.classifiers[key]['clf'])
+                new_dict = {}
+                for keyp in self.classifiers[key]['parameters']:
+                    new_dict[name(self.classifiers[key])+'__'+keyp]\
+                        = self.classifiers[key]['parameters'][keyp]
+                self.classifiers[key]['parameters'] = new_dict
+                self.classifiers[key]['parameters']['selectkbest__k']\
+                    = np.arange(temp, data.shape[1]-temp, temp).tolist()
 
         self.n_folds = n_folds
         self.scale = scale
@@ -140,7 +161,9 @@ class Poly:
             file_name = 'models/{}_{}.p'.format(key, n+1)
             if os.path.isfile(file_name):
                 logger.info('Loading {}'.format(file_name))
+                start = time.process_time()
                 clf = joblib.load(file_name)
+                duration = time.process_time()-start
             else:
                 logger.info('Running {}'.format(key))
                 if val['parameters']:
@@ -154,14 +177,18 @@ class Poly:
                                        iid=False)
                 else:
                     clf = val['clf']
+                start = time.process_time()
                 clf.fit(X, y)
+                duration = time.process_time()-start
                 joblib.dump(clf, file_name)
 
             score = f1_score(y, clf.predict(X), average=average)
             self.scores[key]['train'].append(score)
 
             self.fitted_clfs[key] = clf
-            logger.info('{} : Train {}'.format(key, score))
+            logger.info(
+                '{0:20}:  Train {1:.2f}, {2:.2f} sec'.format(
+                    key, score, duration))
 
         # build the voting classifier
         logger.info('Running Voting Classifier')
@@ -173,10 +200,10 @@ class Poly:
 
         score = f1_score(y, clf_hard.predict(X), average=average)
         self.scores['Hard Voting']['train'].append(score)
-        logger.info('{} : Train {}'.format('Hard Voting', score))
+        logger.info('{0:20} : Train {1:.2f}'.format('Hard Voting', score))
         score = f1_score(y, clf_soft.predict(X), average=average)
         self.scores['Soft Voting']['train'].append(score)
-        logger.info('{} : Train {}'.format('Soft Voting', score))
+        logger.info('{0:20} : Train {1:.2f}'.format('Soft Voting', score))
 
     def test(self, X, y):
         if self.n_class == 2:
@@ -187,7 +214,7 @@ class Poly:
         for key, val in self.fitted_clfs.items():
             score = f1_score(y, val.predict(X), average=average)
             self.scores[key]['test'].append(score)
-            logger.info('{} : Test {}'.format(key, score))
+            logger.info('{0:20} : Test {1:.2f}'.format(key, score))
 
     def run(self):
 
@@ -214,7 +241,7 @@ class Poly:
                      'Train std', 'Test score',
                      'Test std'])
 
-        df.sort_values('Test mean', ascending=False, inplace=True)
+        df.sort_values('Test score', ascending=False, inplace=True)
         df = df.set_index('classifier')
         error = df[['Train std', 'Test std']]
         error.columns = ['Train score', 'Test score']
@@ -224,12 +251,12 @@ class Poly:
                         figsize=(12, 5))
         ax1.set_xticklabels([])
         for n, rect in enumerate(ax1.patches):
+            if n > 9:
+                break
             ax1.text(rect.get_x()+rect.get_width()/2., 0.01,
                      data.index[n], ha='center', va='bottom',
                      rotation='90', color='black', fontsize=15)
-            if n > 9:
-                break
-
+        ax1.yaxis.grid(True)
         ax1.set_ylim(0, 1)
         plt.savefig(file_name + '.pdf')
         return ax1
