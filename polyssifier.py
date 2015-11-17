@@ -20,7 +20,7 @@ from sklearn.metrics import f1_score
 
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.pipeline import make_pipeline
-
+from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
 from sklearn.externals import joblib
@@ -71,16 +71,20 @@ class Poly:
     def __init__(self, data, label, n_folds=10,
                  scale=True, verbose=10, exclude=[],
                  feature_selection=True):
+
+        if scale:
+            sc = StandardScaler()
+            data = sc.fit_transform(data)
+
         if not os.path.exists('models'):
             os.makedirs('models')
 
         self.classifiers = {
             'Multilayer Perceptron': {
-                'clf': MLP(verbose=0, patience=10, learning_rate=1),
-                'parameters': {'n_hidden': [10],
-                               'n_deep': [2, 3],
-                               'l1_norm': [0],
-                               'drop': [0]}},
+                'clf': MLP(verbose=0, patience=500, learning_rate=1,
+                           n_hidden=50, n_deep=3, l1_norm=0,
+                           drop=0),
+                'parameters': {}},
             'Nearest Neighbors': {
                 'clf': KNeighborsClassifier(3),
                 'parameters': {'n_neighbors': [1, 5, 10, 20]}},
@@ -107,7 +111,7 @@ class Poly:
                 'parameters': {'n_estimators': list(range(5, 20))}},
             'Logistic Regression': {
                 'clf': LogisticRegression(),
-                'parameters': {'C': np.logspace(0.1, 3, 5).astype('int').tolist()}},
+                'parameters': {'C': np.logspace(0.1, 3, 5).tolist()}},
             'Naive Bayes': {
                 'clf': GaussianNB(),
                 'parameters': {}},
@@ -187,7 +191,7 @@ class Poly:
 
             self.fitted_clfs[key] = clf
             logger.info(
-                '{0:20}:  Train {1:.2f}, {2:.2f} sec'.format(
+                '{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
                     key, score, duration))
 
         # build the voting classifier
@@ -200,10 +204,10 @@ class Poly:
 
         score = f1_score(y, clf_hard.predict(X), average=average)
         self.scores['Hard Voting']['train'].append(score)
-        logger.info('{0:20} : Train {1:.2f}'.format('Hard Voting', score))
+        logger.info('{0:25} : Train {1:.2f}'.format('Hard Voting', score))
         score = f1_score(y, clf_soft.predict(X), average=average)
         self.scores['Soft Voting']['train'].append(score)
-        logger.info('{0:20} : Train {1:.2f}'.format('Soft Voting', score))
+        logger.info('{0:25} : Train {1:.2f}'.format('Soft Voting', score))
 
     def test(self, X, y):
         if self.n_class == 2:
@@ -214,7 +218,7 @@ class Poly:
         for key, val in self.fitted_clfs.items():
             score = f1_score(y, val.predict(X), average=average)
             self.scores[key]['test'].append(score)
-            logger.info('{0:20} : Test {1:.2f}'.format(key, score))
+            logger.info('{0:25} : Test {1:.2f}'.format(key, score))
 
     def run(self):
 
@@ -251,7 +255,7 @@ class Poly:
                         figsize=(12, 5))
         ax1.set_xticklabels([])
         for n, rect in enumerate(ax1.patches):
-            if n > 9:
+            if n > len(self.classifiers)+1:
                 break
             ax1.text(rect.get_x()+rect.get_width()/2., 0.01,
                      data.index[n], ha='center', va='bottom',
