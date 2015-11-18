@@ -88,18 +88,11 @@ class Poly:
             'Nearest Neighbors': {
                 'clf': KNeighborsClassifier(3),
                 'parameters': {'n_neighbors': [1, 5, 10, 20]}},
-            'Linear SVM': {
-                'clf': SVC(kernel='linear',
-                           C=1, probability=True,
+            'SVM': {
+                'clf': SVC(C=1, probability=True,
                            cache_size=7000),
-                'parameters': {'kernel': ['linear'],
+                'parameters': {'kernel': ['linear', 'rbf', 'poly'],
                                'C': [0.01, 0.1, 1]}},
-            'RBF SVM': {
-                'clf': SVC(gamma=2, C=1, probability=True,
-                           cache_size=7000),
-                'parameters': {'kernel': ['rbf'],
-                               'gamma': [0.1, 0.5, 1, 5],
-                               'C': [0.001, 0.01, 0.1]}},
             'Decision Tree': {
                 'clf': DecisionTreeClassifier(max_depth=None,
                                               max_features='auto'),
@@ -110,8 +103,9 @@ class Poly:
                                               max_features='auto'),
                 'parameters': {'n_estimators': list(range(5, 20))}},
             'Logistic Regression': {
-                'clf': LogisticRegression(),
-                'parameters': {'C': np.logspace(0.1, 3, 5).tolist()}},
+                'clf': LogisticRegression(fit_intercept=False,
+                                          solver='lbfgs', penalty='l2'),
+                'parameters': {'C': [0.001, 0.1, 1]}},
             'Naive Bayes': {
                 'clf': GaussianNB(),
                 'parameters': {}},
