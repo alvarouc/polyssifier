@@ -117,21 +117,7 @@ class Poly:
                 del self.classifiers[key]
         self.exclude = exclude
 
-        if feature_selection:
-            anova_filter = SelectKBest(f_regression, k='all')
-            temp = int(np.round(data.shape[1]/5))
-            name = lambda x:\
-                x['clf']._final_estimator.__class__.__name__.lower()
-            for key, val in self.classifiers.items():
-                self.classifiers[key]['clf'] = make_pipeline(
-                    anova_filter, self.classifiers[key]['clf'])
-                new_dict = {}
-                for keyp in self.classifiers[key]['parameters']:
-                    new_dict[name(self.classifiers[key])+'__'+keyp]\
-                        = self.classifiers[key]['parameters'][keyp]
-                self.classifiers[key]['parameters'] = new_dict
-                self.classifiers[key]['parameters']['selectkbest__k']\
-                    = np.arange(temp, data.shape[1]-temp, temp).tolist()
+        self.feature_selection = feature_selection
 
         self.n_folds = n_folds
         self.scale = scale
@@ -147,6 +133,9 @@ class Poly:
         self.scores['Soft Voting'] = {'train': [], 'test': []}
 
     def fit(self, X, y, n=0):
+
+       
+
         # Fits data on all classifiers
         # Checks if data was already fitted
         if self.n_class == 2:
@@ -215,6 +204,22 @@ class Poly:
             logger.info('{0:25} : Test {1:.2f}'.format(key, score))
 
     def run(self):
+
+        if self.feature_selection:
+            anova_filter = SelectKBest(f_regression, k='all')
+            temp = int(np.round(self.data.shape[1]/5))
+            name = lambda x:\
+                x['clf']._final_estimator.__class__.__name__.lower()
+            for key, val in self.classifiers.items():
+                self.classifiers[key]['clf'] = make_pipeline(
+                    anova_filter, self.classifiers[key]['clf'])
+                new_dict = {}
+                for keyp in self.classifiers[key]['parameters']:
+                    new_dict[name(self.classifiers[key])+'__'+keyp]\
+                        = self.classifiers[key]['parameters'][keyp]
+                self.classifiers[key]['parameters'] = new_dict
+                self.classifiers[key]['parameters']['selectkbest__k']\
+                    = np.arange(temp, self.data.shape[1]-temp, temp).tolist()
 
         kf = StratifiedKFold(self.label, n_folds=self.n_folds,
                              random_state=1988)
