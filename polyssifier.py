@@ -82,7 +82,7 @@ class Poly:
         self.classifiers = {
             'Multilayer Perceptron': {
                 'clf': MLP(verbose=0, patience=500, learning_rate=1,
-                           n_hidden=50, n_deep=3, l1_norm=0,
+                           n_hidden=10, n_deep=2, l1_norm=0,
                            drop=0),
                 'parameters': {}},
             'Nearest Neighbors': {
@@ -90,7 +90,7 @@ class Poly:
                 'parameters': {'n_neighbors': [1, 5, 10, 20]}},
             'SVM': {
                 'clf': SVC(C=1, probability=True,
-                           cache_size=7000),
+                           cache_size=10000),
                 'parameters': {'kernel': ['linear', 'rbf', 'poly'],
                                'C': [0.01, 0.1, 1]}},
             'Decision Tree': {
@@ -129,13 +129,9 @@ class Poly:
 
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
-        self.scores['Hard Voting'] = {'train': [], 'test': []}
-        self.scores['Soft Voting'] = {'train': [], 'test': []}
+        self.scores['Voting'] = {'train': [], 'test': []}
 
     def fit(self, X, y, n=0):
-
-       
-
         # Fits data on all classifiers
         # Checks if data was already fitted
         if self.n_class == 2:
@@ -146,11 +142,10 @@ class Poly:
         self.fitted_clfs = {}
         for key, val in self.classifiers.items():
             file_name = 'models/{}_{}.p'.format(key, n+1)
+            start = time.process_time()
             if os.path.isfile(file_name):
                 logger.info('Loading {}'.format(file_name))
-                start = time.process_time()
                 clf = joblib.load(file_name)
-                duration = time.process_time()-start
             else:
                 logger.info('Running {}'.format(key))
                 if val['parameters']:
@@ -158,39 +153,33 @@ class Poly:
                         njobs = 1
                     else:
                         njobs = PROCESSORS
-                    clf = GridSearchCV(val['clf'],
-                                       val['parameters'],
+                    clf = GridSearchCV(val['clf'], val['parameters'],
                                        n_jobs=njobs, cv=3,
                                        iid=False)
                 else:
                     clf = val['clf']
-                start = time.process_time()
+
                 clf.fit(X, y)
-                duration = time.process_time()-start
                 joblib.dump(clf, file_name)
+
+            duration = time.process_time()-start
 
             score = f1_score(y, clf.predict(X), average=average)
             self.scores[key]['train'].append(score)
 
             self.fitted_clfs[key] = clf
-            logger.info(
-                '{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
-                    key, score, duration))
+            logger.info('{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
+                key, score, duration))
 
         # build the voting classifier
         logger.info('Running Voting Classifier')
         clf_hard = make_voter(self.fitted_clfs, y, 'hard')
-        clf_soft = make_voter(self.fitted_clfs, y, 'soft')
 
-        self.fitted_clfs['Hard Voting'] = clf_hard
-        self.fitted_clfs['Soft Voting'] = clf_soft
+        self.fitted_clfs['Voting'] = clf_hard
 
         score = f1_score(y, clf_hard.predict(X), average=average)
-        self.scores['Hard Voting']['train'].append(score)
-        logger.info('{0:25} : Train {1:.2f}'.format('Hard Voting', score))
-        score = f1_score(y, clf_soft.predict(X), average=average)
-        self.scores['Soft Voting']['train'].append(score)
-        logger.info('{0:25} : Train {1:.2f}'.format('Soft Voting', score))
+        self.scores['Voting']['train'].append(score)
+        logger.info('{0:25} : Train {1:.2f}'.format('Voting', score))
 
     def test(self, X, y):
         if self.n_class == 2:
@@ -246,23 +235,29 @@ class Poly:
 
         df.sort_values('Test score', ascending=False, inplace=True)
         df = df.set_index('classifier')
+        print(df)
         error = df[['Train std', 'Test std']]
         error.columns = ['Train score', 'Test score']
         data = df[['Train score', 'Test score']]
 
         ax1 = data.plot(kind='bar', yerr=error, colormap='Blues',
-                        figsize=(12, 5))
+                        figsize=(12, 5), alpha=0.7)
         ax1.set_xticklabels([])
+        ax1.set_xlabel('')
+        ax1.yaxis.grid(True)
+        ylim = np.max(np.array(data).min()-.1, 0)
+        ax1.set_ylim(ylim, 1)
         for n, rect in enumerate(ax1.patches):
-            if n > len(self.classifiers)+1:
+            if n > len(self.classifiers):
                 break
-            ax1.text(rect.get_x()+rect.get_width()/2., 0.01,
+            ax1.text(rect.get_x()-rect.get_width()/2., ylim + (1-ylim)*.01,
                      data.index[n], ha='center', va='bottom',
                      rotation='90', color='black', fontsize=15)
-        ax1.yaxis.grid(True)
-        ax1.set_ylim(0, 1)
+        ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
+                   ncol=2, fancybox=True, shadow=True)
         plt.savefig(file_name + '.pdf')
-        return ax1
+        
+        return (ax1, df)
 
 
 if __name__ == '__main__':
