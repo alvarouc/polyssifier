@@ -16,7 +16,7 @@ import multiprocessing
 import logging
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, confussion_matrix
 
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.pipeline import make_pipeline
@@ -126,9 +126,12 @@ class Poly:
         self.verbose = verbose
         self.data = data
         self.scores = {}
+        self.confusions = {}
 
+        zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
+                self.confussions[key] = {'train': zeros, 'test': zeros}
         self.scores['Voting'] = {'train': [], 'test': []}
 
     def fit(self, X, y, n=0):
@@ -154,8 +157,7 @@ class Poly:
                     else:
                         njobs = PROCESSORS
                     clf = GridSearchCV(val['clf'], val['parameters'],
-                                       n_jobs=njobs, cv=3,
-                                       iid=False)
+                                       n_jobs=njobs, cv=3, iid=False)
                 else:
                     clf = val['clf']
 
@@ -164,8 +166,11 @@ class Poly:
 
             duration = time.process_time()-start
 
-            score = f1_score(y, clf.predict(X), average=average)
+            ypred = clf.predict(X)
+            score = f1_score(y, ypred, average=average)
             self.scores[key]['train'].append(score)
+            confussion = confussion_matrix(y, ypred)
+            self.confusions[key]['train']+=confussion
 
             self.fitted_clfs[key] = clf
             logger.info('{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
@@ -173,12 +178,16 @@ class Poly:
 
         # build the voting classifier
         logger.info('Running Voting Classifier')
-        clf_hard = make_voter(self.fitted_clfs, y, 'hard')
+        clf = make_voter(self.fitted_clfs, y, 'hard')
 
-        self.fitted_clfs['Voting'] = clf_hard
+        self.fitted_clfs['Voting'] = clf
 
-        score = f1_score(y, clf_hard.predict(X), average=average)
+        ypred = clf.predict(X)
+        score = f1_score(y, ypred, average=average)
         self.scores['Voting']['train'].append(score)
+        confussion = confussion_matrix(y, ypred)
+        self.confusions['Voting']['train']+=confussion
+        
         logger.info('{0:25} : Train {1:.2f}'.format('Voting', score))
 
     def test(self, X, y):
@@ -188,8 +197,11 @@ class Poly:
             average = 'weighted'
 
         for key, val in self.fitted_clfs.items():
-            score = f1_score(y, val.predict(X), average=average)
+            ypred = val.predict(X)
+            score = f1_score(y, ypred, average=average)
             self.scores[key]['test'].append(score)
+            confussion = confussion_matrix(y, ypred)
+            self.confusions[key]['train']+=confussion
             logger.info('{0:25} : Test {1:.2f}'.format(key, score))
 
     def run(self):
