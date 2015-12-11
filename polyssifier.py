@@ -16,7 +16,7 @@ import multiprocessing
 import logging
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import f1_score, confussion_matrix
+from sklearn.metrics import f1_score, confusion_matrix
 
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.pipeline import make_pipeline
@@ -30,6 +30,7 @@ import time
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import pickle as p
 
 logging.basicConfig(format="[%(module)s:%(levelname)s]:%(message)s")
 logger = logging.getLogger(__name__)
@@ -70,7 +71,7 @@ class Poly:
 
     def __init__(self, data, label, n_folds=10,
                  scale=True, verbose=10, exclude=[],
-                 feature_selection=True):
+                 feature_selection=False):
 
         if scale:
             sc = StandardScaler()
@@ -131,8 +132,11 @@ class Poly:
         zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
-                self.confussions[key] = {'train': zeros, 'test': zeros}
+                self.confusions[key] = {'train': np.copy(zeros), 
+                                        'test': np.copy(zeros)}
         self.scores['Voting'] = {'train': [], 'test': []}
+        self.confusions['Voting'] = {'train': np.copy(zeros), 
+                                     'test': np.copy(zeros)}
 
     def fit(self, X, y, n=0):
         # Fits data on all classifiers
@@ -169,8 +173,8 @@ class Poly:
             ypred = clf.predict(X)
             score = f1_score(y, ypred, average=average)
             self.scores[key]['train'].append(score)
-            confussion = confussion_matrix(y, ypred)
-            self.confusions[key]['train']+=confussion
+            confusion = confusion_matrix(y, ypred)
+            self.confusions[key]['train']+=confusion
 
             self.fitted_clfs[key] = clf
             logger.info('{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
@@ -185,8 +189,8 @@ class Poly:
         ypred = clf.predict(X)
         score = f1_score(y, ypred, average=average)
         self.scores['Voting']['train'].append(score)
-        confussion = confussion_matrix(y, ypred)
-        self.confusions['Voting']['train']+=confussion
+        confusion = confusion_matrix(y, ypred)
+        self.confusions['Voting']['train']+=confusion
         
         logger.info('{0:25} : Train {1:.2f}'.format('Voting', score))
 
@@ -200,8 +204,8 @@ class Poly:
             ypred = val.predict(X)
             score = f1_score(y, ypred, average=average)
             self.scores[key]['test'].append(score)
-            confussion = confussion_matrix(y, ypred)
-            self.confusions[key]['train']+=confussion
+            confusion = confusion_matrix(y, ypred)
+            self.confusions[key]['test']+=confusion
             logger.info('{0:25} : Test {1:.2f}'.format(key, score))
 
     def run(self):
@@ -268,9 +272,14 @@ class Poly:
         ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
                    ncol=2, fancybox=True, shadow=True)
         plt.savefig(file_name + '.pdf')
-        
-        return (ax1, df)
+        plt.savefig(file_name + '.svg', transparent=False, 
+                    bbox_inches='tight', pad_inches=0)
 
+        # saving confusion matrices
+        with open('confusions.pkl', 'wb') as f:
+            p.dump(self.confusions, f, protocol=2)
+
+        return (ax1, df)
 
 if __name__ == '__main__':
 
