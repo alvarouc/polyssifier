@@ -134,9 +134,12 @@ class Poly:
                 self.scores[key] = {'train': [], 'test': []}
                 self.confusions[key] = {'train': np.copy(zeros), 
                                         'test': np.copy(zeros)}
-        self.scores['Voting'] = {'train': [], 'test': []}
-        self.confusions['Voting'] = {'train': np.copy(zeros), 
-                                     'test': np.copy(zeros)}
+
+        if 'Voting' not in self.exclude:
+
+            self.scores['Voting'] = {'train': [], 'test': []}
+            self.confusions['Voting'] = {'train': np.copy(zeros), 
+                                         'test': np.copy(zeros)}
 
     def fit(self, X, y, n=0):
         # Fits data on all classifiers
@@ -181,18 +184,16 @@ class Poly:
                 key, score, duration))
 
         # build the voting classifier
-        logger.info('Running Voting Classifier')
-        clf = make_voter(self.fitted_clfs, y, 'hard')
-
-        self.fitted_clfs['Voting'] = clf
-
-        ypred = clf.predict(X)
-        score = f1_score(y, ypred, average=average)
-        self.scores['Voting']['train'].append(score)
-        confusion = confusion_matrix(y, ypred)
-        self.confusions['Voting']['train']+=confusion
-        
-        logger.info('{0:25} : Train {1:.2f}'.format('Voting', score))
+        if 'Voting' not in self.exclude:
+            logger.info('Running Voting Classifier')
+            clf = make_voter(self.fitted_clfs, y, 'hard')
+            self.fitted_clfs['Voting'] = clf
+            ypred = clf.predict(X)
+            score = f1_score(y, ypred, average=average)
+            self.scores['Voting']['train'].append(score)
+            confusion = confusion_matrix(y, ypred)
+            self.confusions['Voting']['train']+=confusion
+            logger.info('{0:25} : Train {1:.2f}'.format('Voting', score))
 
     def test(self, X, y):
         if self.n_class == 2:
@@ -256,15 +257,17 @@ class Poly:
         error.columns = ['Train score', 'Test score']
         data = df[['Train score', 'Test score']]
 
+        nc = df.shape[0]
+
         ax1 = data.plot(kind='bar', yerr=error, colormap='Blues',
-                        figsize=(12, 5), alpha=0.7)
+                        figsize=(nc*2, 5), alpha=0.7)
         ax1.set_xticklabels([])
         ax1.set_xlabel('')
         ax1.yaxis.grid(True)
         ylim = np.max(np.array(data).min()-.1, 0)
         ax1.set_ylim(ylim, 1)
         for n, rect in enumerate(ax1.patches):
-            if n > len(self.classifiers):
+            if n >= nc:
                 break
             ax1.text(rect.get_x()-rect.get_width()/2., ylim + (1-ylim)*.01,
                      data.index[n], ha='center', va='bottom',
