@@ -128,18 +128,23 @@ class Poly:
         self.data = data
         self.scores = {}
         self.confusions = {}
-
+        self._predictions = {}
+        self._test_index = []
+        self.predictions = None
+        
         zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
                 self.confusions[key] = {'train': np.copy(zeros), 
                                         'test': np.copy(zeros)}
+                self._predictions[key] = []
 
         if 'Voting' not in self.exclude:
 
             self.scores['Voting'] = {'train': [], 'test': []}
             self.confusions['Voting'] = {'train': np.copy(zeros), 
                                          'test': np.copy(zeros)}
+            self._predictions['Voting'] = []
 
     def fit(self, X, y, n=0):
         # Fits data on all classifiers
@@ -203,10 +208,15 @@ class Poly:
 
         for key, val in self.fitted_clfs.items():
             ypred = val.predict(X)
+            # Scores
             score = f1_score(y, ypred, average=average)
             self.scores[key]['test'].append(score)
+            # Confusion matrix
             confusion = confusion_matrix(y, ypred)
             self.confusions[key]['test']+=confusion
+            # Predictions
+            self._predictions[key].extend(ypred)
+            
             logger.info('{0:25} : Test {1:.2f}'.format(key, score))
 
     def run(self):
@@ -238,6 +248,13 @@ class Poly:
             X_test, y_test = self.data[test, :], self.label[test]
             self.fit(X_train, y_train, n)
             self.test(X_test, y_test)
+            self._test_index.extend(test)
+
+        self.predictions = pd.DataFrame(self._predictions)
+        self.predictions['index'] = self._test_index
+        self.predictions.set_index('index', inplace=True)
+        self.predictions.sort_index(inplace=True)
+
         return self.scores
 
     def plot(self, file_name='temp'):
