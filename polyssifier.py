@@ -122,7 +122,8 @@ class Poly:
 
         self.n_folds = n_folds
         self.scale = scale
-        self.label = LabelEncoder().fit_transform(label)
+        self._le = LabelEncoder()
+        self.label = self._le.fit_transform(label)
         self.n_class = len(np.unique(label))
         self.verbose = verbose
         self.data = data
@@ -215,7 +216,8 @@ class Poly:
             confusion = confusion_matrix(y, ypred)
             self.confusions[key]['test']+=confusion
             # Predictions
-            self._predictions[key].extend(ypred)
+            self._predictions[key].extend(
+                self._le.inverse_transform(ypred))
             
             logger.info('{0:25} : Test {1:.2f}'.format(key, score))
 
