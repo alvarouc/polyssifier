@@ -73,13 +73,7 @@ class Poly:
                  scale=True, verbose=10, exclude=[],
                  feature_selection=False):
 
-        if scale:
-            sc = StandardScaler()
-            data = sc.fit_transform(data)
-
-        if not os.path.exists('models'):
-            os.makedirs('models')
-
+        logger.info('Building classifiers ...')
         self.classifiers = {
             'Multilayer Perceptron': {
                 'clf': MLP(verbose=0, patience=500, learning_rate=1,
@@ -111,15 +105,13 @@ class Poly:
                 'clf': GaussianNB(),
                 'parameters': {}},
         }
+        logger.info('Done.')
 
         # Remove classifiers that want to be excluded
-        for key in exclude:
-            if key in self.classifiers:
-                del self.classifiers[key]
+        [del self.classifiers[key] for key in exclude if key in self.classifiers]  
+
         self.exclude = exclude
-
         self.feature_selection = feature_selection
-
         self.n_folds = n_folds
         self.scale = scale
         self._le = LabelEncoder()
@@ -136,15 +128,13 @@ class Poly:
         zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
-                self.confusions[key] = {'train': np.copy(zeros), 
-                                        'test': np.copy(zeros)}
+                self.confusions[key] = np.copy(zeros)
                 self._predictions[key] = []
 
         if 'Voting' not in self.exclude:
 
             self.scores['Voting'] = {'train': [], 'test': []}
-            self.confusions['Voting'] = {'train': np.copy(zeros), 
-                                         'test': np.copy(zeros)}
+            self.confusions['Voting'] = np.copy(zeros)
             self._predictions['Voting'] = []
 
     def fit(self, X, y, n=0):
@@ -182,9 +172,7 @@ class Poly:
             ypred = clf.predict(X)
             score = f1_score(y, ypred, average=average)
             self.scores[key]['train'].append(score)
-            confusion = confusion_matrix(y, ypred)
-            self.confusions[key]['train']+=confusion
-
+            
             self.fitted_clfs[key] = clf
             logger.info('{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
                 key, score, duration))
@@ -197,8 +185,6 @@ class Poly:
             ypred = clf.predict(X)
             score = f1_score(y, ypred, average=average)
             self.scores['Voting']['train'].append(score)
-            confusion = confusion_matrix(y, ypred)
-            self.confusions['Voting']['train']+=confusion
             logger.info('{0:25} : Train {1:.2f}'.format('Voting', score))
 
     def test(self, X, y):
@@ -214,7 +200,7 @@ class Poly:
             self.scores[key]['test'].append(score)
             # Confusion matrix
             confusion = confusion_matrix(y, ypred)
-            self.confusions[key]['test']+=confusion
+            self.confusions[key]+=confusion
             # Predictions
             self._predictions[key].extend(
                 self._le.inverse_transform(ypred))
@@ -223,6 +209,13 @@ class Poly:
 
     def run(self):
 
+        if not os.path.exists('models'):
+            os.makedirs('models')
+        
+        if self.scale:
+            sc = StandardScaler()
+            self.data = sc.fit_transform(data)
+        
         if self.feature_selection:
             anova_filter = SelectKBest(f_regression, k='all')
             temp = int(np.round(self.data.shape[1]/5))
