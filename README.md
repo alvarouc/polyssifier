@@ -1,3 +1,6 @@
+[![build: passing](https://img.shields.io/travis/ismav/polyssifier-1.svg)](https://travis-ci.org/ismav/polyssifier-1)
+[![Coverage Status](https://coveralls.io/repos/ismav/polyssifier-1/badge.svg?branch=master&service=github)](https://coveralls.io/github/ismav/polyssifier-1?branch=master)
+
 polyssifier
 ===========
 
@@ -13,7 +16,7 @@ The class Poly includes several classifiers:
 - Nearest Neighbors
 - Linear SVM
 - RBF SVM
-- Desicion Tree
+- Decision Tree
 - Random Forest
 - Logistic Regression
 - Naive Bayes
