@@ -1,3 +1,5 @@
+https://travis-ci.org/ismav/polyssifier-1.svg?branch=master
+
 polyssifier
 ===========
 
