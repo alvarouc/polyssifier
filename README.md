@@ -16,7 +16,7 @@ The class Poly includes several classifiers:
 - Nearest Neighbors
 - Linear SVM
 - RBF SVM
-- Desicion Tree
+- Decision Tree
 - Random Forest
 - Logistic Regression
 - Naive Bayes
