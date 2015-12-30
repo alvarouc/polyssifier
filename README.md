@@ -1,4 +1,5 @@
-https://travis-ci.org/ismav/polyssifier-1.svg?branch=master
+[![build: passing](https://img.shields.io/travis/ismav/polyssifier-1.svg)](https://travis-ci.org/ismav/polyssifier-1)
+[![Coverage Status](https://coveralls.io/repos/ismav/polyssifier-1/badge.svg?branch=master&service=github)](https://coveralls.io/github/ismav/polyssifier-1?branch=master)
 
 polyssifier
 ===========
