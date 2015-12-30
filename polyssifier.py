@@ -24,7 +24,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
 from sklearn.externals import joblib
-from mlp import MLP
+#from mlp import MLP
 import time
 
 import os
@@ -69,17 +69,18 @@ def make_argument_parser():
 
 class Poly:
 
+
     def __init__(self, data, label, n_folds=10,
                  scale=True, verbose=10, exclude=[],
                  feature_selection=False):
 
         logger.info('Building classifiers ...')
         self.classifiers = {
-            'Multilayer Perceptron': {
-                'clf': MLP(verbose=0, patience=500, learning_rate=1,
-                           n_hidden=10, n_deep=2, l1_norm=0,
-                           drop=0),
-                'parameters': {}},
+            #'Multilayer Perceptron': {
+            #    'clf': MLP(verbose=0, patience=500, learning_rate=1,
+            #               n_hidden=10, n_deep=2, l1_norm=0,
+            #               drop=0),
+            #    'parameters': {}},
             'Nearest Neighbors': {
                 'clf': KNeighborsClassifier(3),
                 'parameters': {'n_neighbors': [1, 5, 10, 20]}},
@@ -108,7 +109,9 @@ class Poly:
         logger.info('Done.')
 
         # Remove classifiers that want to be excluded
-        [del self.classifiers[key] for key in exclude if key in self.classifiers]  
+        for key in exclude:
+            if key in self.classifiers:
+                del self.classifiers[key]
 
         self.exclude = exclude
         self.feature_selection = feature_selection
@@ -148,7 +151,7 @@ class Poly:
         self.fitted_clfs = {}
         for key, val in self.classifiers.items():
             file_name = 'models/{}_{}.p'.format(key, n+1)
-            start = time.process_time()
+            start = time.time()
             if os.path.isfile(file_name):
                 logger.info('Loading {}'.format(file_name))
                 clf = joblib.load(file_name)
@@ -167,7 +170,7 @@ class Poly:
                 clf.fit(X, y)
                 joblib.dump(clf, file_name)
 
-            duration = time.process_time()-start
+            duration = time.time()-start
 
             ypred = clf.predict(X)
             score = f1_score(y, ypred, average=average)
@@ -214,7 +217,7 @@ class Poly:
         
         if self.scale:
             sc = StandardScaler()
-            self.data = sc.fit_transform(data)
+            self.data = sc.fit_transform(self.data)
         
         if self.feature_selection:
             anova_filter = SelectKBest(f_regression, k='all')
