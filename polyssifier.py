@@ -24,7 +24,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
 from sklearn.externals import joblib
-#from mlp import MLP
+from mlp import MLP
 import time
 
 import os
@@ -76,11 +76,11 @@ class Poly:
 
         logger.info('Building classifiers ...')
         self.classifiers = {
-            #'Multilayer Perceptron': {
-            #    'clf': MLP(verbose=0, patience=500, learning_rate=1,
-            #               n_hidden=10, n_deep=2, l1_norm=0,
-            #               drop=0),
-            #    'parameters': {}},
+            'Multilayer Perceptron': {
+                'clf': MLP(verbose=0, patience=500, learning_rate=1,
+                           n_hidden=10, n_deep=2, l1_norm=0,
+                           drop=0),
+                'parameters': {}},
             'Nearest Neighbors': {
                 'clf': KNeighborsClassifier(3),
                 'parameters': {'n_neighbors': [1, 5, 10, 20]}},
