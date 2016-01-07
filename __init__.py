@@ -1,2 +1,2 @@
-from .polyssifier import *
+from .polyssifier import Poly
 
