@@ -25,8 +25,8 @@ before_install:
   - conda update --yes conda
 
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION pip numpy scipy pytest matplotlib pandas scikit-learn keras
-  - pip install pep8 python-coveralls pytest-cov
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION pip numpy scipy pytest matplotlib pandas scikit-learn
+  - pip install pep8 python-coveralls pytest-cov keras
 # Skip setup.py for now
 #  - pip install -e .
 
