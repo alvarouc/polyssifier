@@ -7,7 +7,6 @@ from sklearn.cross_validation import StratifiedShuffleSplit
 from sklearn.metrics import roc_auc_score, f1_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator, ClassifierMixin
-from data_generator import DataGeneratorByGroup as dbg
 from theano import function
 import numpy as np
 import logging
@@ -136,7 +135,7 @@ class BaseMLP(BaseEstimator, ClassifierMixin):
 class MLP(BaseMLP):
 
     def fit(self, X, y):
-        super().fit(X, y)
+        super(MLP, self).fit(X, y)
         if self.n_class > 2:
             y = unroll(self.y_)
         else:

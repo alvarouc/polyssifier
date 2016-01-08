@@ -10,7 +10,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
-# from sklearn.lda import LDA
 import numpy as np
 import multiprocessing
 import logging
@@ -24,7 +23,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
 from sklearn.externals import joblib
-from .mlp import MLP
+from mlp import MLP
 import time
 
 import os
