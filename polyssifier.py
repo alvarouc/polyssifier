@@ -72,7 +72,7 @@ class Poly:
 
     def __init__(self, data, label, n_folds=10,
                  scale=True, verbose=10, exclude=[],
-                 feature_selection=False):
+                 feature_selection=False, save=True):
 
         logger.info('Building classifiers ...')
         self.classifiers = {
@@ -107,7 +107,7 @@ class Poly:
                 'parameters': {}},
             'Voting':{},
         }
-        logger.info('Done.')
+
 
         # Remove classifiers that want to be excluded
         for key in exclude:
@@ -128,13 +128,14 @@ class Poly:
         self._predictions = {}
         self._test_index = []
         self.predictions = None
+        self.save = save
         
         zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
                 self.confusions[key] = np.copy(zeros)
                 self._predictions[key] = []
-
+        logger.info('Initialization, done.')
 
     def fit(self, X, y, n=0):
         # Fits data on all classifiers
@@ -146,6 +147,8 @@ class Poly:
 
         self.fitted_clfs = {}
         for key, val in self.classifiers.items():
+            if key=='Voting':
+                continue
             file_name = 'models/{}_{}.p'.format(key, n+1)
             start = time.time()
             if os.path.isfile(file_name):
@@ -164,7 +167,8 @@ class Poly:
                     clf = val['clf']
 
                 clf.fit(X, y)
-                joblib.dump(clf, file_name)
+                if self.save:
+                    joblib.dump(clf, file_name)
 
             duration = time.time()-start
 

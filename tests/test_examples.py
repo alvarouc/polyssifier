@@ -11,7 +11,7 @@ from sklearn.datasets import make_moons, make_classification
 @pytest.mark.medium
 def test_run():
     data, label = make_moons(n_samples=2000, noise=0.4)
-    pol = Poly(data,label, n_folds=2, verbose=1, feature_selection=False)
+    pol = Poly(data,label, n_folds=2, verbose=1, feature_selection=False, save=False)
     scores= pol.run()
 
     data, label = make_classification(n_samples=2000, n_features=20,
@@ -22,7 +22,7 @@ def test_run():
                                       hypercube=True, shift=0.0,
                                       scale=1.0, shuffle=True,
                                       random_state=None)
-    pol = Poly(data, label, n_folds=10, verbose=1, feature_selection=False)
+    pol = Poly(data, label, n_folds=10, verbose=1, feature_selection=False, save=False)
     scores= pol.run()
 #
 #    pol = Poly(data, label, n_folds=2, verbose=1, exclude=['Multilayer Perceptron','SVM'],
