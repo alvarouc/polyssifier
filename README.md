@@ -1,4 +1,4 @@
-
+[![Coverage Status](https://coveralls.io/repos/alvarouc/polyssifier/badge.svg?branch=master&service=github)](https://coveralls.io/github/alvarouc/polyssifier?branch=master)
 [![Build Status](https://travis-ci.org/alvarouc/polyssifier.svg)](https://travis-ci.org/alvarouc/polyssifier)
 
 polyssifier
@@ -6,7 +6,7 @@ polyssifier
 
 Run a multitude of classifiers on your data and get an AUC report
 
-Example: 
+Example:
 
 https://github.com/MRN-Code/polyssifier/blob/master/sample/example.ipynb
 
