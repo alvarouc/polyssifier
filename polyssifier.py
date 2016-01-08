@@ -24,7 +24,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
 from sklearn.externals import joblib
-from mlp import MLP
+from .mlp import MLP
 import time
 
 import os
@@ -69,9 +69,10 @@ def make_argument_parser():
 
 class Poly:
 
+
     def __init__(self, data, label, n_folds=10,
                  scale=True, verbose=10, exclude=[],
-                 feature_selection=False):
+                 feature_selection=False, save=True):
 
         logger.info('Building classifiers ...')
         self.classifiers = {
@@ -104,11 +105,14 @@ class Poly:
             'Naive Bayes': {
                 'clf': GaussianNB(),
                 'parameters': {}},
+            'Voting':{},
         }
-        logger.info('Done.')
+
 
         # Remove classifiers that want to be excluded
-        [del self.classifiers[key] for key in exclude if key in self.classifiers]  
+        for key in exclude:
+            if key in self.classifiers:
+                del self.classifiers[key]
 
         self.exclude = exclude
         self.feature_selection = feature_selection
@@ -124,18 +128,14 @@ class Poly:
         self._predictions = {}
         self._test_index = []
         self.predictions = None
+        self.save = save
         
         zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
                 self.confusions[key] = np.copy(zeros)
                 self._predictions[key] = []
-
-        if 'Voting' not in self.exclude:
-
-            self.scores['Voting'] = {'train': [], 'test': []}
-            self.confusions['Voting'] = np.copy(zeros)
-            self._predictions['Voting'] = []
+        logger.info('Initialization, done.')
 
     def fit(self, X, y, n=0):
         # Fits data on all classifiers
@@ -147,8 +147,10 @@ class Poly:
 
         self.fitted_clfs = {}
         for key, val in self.classifiers.items():
+            if key=='Voting':
+                continue
             file_name = 'models/{}_{}.p'.format(key, n+1)
-            start = time.process_time()
+            start = time.time()
             if os.path.isfile(file_name):
                 logger.info('Loading {}'.format(file_name))
                 clf = joblib.load(file_name)
@@ -165,9 +167,10 @@ class Poly:
                     clf = val['clf']
 
                 clf.fit(X, y)
-                joblib.dump(clf, file_name)
+                if self.save:
+                    joblib.dump(clf, file_name)
 
-            duration = time.process_time()-start
+            duration = time.time()-start
 
             ypred = clf.predict(X)
             score = f1_score(y, ypred, average=average)
@@ -214,7 +217,7 @@ class Poly:
         
         if self.scale:
             sc = StandardScaler()
-            self.data = sc.fit_transform(data)
+            self.data = sc.fit_transform(self.data)
         
         if self.feature_selection:
             anova_filter = SelectKBest(f_regression, k='all')
