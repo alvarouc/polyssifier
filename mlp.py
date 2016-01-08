@@ -135,7 +135,7 @@ class BaseMLP(BaseEstimator, ClassifierMixin):
 class MLP(BaseMLP):
 
     def fit(self, X, y):
-        super().fit(X, y)
+        super(MLP, self).fit(X, y)
         if self.n_class > 2:
             y = unroll(self.y_)
         else:
