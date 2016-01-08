@@ -24,3 +24,9 @@ def test_run():
                                       random_state=None)
     pol = Poly(data,label, n_folds=2, verbose=1, feature_selection=False)
     scores= pol.run()
+
+    pol = Poly(data,label, n_folds=2, verbose=1, exclude=['Multilayer Perceptron','SVM'],
+               feature_selection=False)
+    scores= pol.run()
+
+    
