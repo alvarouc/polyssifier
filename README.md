@@ -8,11 +8,11 @@ Run a multitude of classifiers on your data and get an AUC report
 
 Example: 
 
-https://github.com/alvarouc/polyssifier/blob/master/sample/example.ipynb
+https://github.com/MRN-Code/polyssifier/blob/master/sample/example.ipynb
 
 The class Poly includes several classifiers:
 
-- Multilayer Perceptron (see https://github.com/alvarouc/mlp )
+- Multilayer Perceptron (see mlp.py )
 - Nearest Neighbors
 - Linear SVM
 - RBF SVM
