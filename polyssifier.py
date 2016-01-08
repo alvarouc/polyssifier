@@ -105,6 +105,7 @@ class Poly:
             'Naive Bayes': {
                 'clf': GaussianNB(),
                 'parameters': {}},
+            'Voting':{},
         }
         logger.info('Done.')
 
@@ -134,11 +135,6 @@ class Poly:
                 self.confusions[key] = np.copy(zeros)
                 self._predictions[key] = []
 
-        if 'Voting' not in self.exclude:
-
-            self.scores['Voting'] = {'train': [], 'test': []}
-            self.confusions['Voting'] = np.copy(zeros)
-            self._predictions['Voting'] = []
 
     def fit(self, X, y, n=0):
         # Fits data on all classifiers

@@ -22,11 +22,11 @@ def test_run():
                                       hypercube=True, shift=0.0,
                                       scale=1.0, shuffle=True,
                                       random_state=None)
-    pol = Poly(data,label, n_folds=2, verbose=1, feature_selection=False)
+    pol = Poly(data, label, n_folds=10, verbose=1, feature_selection=False)
     scores= pol.run()
-
-    pol = Poly(data,label, n_folds=2, verbose=1, exclude=['Multilayer Perceptron','SVM'],
-               feature_selection=False)
-    scores= pol.run()
+#
+#    pol = Poly(data, label, n_folds=2, verbose=1, exclude=['Multilayer Perceptron','SVM'],
+#               feature_selection=False)
+#    scores= pol.run()
 
     
