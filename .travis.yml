@@ -19,7 +19,9 @@ python:
   - "3.5"
 
 install:
-  - pip install pep8 python-coveralls pytest-cov keras numpy scipy pytest matplotlib pandas scikit-learn
+  - pip install pep8 python-coveralls pytest-cov keras numpy scipy pytest matplotlib
+  - pip install pandas
+  - pip install scikit-learn
 # Skip setup.py for now
 #  - pip install -e .
 
