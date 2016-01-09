@@ -30,6 +30,7 @@ def test_run():
                exclude=['Multilayer Perceptron','Voting'],
                feature_selection=True)
     scores = pol.run()
+    scores = pol.run() # this duplicated line is to test loading models
     pol.plot()
 #    scores= pol.run()
 
