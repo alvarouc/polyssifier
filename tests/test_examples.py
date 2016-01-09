@@ -16,7 +16,7 @@ def test_run():
     scores= pol.run()
     data, label = make_classification(n_samples=2000, n_features=20,
                                       n_informative=5, n_redundant=2,
-                                      n_repeated=0, n_classes=2,
+                                      n_repeated=0, n_classes=5,
                                       n_clusters_per_class=2, weights=None,
                                       flip_y=0.01, class_sep=1.0,
                                       hypercube=True, shift=0.0,
@@ -26,7 +26,7 @@ def test_run():
                feature_selection=False, save=False)
     scores= pol.run()
 
-    pol = Poly(data, label, n_folds=2, verbose=1,
+    pol = Poly(data, label, n_folds=3, verbose=1,
                exclude=['Multilayer Perceptron','Voting'],
                feature_selection=True)
     scores = pol.run()
