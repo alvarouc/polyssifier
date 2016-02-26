@@ -66,7 +66,7 @@ class Poly:
     def __init__(self, data, label, n_folds=10, scale=True, verbose=False,
                  exclude=[], feature_selection=False, save=True, scoring='f1'):
         if not verbose:
-            logging.setLevel(logging.ERROR)
+            logger.setLevel(logging.ERROR)
         logger.info('Building classifiers ...')
         self.classifiers = {
             'Multilayer Perceptron': {
