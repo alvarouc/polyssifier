@@ -1,41 +1,36 @@
-#import matplotlib
-#matplotlib.use('Agg')
 import sys
-sys.setrecursionlimit(10000)
 import argparse
-
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import GaussianNB
 import numpy as np
 import multiprocessing
 import logging
-from sklearn.cross_validation import StratifiedKFold
-from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import f1_score, confusion_matrix
-
-from sklearn.feature_selection import SelectKBest, f_regression
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import VotingClassifier
-from sklearn.externals import joblib
-from mlp import MLP
-import time
-
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import pickle as p
 
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
+from sklearn.cross_validation import StratifiedKFold
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.externals import joblib
+from mlp import MLP
+import time
+
+
+sys.setrecursionlimit(10000)
 logging.basicConfig(format="[%(module)s:%(levelname)s]:%(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-PROCESSORS = int(multiprocessing.cpu_count() * 3 / 4)
+PROCESSORS = int(multiprocessing.cpu_count() // 2)
 
 
 def make_voter(estimators, y, voting='hard'):
@@ -68,11 +63,10 @@ def make_argument_parser():
 
 class Poly:
 
-
-    def __init__(self, data, label, n_folds=10,
-                 scale=True, verbose=10, exclude=[],
-                 feature_selection=False, save=True):
-
+    def __init__(self, data, label, n_folds=10, scale=True, verbose=False,
+                 exclude=[], feature_selection=False, save=True, scoring='f1'):
+        if not verbose:
+            logging.setLevel(logging.ERROR)
         logger.info('Building classifiers ...')
         self.classifiers = {
             'Multilayer Perceptron': {
@@ -104,9 +98,8 @@ class Poly:
             'Naive Bayes': {
                 'clf': GaussianNB(),
                 'parameters': {}},
-            'Voting':{},
+            'Voting': {},
         }
-
 
         # Remove classifiers that want to be excluded
         for key in exclude:
@@ -120,7 +113,6 @@ class Poly:
         self._le = LabelEncoder()
         self.label = self._le.fit_transform(label)
         self.n_class = len(np.unique(label))
-        self.verbose = verbose
         self.data = data
         self.scores = {}
         self.confusions = {}
@@ -128,7 +120,18 @@ class Poly:
         self._test_index = []
         self.predictions = None
         self.save = save
-        
+        # Scoring
+        if self.scoring == 'f1':
+            if self.n_class == 2:
+                average = 'binary'
+            else:
+                average = 'weighted'
+                self._scorer = lambda x, y: f1_score(x, y, average=average)
+        elif self.scoring == 'auc':
+            self._scorer = roc_auc_score
+        else:
+            logger.Error('No {} scorer defined'.format(self.scoring))
+
         zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
@@ -139,14 +142,9 @@ class Poly:
     def fit(self, X, y, n=0):
         # Fits data on all classifiers
         # Checks if data was already fitted
-        if self.n_class == 2:
-            average = 'binary'
-        else:
-            average = 'weighted'
-
         self.fitted_clfs = {}
         for key, val in self.classifiers.items():
-            if key=='Voting':
+            if key == 'Voting':
                 continue
             file_name = 'models/{}_{}.p'.format(key, n+1)
             start = time.time()
@@ -172,7 +170,7 @@ class Poly:
             duration = time.time()-start
 
             ypred = clf.predict(X)
-            score = f1_score(y, ypred, average=average)
+            score = self._scorer(y, ypred, )
             self.scores[key]['train'].append(score)
             
             self.fitted_clfs[key] = clf
@@ -185,39 +183,33 @@ class Poly:
             clf = make_voter(self.fitted_clfs, y, 'hard')
             self.fitted_clfs['Voting'] = clf
             ypred = clf.predict(X)
-            score = f1_score(y, ypred, average=average)
+            score = self._scorer(y, ypred)
             self.scores['Voting']['train'].append(score)
             logger.info('{0:25} : Train {1:.2f}'.format('Voting', score))
 
     def test(self, X, y):
-        if self.n_class == 2:
-            average = 'binary'
-        else:
-            average = 'weighted'
-
         for key, val in self.fitted_clfs.items():
             ypred = val.predict(X)
             # Scores
-            score = f1_score(y, ypred, average=average)
+            score = self._scorer(y, ypred)
             self.scores[key]['test'].append(score)
             # Confusion matrix
             confusion = confusion_matrix(y, ypred)
-            self.confusions[key]+=confusion
+            self.confusions[key] += confusion
             # Predictions
             self._predictions[key].extend(
                 self._le.inverse_transform(ypred))
-            
             logger.info('{0:25} : Test {1:.2f}'.format(key, score))
 
     def run(self):
 
         if not os.path.exists('models'):
             os.makedirs('models')
-        
+
         if self.scale:
             sc = StandardScaler()
             self.data = sc.fit_transform(self.data)
-        
+
         if self.feature_selection:
             anova_filter = SelectKBest(f_regression, k='all')
             temp = int(np.round(self.data.shape[1]/5))
@@ -254,7 +246,7 @@ class Poly:
 
         return self.scores
 
-    def plot(self, file_name='temp'):
+    def plot(self, file_name='temp', min_val=None):
 
         df = pd.DataFrame(
             [(key, np.mean(score['train']), np.std(score['train']),
@@ -278,7 +270,10 @@ class Poly:
         ax1.set_xticklabels([])
         ax1.set_xlabel('')
         ax1.yaxis.grid(True)
-        ylim = np.max(np.array(data).min()-.1, 0)
+        if min_val:
+            ylim = min_val
+        else:
+            ylim = np.max(np.array(data).min()-.1, 0)
         ax1.set_ylim(ylim, 1)
         for n, rect in enumerate(ax1.patches):
             if n >= nc:
@@ -289,7 +284,7 @@ class Poly:
         ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
                    ncol=2, fancybox=True, shadow=True)
         plt.savefig(file_name + '.pdf')
-        plt.savefig(file_name + '.svg', transparent=False, 
+        plt.savefig(file_name + '.svg', transparent=False,
                     bbox_inches='tight', pad_inches=0)
 
         # saving confusion matrices
