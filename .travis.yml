@@ -5,7 +5,7 @@ language: python
 sudo: false
 
 cache: pip
- apt: true
+apt: true
 
 addons:
   apt:
