@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import pickle as p
 
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
+from sklearn.svm import SVC, LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.linear_model import LogisticRegression
@@ -80,8 +80,12 @@ class Poly:
             'SVM': {
                 'clf': SVC(C=1, probability=True,
                            cache_size=10000),
-                'parameters': {'kernel': ['linear', 'rbf', 'poly'],
+                'parameters': {'kernel': ['rbf', 'poly'],
                                'C': [0.01, 0.1, 1]}},
+            'Linear SVM': {
+                'clf': LinearSVC(dual=False),
+                'parameters': {'C': [0.01, 0.1, 1],
+                               'penalty': ['l1','l2']}},
             'Decision Tree': {
                 'clf': DecisionTreeClassifier(max_depth=None,
                                               max_features='auto'),
@@ -121,13 +125,13 @@ class Poly:
         self.predictions = None
         self.save = save
         # Scoring
-        if self.scoring == 'f1':
+        if scoring == 'f1':
             if self.n_class == 2:
                 average = 'binary'
             else:
                 average = 'weighted'
                 self._scorer = lambda x, y: f1_score(x, y, average=average)
-        elif self.scoring == 'auc':
+        elif scoring == 'auc':
             self._scorer = roc_auc_score
         else:
             logger.Error('No {} scorer defined'.format(self.scoring))
@@ -258,7 +262,6 @@ class Poly:
 
         df.sort_values('Test score', ascending=False, inplace=True)
         df = df.set_index('classifier')
-        print(df)
         error = df[['Train std', 'Test std']]
         error.columns = ['Train score', 'Test score']
         data = df[['Train score', 'Test score']]
@@ -291,7 +294,7 @@ class Poly:
         with open('confusions.pkl', 'wb') as f:
             p.dump(self.confusions, f, protocol=2)
 
-        return (ax1, df)
+        return (ax1)
 
 if __name__ == '__main__':
 
