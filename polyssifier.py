@@ -125,17 +125,14 @@ class Poly:
         self.predictions = None
         self.save = save
         # Scoring
+        self._scorer = roc_auc_score
         if scoring == 'f1':
             if self.n_class == 2:
                 average = 'binary'
             else:
                 average = 'weighted'
                 self._scorer = lambda x, y: f1_score(x, y, average=average)
-        elif scoring == 'auc':
-            self._scorer = roc_auc_score
-        else:
-            logger.Error('No {} scorer defined'.format(self.scoring))
-
+        
         zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
@@ -174,7 +171,7 @@ class Poly:
             duration = time.time()-start
 
             ypred = clf.predict(X)
-            score = self._scorer(y, ypred, )
+            score = self._scorer(y, ypred)
             self.scores[key]['train'].append(score)
             
             self.fitted_clfs[key] = clf
