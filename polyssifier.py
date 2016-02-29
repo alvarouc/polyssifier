@@ -270,10 +270,11 @@ class Poly:
         ax1.set_xticklabels([])
         ax1.set_xlabel('')
         ax1.yaxis.grid(True)
-        if min_val:
-            ylim = min_val
-        else:
+        if min_val is None:
             ylim = np.max(np.array(data).min()-.1, 0)
+        else:
+            ylim = min_val
+
         ax1.set_ylim(ylim, 1)
         for n, rect in enumerate(ax1.patches):
             if n >= nc:
