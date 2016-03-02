@@ -133,7 +133,7 @@ class Poly:
             else:
                 average = 'weighted'
                 self._scorer = lambda x, y: f1_score(x, y, average=average)
-        
+
         zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
                 self.scores[key] = {'train': [], 'test': []}
