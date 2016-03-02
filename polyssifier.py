@@ -7,6 +7,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import pickle as p
+import collections
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC, LinearSVC
@@ -69,42 +70,40 @@ class Poly:
         if not verbose:
             logger.setLevel(logging.ERROR)
         logger.info('Building classifiers ...')
-        self.classifiers = {
-            'Multilayer Perceptron': {
-                'clf': MLP(verbose=0, patience=500, learning_rate=1,
-                           n_hidden=10, n_deep=2, l1_norm=0,
-                           drop=0),
-                'parameters': {}},
-            'Nearest Neighbors': {
-                'clf': KNeighborsClassifier(3),
-                'parameters': {'n_neighbors': [1, 5, 10, 20]}},
-            'SVM': {
-                'clf': SVC(C=1, probability=True,
-                           cache_size=10000),
-                'parameters': {'kernel': ['rbf', 'poly'],
-                               'C': [0.01, 0.1, 1]}},
-            'Linear SVM': {
-                'clf': LinearSVC(dual=False),
-                'parameters': {'C': [0.01, 0.1, 1],
-                               'penalty': ['l1','l2']}},
-            'Decision Tree': {
-                'clf': DecisionTreeClassifier(max_depth=None,
-                                              max_features='auto'),
-                'parameters': {}},
-            'Random Forest': {
-                'clf': RandomForestClassifier(max_depth=None,
-                                              n_estimators=10,
-                                              max_features='auto'),
-                'parameters': {'n_estimators': list(range(5, 20))}},
-            'Logistic Regression': {
-                'clf': LogisticRegression(fit_intercept=False,
-                                          solver='lbfgs', penalty='l2'),
-                'parameters': {'C': [0.001, 0.1, 1]}},
-            'Naive Bayes': {
-                'clf': GaussianNB(),
-                'parameters': {}},
-            'Voting': {},
-        }
+        od = collections.OrderedDict()
+        od['Multilayer Perceptron'] = {
+            'clf': MLP(verbose=0, patience=500, learning_rate=1,
+                       n_hidden=10, n_deep=2, l1_norm=0, drop=0),
+            'parameters': {}}
+        od['Nearest Neighbors'] = {
+            'clf': KNeighborsClassifier(3),
+            'parameters': {'n_neighbors': [1, 5, 10, 20]}}
+        od['SVM'] = {
+            'clf': SVC(C=1, probability=True, cache_size=10000),
+            'parameters': {'kernel': ['rbf', 'poly'],
+                           'C': [0.01, 0.1, 1]}}
+        od['Linear SVM'] = {
+            'clf': LinearSVC(dual=False),
+            'parameters': {'C': [0.01, 0.1, 1],
+                           'penalty': ['l1', 'l2']}}
+        od['Decision Tree'] = {
+            'clf': DecisionTreeClassifier(max_depth=None,
+                                          max_features='auto'),
+            'parameters': {}}
+        od['Random Forest'] = {
+            'clf': RandomForestClassifier(max_depth=None,
+                                          n_estimators=10,
+                                          max_features='auto'),
+            'parameters': {'n_estimators': list(range(5, 20))}}
+        od['Logistic Regression'] = {
+            'clf': LogisticRegression(fit_intercept=False,
+                                      solver='lbfgs', penalty='l2'),
+            'parameters': {'C': [0.001, 0.1, 1]}}
+        od['Naive Bayes'] = {
+            'clf': GaussianNB(),
+            'parameters': {}}
+        od['Voting'] = {}
+        self.classifiers = od
 
         # Remove classifiers that want to be excluded
         for key in exclude:
@@ -142,13 +141,29 @@ class Poly:
                 self._predictions[key] = []
         logger.info('Initialization, done.')
 
+    def _fit_a_classifier(self, X, y, key, val):
+        '''
+        Run fit method from val with X and y
+        key is a string with the classifier name
+        '''
+        if key == 'Voting':  # should be the last to run
+            self.classifiers['Voting']['clf'] =\
+                make_voter(self.fitted_clfs, y, 'hard')
+            clf = val['clf']  # do not fit again
+        else:
+            if val['parameters']:
+                njobs = 1 if key == 'Multilayer Perceptron' else PROCESSORS
+                clf = GridSearchCV(val['clf'], val['parameters'],
+                                   n_jobs=njobs, cv=3, iid=False)
+            clf = val['clf']
+            clf.fit(X, y)
+        return clf
+
     def fit(self, X, y, n=0):
         # Fits data on all classifiers
         # Checks if data was already fitted
         self.fitted_clfs = {}
         for key, val in self.classifiers.items():
-            if key == 'Voting':
-                continue
             file_name = '{}_models/{}_{}.p'.format(self.name, key, n+1)
             start = time.time()
             if os.path.isfile(file_name):
@@ -156,17 +171,7 @@ class Poly:
                 clf = joblib.load(file_name)
             else:
                 logger.info('Running {}'.format(key))
-                if val['parameters']:
-                    if key == 'Multilayer Perceptron':
-                        njobs = 1
-                    else:
-                        njobs = PROCESSORS
-                    clf = GridSearchCV(val['clf'], val['parameters'],
-                                       n_jobs=njobs, cv=3, iid=False)
-                else:
-                    clf = val['clf']
-
-                clf.fit(X, y)
+                clf = self._fit_a_classifier(X, y, key, val)
                 if self.save:
                     joblib.dump(clf, file_name)
             duration = time.time()-start
@@ -176,16 +181,6 @@ class Poly:
             self.fitted_clfs[key] = clf
             logger.info('{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
                 key, score, duration))
-
-        # build the voting classifier
-        if 'Voting' not in self.exclude:
-            logger.info('Running Voting Classifier')
-            clf = make_voter(self.fitted_clfs, y, 'hard')
-            self.fitted_clfs['Voting'] = clf
-            ypred = clf.predict(X)
-            score = self._scorer(y, ypred)
-            self.scores['Voting']['train'].append(score)
-            logger.info('{0:25} : Train {1:.2f}'.format('Voting', score))
 
     def test(self, X, y):
         for key, val in self.fitted_clfs.items():
