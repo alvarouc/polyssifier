@@ -169,13 +169,10 @@ class Poly:
                 clf.fit(X, y)
                 if self.save:
                     joblib.dump(clf, file_name)
-
             duration = time.time()-start
-
             ypred = clf.predict(X)
             score = self._scorer(y, ypred)
             self.scores[key]['train'].append(score)
-            
             self.fitted_clfs[key] = clf
             logger.info('{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
                 key, score, duration))
