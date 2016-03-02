@@ -64,7 +64,8 @@ def make_argument_parser():
 class Poly:
 
     def __init__(self, data, label, n_folds=10, scale=True, verbose=False,
-                 exclude=[], feature_selection=False, save=True, scoring='f1'):
+                 exclude=[], feature_selection=False, save=True, scoring='f1',
+                 name=''):
         if not verbose:
             logger.setLevel(logging.ERROR)
         logger.info('Building classifiers ...')
@@ -124,6 +125,7 @@ class Poly:
         self._test_index = []
         self.predictions = None
         self.save = save
+        self.name = name
         # Scoring
         self._scorer = roc_auc_score
         if scoring == 'f1':
@@ -147,7 +149,7 @@ class Poly:
         for key, val in self.classifiers.items():
             if key == 'Voting':
                 continue
-            file_name = 'models/{}_{}.p'.format(key, n+1)
+            file_name = '{}_models/{}_{}.p'.format(self.name, key, n+1)
             start = time.time()
             if os.path.isfile(file_name):
                 logger.info('Loading {}'.format(file_name))
@@ -204,8 +206,8 @@ class Poly:
 
     def run(self):
 
-        if not os.path.exists('models'):
-            os.makedirs('models')
+        if not os.path.exists('{}_models'.format(name)):
+            os.makedirs('{}_models'.format(name))
 
         if self.scale:
             sc = StandardScaler()
