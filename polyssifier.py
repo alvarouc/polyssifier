@@ -206,8 +206,8 @@ class Poly:
 
     def run(self):
 
-        if not os.path.exists('{}_models'.format(name)):
-            os.makedirs('{}_models'.format(name))
+        if not os.path.exists('{}_models'.format(self.name)):
+            os.makedirs('{}_models'.format(self.name))
 
         if self.scale:
             sc = StandardScaler()
