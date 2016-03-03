@@ -128,11 +128,8 @@ class Poly:
         # Scoring
         self._scorer = roc_auc_score
         if scoring == 'f1':
-            if self.n_class == 2:
-                average = 'binary'
-            else:
-                average = 'weighted'
-                self._scorer = lambda x, y: f1_score(x, y, average=average)
+            average = 'binary' if self.n_class == 2 else 'weighted'
+            self._scorer = lambda x, y: f1_score(x, y, average=average)
 
         zeros = np.zeros((self.n_class, self.n_class))
         for key in self.classifiers:
@@ -264,10 +261,8 @@ class Poly:
         ax1.set_xticklabels([])
         ax1.set_xlabel('')
         ax1.yaxis.grid(True)
-        if min_val is None:
-            ylim = np.max(np.array(data).min()-.1, 0)
-        else:
-            ylim = min_val
+
+        ylim = np.max(data.values.min()-.1, 0) if min_val is None else min_val
 
         ax1.set_ylim(ylim, 1)
         for n, rect in enumerate(ax1.patches):
