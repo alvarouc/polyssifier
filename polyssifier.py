@@ -69,6 +69,9 @@ class Poly:
     def __init__(self, data, label, n_folds=10, scale=True, verbose=False,
                  exclude=[], feature_selection=False, save=True, scoring='f1',
                  name=''):
+
+        label = label.astype(np.int)
+
         if not verbose:
             logger.setLevel(logging.ERROR)
         logger.info('Building classifiers ...')
