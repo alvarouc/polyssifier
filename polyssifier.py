@@ -84,11 +84,12 @@ class Poly:
             'clf': KNeighborsClassifier(3),
             'parameters': {'n_neighbors': [1, 5, 10, 20]}}
         od['SVM'] = {
-            'clf': SVC(C=1, probability=True, cache_size=10000),
+            'clf': SVC(C=1, probability=True, cache_size=10000,
+                       class_weight='balanced'),
             'parameters': {'kernel': ['rbf', 'poly'],
                            'C': [0.01, 0.1, 1]}}
         od['Linear SVM'] = {
-            'clf': LinearSVC(dual=False),
+            'clf': LinearSVC(dual=False, class_weight='balanced'),
             'parameters': {'C': [0.01, 0.1, 1],
                            'penalty': ['l1', 'l2']}}
         od['Decision Tree'] = {
@@ -101,8 +102,8 @@ class Poly:
                                           max_features='auto'),
             'parameters': {'n_estimators': list(range(5, 20))}}
         od['Logistic Regression'] = {
-            'clf': LogisticRegression(fit_intercept=False,
-                                      solver='lbfgs', penalty='l2'),
+            'clf': LogisticRegression(fit_intercept=False, solver='lbfgs',
+                                      penalty='l2', class_weight='balanced'),
             'parameters': {'C': [0.001, 0.1, 1]}}
         od['Naive Bayes'] = {
             'clf': GaussianNB(),
