@@ -2,6 +2,7 @@ import sys
 import argparse
 import numpy as np
 import multiprocessing
+from multiprocessing import Process, Manager
 import logging
 import os
 import pandas as pd
@@ -27,7 +28,8 @@ import time
 
 
 sys.setrecursionlimit(10000)
-logging.basicConfig(format="[%(module)s:%(levelname)s]:%(message)s")
+# logging.basicConfig(format="[%(module)s:%(levelname)s]:%(message)s")
+logger = multiprocessing.get_logger()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -103,6 +105,7 @@ class Poly:
             'clf': GaussianNB(),
             'parameters': {}}
         od['Voting'] = {}
+
         self.classifiers = od
 
         # Remove classifiers that want to be excluded
@@ -131,76 +134,112 @@ class Poly:
             average = 'binary' if self.n_class == 2 else 'weighted'
             self._scorer = lambda x, y: f1_score(x, y, average=average)
 
-        zeros = np.zeros((self.n_class, self.n_class))
-        for key in self.classifiers:
-                self.scores[key] = {'train': [], 'test': []}
-                self.confusions[key] = np.copy(zeros)
-                self._predictions[key] = []
-        logger.info('Initialization, done.')
-
-    def _fit_a_classifier(self, X, y, key, val):
-        '''
-        Run fit method from val with X and y
-        key is a string with the classifier name
-        '''
-        if key == 'Voting':  # should be the last to run
-            self.classifiers['Voting']['clf'] =\
-                make_voter(self.fitted_clfs, y, 'hard')
-            clf = val['clf']  # do not fit again
-        else:
-            if val['parameters']:
-                njobs = 1 if key == 'Multilayer Perceptron' else PROCESSORS
-                clf = GridSearchCV(val['clf'], val['parameters'],
-                                   n_jobs=njobs, cv=3, iid=False)
-            clf = val['clf']
-            clf.fit(X, y)
-        return clf
-
-    def fit(self, X, y, n=0):
-        # Fits data on all classifiers
-        # Checks if data was already fitted
-        self.fitted_clfs = {}
-        for key, val in self.classifiers.items():
-            file_name = '{}_models/{}_{}.p'.format(self.name, key, n+1)
-            start = time.time()
-            if os.path.isfile(file_name):
-                logger.info('Loading {}'.format(file_name))
-                clf = joblib.load(file_name)
-            else:
-                logger.info('Running {}'.format(key))
-                clf = self._fit_a_classifier(X, y, key, val)
-                if self.save:
-                    joblib.dump(clf, file_name)
-            duration = time.time()-start
-            ypred = clf.predict(X)
-            score = self._scorer(y, ypred)
-            self.scores[key]['train'].append(score)
-            self.fitted_clfs[key] = clf
-            logger.info('{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
-                key, score, duration))
-
-    def test(self, X, y):
-        for key, val in self.fitted_clfs.items():
-            ypred = val.predict(X)
-            # Scores
-            score = self._scorer(y, ypred)
-            self.scores[key]['test'].append(score)
-            # Confusion matrix
-            confusion = confusion_matrix(y, ypred)
-            self.confusions[key] += confusion
-            # Predictions
-            self._predictions[key].extend(
-                self._le.inverse_transform(ypred))
-            logger.info('{0:25} : Test {1:.2f}'.format(key, score))
-
-    def run(self):
-
         if not os.path.exists('{}_models'.format(self.name)):
             os.makedirs('{}_models'.format(self.name))
 
         if self.scale:
             sc = StandardScaler()
             self.data = sc.fit_transform(self.data)
+
+        zeros = np.zeros((self.n_class, self.n_class))
+        for key in self.classifiers:
+            self.scores[key] = {'train': [], 'test': []}
+            self.confusions[key] = np.copy(zeros)
+            self._predictions[key] = []
+        logger.info('Initialization, done.')
+
+    def _fit_a_classifier(self, data, key, val, n, fitted_clfs, score):
+        '''
+        Run fit method from val with X and y
+        key is a string with the classifier name
+        '''
+        X = data['X']
+        y = data['y']
+        file_name = '{}_models/{}_{}.p'.format(self.name, key, n+1)
+        start = time.time()
+        if os.path.isfile(file_name):
+            logger.info('Loading {}'.format(file_name))
+            clf = joblib.load(file_name)
+        else:
+            logger.info('Running {}'.format(key))
+            if key == 'Voting':  # should be the last to run
+                self.classifiers['Voting']['clf'] =\
+                    make_voter(fitted_clfs, y, 'hard')
+                clf = val['clf']
+            else:
+                clf = val['clf']
+                if val['parameters']:
+                    njobs = 1 if key == 'Multilayer Perceptron' else PROCESSORS
+                    clf = GridSearchCV(val['clf'], val['parameters'],
+                                       n_jobs=njobs, cv=3, iid=False)
+                clf.fit(X, y)
+            if self.save:
+                joblib.dump(clf, file_name)
+        ypred = clf.predict(X)
+        score[key] = self._scorer(y, ypred)
+        fitted_clfs[key] = clf
+        duration = time.time()-start
+        logger.info('{0:25}:  Train {1:.2f}, {2:.2f} sec'.format(
+            key, score[key], duration))
+
+        return
+
+    def fit(self, X, y, n=0):
+        # Fits data on all classifiers
+        # Checks if data was already fitted
+
+        manager = Manager()
+        fitted_clfs = manager.dict()
+        score = manager.dict()
+        data = manager.dict()
+        data['X'] = X
+        data['y'] = y
+        ps = []
+        for key, val in self.classifiers.items():
+            if key != 'Voting':
+                ps.append(Process(target=self._fit_a_classifier,
+                                  args=(data, key, val, n, fitted_clfs, score)))
+                ps[-1].start()
+            else:
+                [p.join() for p in ps]
+                self._fit_a_classifier(data, key, val, n, fitted_clfs, score)
+
+        self.fitted_clfs = fitted_clfs
+        return score
+
+    def _predict(self, data, val, key, score, confusion, predictions):
+        X = data['X']
+        y = data['y']
+        ypred = val.predict(X)
+        # Scores
+        score[key] = self._scorer(y, ypred)
+        # Confusion matrix
+        confusion[key] = confusion_matrix(y, ypred)
+        # Predictions
+        predictions[key] = self._le.inverse_transform(ypred)
+        logger.info('{0:25} : Test {1:.2f}'.format(key, score[key]))
+
+    def test(self, X, y):
+
+        manager = Manager()
+        data = manager.dict()
+        score = manager.dict()
+        confusion = manager.dict()
+        predictions = manager.dict()
+        data['X'] = X
+        data['y'] = y
+
+        ps = []
+        for key, val in self.fitted_clfs.items():
+            ps.append(Process(target=self._predict,
+                              args=(data, val, key, score, confusion,
+                                    predictions)))
+            ps[-1].start()
+
+        [p.join() for p in ps]
+        return score, confusion, predictions
+
+    def run(self):
 
         if self.feature_selection:
             anova_filter = SelectKBest(f_regression, k='all')
@@ -224,11 +263,17 @@ class Poly:
         for n, (train, test) in enumerate(kf):
 
             logger.info('Fold {}'.format(n+1))
-
             X_train, y_train = self.data[train, :], self.label[train]
             X_test, y_test = self.data[test, :], self.label[test]
-            self.fit(X_train, y_train, n)
-            self.test(X_test, y_test)
+            scores = self.fit(X_train, y_train, n)
+            for key, val in scores.items():
+                self.scores[key]['train'].append(scores[key])
+            scores,  confusion, prediction = self.test(X_test, y_test)
+            for key, val in scores.items():
+                self.scores[key]['test'].append(scores[key])
+                self.confusions[key] += confusion[key]
+                self._predictions[key].extend(
+                    self._le.inverse_transform(prediction[key]))
             self._test_index.extend(test)
 
         self.predictions = pd.DataFrame(self._predictions)
@@ -262,7 +307,8 @@ class Poly:
         ax1.set_xlabel('')
         ax1.yaxis.grid(True)
 
-        ylim = np.max(data.values.min()-.1, 0) if min_val is None else min_val
+        temp = np.array(data)
+        ylim = np.max(temp.min()-.1, 0) if min_val is None else min_val
 
         ax1.set_ylim(ylim, 1)
         for n, rect in enumerate(ax1.patches):
