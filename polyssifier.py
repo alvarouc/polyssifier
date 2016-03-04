@@ -129,6 +129,7 @@ class Poly:
         self.save = save
         self.name = name
         # Scoring
+        self.scoring = scoring
         self._scorer = roc_auc_score
         if scoring == 'f1':
             average = 'binary' if self.n_class == 2 else 'weighted'
