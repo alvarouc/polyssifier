@@ -171,7 +171,8 @@ class Poly:
                 if val['parameters']:
                     njobs = 1 if key == 'Multilayer Perceptron' else PROCESSORS
                     clf = GridSearchCV(val['clf'], val['parameters'],
-                                       n_jobs=njobs, cv=3, iid=False)
+                                       scoring=self.scoring, n_jobs=njobs,
+                                       cv=3)
                 clf.fit(X, y)
             if self.save:
                 joblib.dump(clf, file_name)
