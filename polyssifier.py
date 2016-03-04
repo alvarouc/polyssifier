@@ -60,6 +60,8 @@ def make_argument_parser():
                         help='label file name')
     parser.add_argument('--level', default='info',
                         help='Logging level')
+    parser.add_argument('--name', default='default',
+                        help='Experiment name')
 
     return parser
 
@@ -351,6 +353,6 @@ if __name__ == '__main__':
     logger.info(
         'Starting classification with {} workers'.format(PROCESSORS))
 
-    poly = Poly(data, label, n_folds=5)
+    poly = Poly(data, label, n_folds=5, name=args.name)
     poly.run()
     poly.plot(args.data_directory + args.data)
