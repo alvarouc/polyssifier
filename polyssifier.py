@@ -169,7 +169,7 @@ class Poly:
             logger.info('Loading {}'.format(file_name))
             clf = joblib.load(file_name)
         else:
-            logger.info('Running {}'.format(key))
+            logger.info('Training {}'.format(key))
             if key == 'Voting':  # should be the last to run
                 self.classifiers['Voting']['clf'] =\
                     make_voter(fitted_clfs, y, 'hard')
@@ -204,10 +204,17 @@ class Poly:
         data['X'] = X
         data['y'] = y
         ps = []
-        for key, val in self.classifiers.items():
+        for ni, (key, val) in enumerate(self.classifiers.items()):
             if key != 'Voting':
+                if ni+1 % PROCESSORS == 0:
+                    # Wait when reached limit of processors
+                    logger.info('Reached limit of {} concurrent processes...'
+                                .format(PROCESSORS))
+                    [p.join() for p in ps]
+                    ps = []
                 ps.append(Process(target=self._fit_a_classifier,
-                                  args=(data, key, val, n, fitted_clfs, score)))
+                                  args=(data, key, val, n,
+                                        fitted_clfs, score)))
                 ps[-1].start()
             else:
                 [p.join() for p in ps]
@@ -239,7 +246,12 @@ class Poly:
         data['y'] = y
 
         ps = []
-        for key, val in self.fitted_clfs.items():
+        for n, (key, val) in enumerate(self.fitted_clfs.items()):
+            if n+1 % PROCESSORS == 0:
+                logger.info('Reached limit of {} concurrent processes...'
+                            .format(PROCESSORS))
+                [p.join() for p in ps]
+                ps = []
             ps.append(Process(target=self._predict,
                               args=(data, val, key, score, confusion,
                                     predictions)))
