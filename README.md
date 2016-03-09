@@ -38,7 +38,7 @@ Example:
 
 https://github.com/MRN-Code/polyssifier/blob/master/sample/example.ipynb
 
-The class Poly includes several classifiers:
+It includes the following classifiers:
 
 - Multilayer Perceptron (see mlp.py )
 - Nearest Neighbors
@@ -50,7 +50,7 @@ The class Poly includes several classifiers:
 - Naive Bayes
 - Voting Classifier
 
-You can exclude some of this classifiers by provinding a list of names as follows:
+You can exclude some of this classifiers by providing a list of names as follows:
 ```python
 from polyssifier import poly, plot
 
