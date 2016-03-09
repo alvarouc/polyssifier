@@ -4,7 +4,7 @@
 Polyssifier
 ===========
 
-Run a multitude of machine learning classifiers on your data and get a  report of scores, confusion matrices, predictions, and a plot of the scores ranked by classifier performance.
+Polyssifier runs a multitude of machine learning classifiers on your data. It reports scores, confusion matrices, predictions, and a plot of the scores ranked by classifier performance.
 
 ### Requirements
  - Python 3.3 or higher.
