@@ -1,19 +1,21 @@
 import pytest
 import warnings
-warnings.filterwarnings('ignore')
-warnings.filterwarnings("ignore",category=DeprecationWarning)
 
-from polyssifier import Poly
+from polyssifier import poly, plot
 import numpy as np
 import pandas as pd
 from sklearn.datasets import make_moons, make_classification
 
+warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+
 @pytest.mark.medium
 def test_run():
     data, label = make_moons(n_samples=2000, noise=0.4)
-    pol = Poly(data,label, n_folds=2, verbose=1,
-               feature_selection=False, save=False)
-    scores= pol.run()
+    scores, confusions, predictions = poly(data, label, n_folds=2, verbose=1,
+                                           feature_selection=False, save=False,
+                                           project_name='test1')
     data, label = make_classification(n_samples=2000, n_features=20,
                                       n_informative=5, n_redundant=2,
                                       n_repeated=0, n_classes=5,
@@ -22,16 +24,18 @@ def test_run():
                                       hypercube=True, shift=0.0,
                                       scale=1.0, shuffle=True,
                                       random_state=None)
-    pol = Poly(data, label, n_folds=3, verbose=1,
-               feature_selection=False, save=False)
-    scores= pol.run()
+    scores, confusions, predictions = poly(data, label, n_folds=3, verbose=1,
+                                           feature_selection=False, save=False,
+                                           project_name='test2')
 
-    pol = Poly(data, label, n_folds=3, verbose=1,
-               exclude=['Multilayer Perceptron','Voting'],
-               feature_selection=True)
-    scores = pol.run()
-    scores = pol.run() # this duplicated line is to test loading models
-    pol.plot()
-#    scores= pol.run()
-
-    
+    scores, confusions, predictions = poly(data, label, n_folds=3, verbose=1,
+                                           exclude=['Multilayer Perceptron',
+                                                    'Voting'],
+                                           feature_selection=True,
+                                           project_name='test3')
+    scores, confusions, predictions = poly(data, label, n_folds=3, verbose=1,
+                                           exclude=['Multilayer Perceptron',
+                                                    'Voting'],
+                                           feature_selection=True,
+                                           project_name='test3')
+    plot(scores)

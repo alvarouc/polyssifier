@@ -294,6 +294,6 @@ if __name__ == '__main__':
     logger.info(
         'Starting classification with {} workers'.format(PROCESSORS))
 
-    poly = Poly(data, label, n_folds=5, name=args.name)
-    poly.run()
-    poly.plot(args.data_directory + args.data)
+    scores, confusions, predictions = poly(data, label, n_folds=5,
+                                           project_name=args.name)
+    plot(scores, args.data_directory + args.data)

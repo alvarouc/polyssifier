@@ -24,9 +24,8 @@ The class Poly includes several classifiers:
 
 You can exclude some of this classfiers by provind a list of names as follows:
 ```python
-from polyssifier import Poly
+from polyssifier import poly, plot
 
-pol = Poly(data,label, n_folds=5, exclude=['Multilayer Perceptron'], verbose =1)
-
-scores= pol.run()
+scores, confusions, predictions = poly(data,label, n_folds=5, exclude=['Multilayer Perceptron'], verbose=1, concurrency=4)
+plot(scores)
 ```
