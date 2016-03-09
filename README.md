@@ -26,6 +26,6 @@ You can exclude some of this classfiers by provind a list of names as follows:
 ```python
 from polyssifier import poly, plot
 
-scores, confusions, predictions = poly(data,label, n_folds=5, exclude=['Multilayer Perceptron'], verbose=1, concurrency=4)
+scores, confusions, predictions = poly(data,label, n_folds=8, exclude=['Multilayer Perceptron'], verbose=1, concurrency=4)
 plot(scores)
 ```

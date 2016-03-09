@@ -2,8 +2,6 @@ import pytest
 import warnings
 
 from polyssifier import poly, plot
-import numpy as np
-import pandas as pd
 from sklearn.datasets import make_moons, make_classification
 
 warnings.filterwarnings('ignore')
