@@ -69,6 +69,7 @@ def poly(data, label, n_folds=10, scale=True, verbose=False,
          exclude=[], feature_selection=False, save=True, scoring='f1',
          project_name='', concurrency=1):
 
+    data = data.astype(np.float)
     label = label.astype(np.int)
     _le = LabelEncoder()
     label = _le.fit_transform(label)
@@ -77,10 +78,10 @@ def poly(data, label, n_folds=10, scale=True, verbose=False,
         logger.setLevel(logging.ERROR)
     logger.info('Building classifiers ...')
     classifiers = collections.OrderedDict()
-    classifiers['Multilayer Perceptron'] = {
-        'clf': MLP(verbose=0, patience=500, learning_rate=1,
-                   n_hidden=10, n_deep=2, l1_norm=0, drop=0),
-        'parameters': {}}
+    #    classifiers['Multilayer Perceptron'] = {
+    #        'clf': MLP(verbose=0, patience=500, learning_rate=1,
+    #                   n_hidden=10, n_deep=2, l1_norm=0, drop=0),
+    #        'parameters': {}}
     classifiers['Nearest Neighbors'] = {
         'clf': KNeighborsClassifier(3),
         'parameters': {'n_neighbors': [1, 5, 10, 20]}}
@@ -103,7 +104,7 @@ def poly(data, label, n_folds=10, scale=True, verbose=False,
                                       max_features='auto'),
         'parameters': {'n_estimators': list(range(5, 20))}}
     classifiers['Logistic Regression'] = {
-        'clf': LogisticRegression(fit_intercept=False, solver='lbfgs',
+        'clf': LogisticRegression(fit_intercept=True, solver='lbfgs',
                                   penalty='l2', class_weight='balanced'),
         'parameters': {'C': [0.001, 0.1, 1]}}
     classifiers['Naive Bayes'] = {
@@ -151,8 +152,7 @@ def poly(data, label, n_folds=10, scale=True, verbose=False,
 
     logger.info('Initialization, done.')
 
-    kf = list(StratifiedKFold(label, n_folds=n_folds,
-                              random_state=1988))
+    kf = list(StratifiedKFold(label, n_folds=n_folds, random_state=1988))
     manager = Manager()
     args = manager.list()
     args.append({})  # Store inputs
@@ -165,62 +165,61 @@ def poly(data, label, n_folds=10, scale=True, verbose=False,
     pool = Pool(processes=concurrency)
 
     args2 = []
-    for key, val in classifiers.items():
+    for clf_name, val in classifiers.items():
         for n_fold in range(n_folds):
-            args2.append((args, key, val, n_fold, project_name,
+            args2.append((args, clf_name, val, n_fold, project_name,
                           save, scoring))
     result = pool.starmap(fit_clf, args2)
     pool.close()
 
-    for key in classifiers:
+    for clf_name in classifiers:
         temp = np.zeros((n_class, n_class))
         temp_pred = np.zeros((data.shape[0], ))
-        for n_fold in range(n_folds):
-            train_score, test_score, prediction, confusion = result.pop(0)
-            scores.loc[n_fold, (key, 'train')] = train_score
-            scores.loc[n_fold, (key, 'test')] = test_score
+        for n_fold, (train_score, test_score, prediction,
+                     confusion) in enumerate(result):
+            scores.loc[n_fold, (clf_name, 'train')] = train_score
+            scores.loc[n_fold, (clf_name, 'test')] = test_score
             temp += confusion
             temp_pred[kf[n_fold][1]] = _le.inverse_transform(prediction)
 
-        confusions[key] = temp
-        predictions[key] = temp_pred
+        confusions[clf_name] = temp
+        predictions[clf_name] = temp_pred
     return scores, confusions, predictions
 
 
 def _scorer(xx, yy, scoring, n_class):
     # Scoring
     if scoring == 'auc':
-        score = roc_auc_score(xx, yy)
+        score = roc_auc_score(xx, yy, 'weighted')
     if scoring == 'f1':
         average = 'binary' if n_class == 2 else 'weighted'
         score = f1_score(xx, yy, average=average)
     return score
 
 
-def fit_clf(args, key, val, n_fold, project_name, save, scoring):
+def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     '''
     Run fit method from val with X and y
-    key is a string with the classifier name
+    clf_name is a string with the classifier name
     '''
+    logger = logging.getLogger(str(os.getpid()) + ':logger')
     train, test = args[0]['kf'][n_fold]
     X = args[0]['X'][train, :]
     y = args[0]['y'][train]
     n_class = len(np.unique(y))
-    file_name = '{}_models/{}_{}.p'.format(project_name, key, n_fold+1)
+    file_name = '{}_models/{}_{}.p'.format(project_name, clf_name, n_fold+1)
     start = time.time()
     if os.path.isfile(file_name):
-        #logger.info('Loading {} {}'.format(file_name, n_fold))
+        logger.info('Loading {} {}'.format(file_name, n_fold))
         clf = joblib.load(file_name)
     else:
-        #logger.info('Training {} {}'.format(key, n_fold))
+        logger.info('Training {} {}'.format(clf_name, n_fold))
         clf = deepcopy(val['clf'])
         if val['parameters']:
-            clf = GridSearchCV(clf, val['parameters'],
-                               scoring='f1', n_jobs=1,
-                               cv=3)
-    clf.fit(X, y)
-    if save:
-        joblib.dump(clf, file_name)
+            clf = GridSearchCV(clf, val['parameters'], n_jobs=1, cv=3)
+        clf.fit(X, y)
+        if save:
+            joblib.dump(clf, file_name)
 
     ypred = clf.predict(X)
 
@@ -233,8 +232,7 @@ def fit_clf(args, key, val, n_fold, project_name, save, scoring):
     test_score = _scorer(y, ypred, scoring, n_class)
     confusion = confusion_matrix(y, ypred)
     duration = time.time()-start
-    logger.info('{0:25} {1:2}:  Train {2:.2f}/ Test {3:.2f}, {4:.2f} sec'.format(
-            key, n_fold, train_score, test_score, duration))
+    logger.info('{0:25} {1:2}:  Train {2:.2f}/ Test {3:.2f}, {4:.2f} sec'.format(clf_name, n_fold, train_score, test_score, duration))
     return (train_score, test_score, ypred, confusion)
 
 
@@ -295,5 +293,6 @@ if __name__ == '__main__':
         'Starting classification with {} workers'.format(PROCESSORS))
 
     scores, confusions, predictions = poly(data, label, n_folds=5,
-                                           project_name=args.name)
+                                           project_name=args.name,
+                                           concurrency=PROCESSORS)
     plot(scores, args.data_directory + args.data)
