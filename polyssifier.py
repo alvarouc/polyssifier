@@ -23,7 +23,7 @@ from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.externals import joblib
-from mlp import MLP
+from .mlp import MLP
 import time
 
 sys.setrecursionlimit(10000)
@@ -175,12 +175,12 @@ def poly(data, label, n_folds=10, scale=True, verbose=False,
     for clf_name in classifiers:
         temp = np.zeros((n_class, n_class))
         temp_pred = np.zeros((data.shape[0], ))
-        for n_fold, (train_score, test_score, prediction,
-                     confusion) in enumerate(result):
+        for n, (train_score, test_score, prediction,
+                confusion) in enumerate(result):
             scores.loc[n_fold, (clf_name, 'train')] = train_score
             scores.loc[n_fold, (clf_name, 'test')] = test_score
             temp += confusion
-            temp_pred[kf[n_fold][1]] = _le.inverse_transform(prediction)
+            temp_pred[kf[n % n_fold][1]] = _le.inverse_transform(prediction)
 
         confusions[clf_name] = temp
         predictions[clf_name] = temp_pred
