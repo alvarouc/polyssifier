@@ -23,12 +23,12 @@ from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.externals import joblib
-from .mlp import MLP
+from mlp import MLP
 import time
 
 sys.setrecursionlimit(10000)
 # logging.basicConfig(format="[%(module)s:%(levelname)s]:%(message)s")
-logger = multiprocessing.get_logger()
+# logger = multiprocessing.get_logger()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -45,28 +45,8 @@ def make_voter(estimators, y, voting='hard'):
     return clf
 
 
-def make_argument_parser():
-    '''
-    Creates an ArgumentParser to read the options for this script from
-    sys.argv
-    '''
-    parser = argparse.ArgumentParser()
-    parser.add_argument('data_directory',
-                        help='Directory where the data files live.')
-    parser.add_argument('data', default='data.npy',
-                        help='Data file name')
-    parser.add_argument('label', default='labels.npy',
-                        help='label file name')
-    parser.add_argument('--level', default='info',
-                        help='Logging level')
-    parser.add_argument('--name', default='default',
-                        help='Experiment name')
-
-    return parser
-
-
-def poly(data, label, n_folds=10, scale=True, verbose=False,
-         exclude=[], feature_selection=False, save=True, scoring='f1',
+def poly(data, label, n_folds=10, scale=True, verbose=True,
+         exclude=[], feature_selection=False, save=True, scoring='auc',
          project_name='', concurrency=1):
 
     data = data.astype(np.float)
@@ -82,34 +62,34 @@ def poly(data, label, n_folds=10, scale=True, verbose=False,
     #        'clf': MLP(verbose=0, patience=500, learning_rate=1,
     #                   n_hidden=10, n_deep=2, l1_norm=0, drop=0),
     #        'parameters': {}}
-    classifiers['Nearest Neighbors'] = {
-        'clf': KNeighborsClassifier(3),
-        'parameters': {'n_neighbors': [1, 5, 10, 20]}}
-    classifiers['SVM'] = {
-        'clf': SVC(C=1, probability=True, cache_size=10000,
-                   class_weight='balanced'),
-        'parameters': {'kernel': ['rbf', 'poly'],
-                       'C': [0.01, 0.1, 1]}}
-    classifiers['Linear SVM'] = {
-        'clf': LinearSVC(dual=False, class_weight='balanced'),
-        'parameters': {'C': [0.01, 0.1, 1],
-                       'penalty': ['l1', 'l2']}}
-    classifiers['Decision Tree'] = {
-        'clf': DecisionTreeClassifier(max_depth=None,
-                                      max_features='auto'),
-        'parameters': {}}
-    classifiers['Random Forest'] = {
-        'clf': RandomForestClassifier(max_depth=None,
-                                      n_estimators=10,
-                                      max_features='auto'),
-        'parameters': {'n_estimators': list(range(5, 20))}}
+    #classifiers['Nearest Neighbors'] = {
+    #    'clf': KNeighborsClassifier(3),
+    #    'parameters': {'n_neighbors': [1, 5, 10, 20]}}
+    #classifiers['SVM'] = {
+    #    'clf': SVC(C=1, probability=True, cache_size=10000,
+    #               class_weight='balanced'),
+    #    'parameters': {'kernel': ['rbf', 'poly'],
+    #                   'C': [0.01, 0.1, 1]}}
+    #classifiers['Linear SVM'] = {
+    #    'clf': LinearSVC(dual=False, class_weight='balanced'),
+    #    'parameters': {'C': [0.01, 0.1, 1],
+    #                   'penalty': ['l1', 'l2']}}
+    #classifiers['Decision Tree'] = {
+    #    'clf': DecisionTreeClassifier(max_depth=None,
+    #                                  max_features='auto'),
+    #    'parameters': {}}
+    #classifiers['Random Forest'] = {
+    #    'clf': RandomForestClassifier(max_depth=None,
+    #                                  n_estimators=10,
+    #                                  max_features='auto'),
+    #    'parameters': {'n_estimators': list(range(5, 20))}}
     classifiers['Logistic Regression'] = {
         'clf': LogisticRegression(fit_intercept=True, solver='lbfgs',
-                                  penalty='l2', class_weight='balanced'),
+                                  penalty='l2'),
         'parameters': {'C': [0.001, 0.1, 1]}}
-    classifiers['Naive Bayes'] = {
-        'clf': GaussianNB(),
-        'parameters': {}}
+    #classifiers['Naive Bayes'] = {
+    #    'clf': GaussianNB(),
+    #    'parameters': {}}
     #classifiers['Voting'] = {}
 
     # Remove classifiers that want to be excluded
@@ -187,13 +167,12 @@ def poly(data, label, n_folds=10, scale=True, verbose=False,
     return scores, confusions, predictions
 
 
-def _scorer(xx, yy, scoring, n_class):
+def _scorer(clf, xx, yy):
     # Scoring
-    if scoring == 'auc':
-        score = roc_auc_score(xx, yy, 'weighted')
-    if scoring == 'f1':
-        average = 'binary' if n_class == 2 else 'weighted'
-        score = f1_score(xx, yy, average=average)
+    #if scoring == 'auc':
+    score = roc_auc_score(xx, yy)
+    #if scoring == 'f1':
+    #    score = f1_score(xx, yy, 'weighted')
     return score
 
 
@@ -202,7 +181,6 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     Run fit method from val with X and y
     clf_name is a string with the classifier name
     '''
-    logger = logging.getLogger(str(os.getpid()) + ':logger')
     train, test = args[0]['kf'][n_fold]
     X = args[0]['X'][train, :]
     y = args[0]['y'][train]
@@ -276,6 +254,27 @@ def plot(scores, file_name='temp', min_val=None):
 
     return (ax1)
 
+def make_argument_parser():
+    '''
+    Creates an ArgumentParser to read the options for this script from
+    sys.argv
+    '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('data_directory',
+                        help='Directory where the data files live.')
+    parser.add_argument('data', default='data.npy',
+                        help='Data file name')
+    parser.add_argument('label', default='labels.npy',
+                        help='label file name')
+    parser.add_argument('--level', default='info',
+                        help='Logging level')
+    parser.add_argument('--name', default='default',
+                        help='Experiment name')
+    parser.add_argument('--concurrency', default='1',
+                        help='Experiment name')
+
+    return parser
+
 if __name__ == '__main__':
 
     parser = make_argument_parser()
@@ -294,5 +293,7 @@ if __name__ == '__main__':
 
     scores, confusions, predictions = poly(data, label, n_folds=5,
                                            project_name=args.name,
-                                           concurrency=PROCESSORS)
-    plot(scores, args.data_directory + args.data)
+                                           concurrency=int(args.concurrency))
+    plot(scores, args.data_directory + args.name)
+
+
