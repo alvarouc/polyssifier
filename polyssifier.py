@@ -167,13 +167,17 @@ def poly(data, label, n_folds=10, scale=True, verbose=True,
         predictions[clf_name] = temp_pred
 
     # saving confusion matrices
-    with open('confusions.pkl', 'wb') as f:
+    with open(project_name + 'confusions.pkl', 'wb') as f:
         p.dump(confusions, f, protocol=2)
     return scores, confusions, predictions
 
 
 def _scorer(clf, X, y):
-    score = roc_auc_score(y, clf.predict(X))
+    n_class = len(np.unique(y))
+    if n_class == 2:
+        score = roc_auc_score(y, clf.predict(X))
+    else:
+        score = f1_score(y, clf.predict(X), 'weighted')
     return score
 
 
