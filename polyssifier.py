@@ -165,6 +165,10 @@ def poly(data, label, n_folds=10, scale=True, verbose=True,
 
         confusions[clf_name] = temp
         predictions[clf_name] = temp_pred
+
+    # saving confusion matrices
+    with open('confusions.pkl', 'wb') as f:
+        p.dump(confusions, f, protocol=2)
     return scores, confusions, predictions
 
 
@@ -242,9 +246,6 @@ def plot(scores, file_name='temp', min_val=None):
     plt.savefig(file_name + '.pdf')
     plt.savefig(file_name + '.svg', transparent=False)
 
-    # saving confusion matrices
-    with open('confusions.pkl', 'wb') as f:
-        p.dump(self.confusions, f, protocol=2)
     print(scores)
     return (ax1)
 
