@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import collections
 from copy import deepcopy
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC, LinearSVC
+from sklearn.svm import LinearSVC, SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.linear_model import LogisticRegression
@@ -28,8 +28,6 @@ from mlp import MLP
 import time
 
 sys.setrecursionlimit(10000)
-# logging.basicConfig(format="[%(module)s:%(levelname)s]:%(message)s")
-# logger = multiprocessing.get_logger()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -66,11 +64,11 @@ def poly(data, label, n_folds=10, scale=True, verbose=True,
     classifiers['Nearest Neighbors'] = {
         'clf': KNeighborsClassifier(3),
         'parameters': {'n_neighbors': [1, 5, 10, 20]}}
-    #classifiers['SVM'] = {
-    #    'clf': SVC(C=1, probability=True, cache_size=10000,
-    #               class_weight='balanced'),
-    #    'parameters': {'kernel': ['rbf', 'poly'],
-    #                   'C': [0.01, 0.1, 1]}}
+    classifiers['SVM'] = {
+        'clf': SVC(C=1, probability=True, cache_size=10000,
+                   class_weight='balanced'),
+        'parameters': {'kernel': ['rbf', 'poly'],
+                       'C': [0.01, 0.1, 1]}}
     classifiers['Linear SVM'] = {
         'clf': LinearSVC(dual=False, class_weight='balanced'),
         'parameters': {'C': [0.01, 0.1, 1],
@@ -175,7 +173,11 @@ def poly(data, label, n_folds=10, scale=True, verbose=True,
 def _scorer(clf, X, y):
     n_class = len(np.unique(y))
     if n_class == 2:
-        score = roc_auc_score(y, clf.predict(X))
+        if hasattr(clf, 'predict_proba'):
+            ypred = clf.predict_proba(X)[:, 1]
+        elif hasattr(clf, 'decision_function'):
+            ypred = clf.decision_function(X)
+        score = roc_auc_score(y, ypred)
     else:
         score = f1_score(y, clf.predict(X), 'weighted')
     return score
