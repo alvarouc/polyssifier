@@ -62,7 +62,7 @@ def poly(data, label, n_folds=10, scale=True, verbose=True,
                    n_hidden=10, n_deep=2, l1_norm=0, drop=0),
         'parameters': {}}
     classifiers['Nearest Neighbors'] = {
-        'clf': KNeighborsClassifier(3),
+        'clf': KNeighborsClassifier(),
         'parameters': {'n_neighbors': [1, 5, 10, 20]}}
     classifiers['SVM'] = {
         'clf': SVC(C=1, probability=True, cache_size=10000,
@@ -107,8 +107,8 @@ def poly(data, label, n_folds=10, scale=True, verbose=True,
     fitted_clfs = pd.DataFrame(columns=classifiers.keys(),
                                index=range(n_folds))
 
-    if not os.path.exists('{}_models'.format(project_name)):
-        os.makedirs('{}_models'.format(project_name))
+    if not os.path.exists('poly_{}/models'.format(project_name)):
+        os.makedirs('poly_{}/models'.format(project_name))
 
     if scale:
         sc = StandardScaler()
@@ -165,7 +165,7 @@ def poly(data, label, n_folds=10, scale=True, verbose=True,
         predictions[clf_name] = temp_pred
 
     # saving confusion matrices
-    with open(project_name + 'confusions.pkl', 'wb') as f:
+    with open('poly_' + project_name + '/confusions.pkl', 'wb') as f:
         p.dump(confusions, f, protocol=2)
     return scores, confusions, predictions
 
@@ -191,7 +191,7 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     train, test = args[0]['kf'][n_fold]
     X = args[0]['X'][train, :]
     y = args[0]['y'][train]
-    file_name = '{}_models/{}_{}.p'.format(project_name, clf_name, n_fold+1)
+    file_name = 'poly_{}/models/{}_{}.p'.format(project_name, clf_name, n_fold+1)
     start = time.time()
     if os.path.isfile(file_name):
         logger.info('Loading {} {}'.format(file_name, n_fold))
@@ -251,9 +251,8 @@ def plot(scores, file_name='temp', min_val=None):
                ncol=2, fancybox=True, shadow=True)
     plt.savefig(file_name + '.pdf')
     plt.savefig(file_name + '.svg', transparent=False)
-
-    print(scores)
     return (ax1)
+
 
 def make_argument_parser():
     '''
@@ -261,8 +260,6 @@ def make_argument_parser():
     sys.argv
     '''
     parser = argparse.ArgumentParser()
-    parser.add_argument('data_directory',
-                        help='Directory where the data files live.')
     parser.add_argument('data', default='data.npy',
                         help='Data file name')
     parser.add_argument('label', default='labels.npy',
@@ -286,8 +283,8 @@ if __name__ == '__main__':
     else:
         logger.setLevel(logging.DEBUG)
 
-    data = np.load(args.data_directory + args.data)
-    label = np.load(args.data_directory + args.label)
+    data = np.load(args.data)
+    label = np.load(args.label)
 
     logger.info(
         'Starting classification with {} workers'.format(PROCESSORS))
@@ -295,6 +292,4 @@ if __name__ == '__main__':
     scores, confusions, predictions = poly(data, label, n_folds=5,
                                            project_name=args.name,
                                            concurrency=int(args.concurrency))
-    plot(scores, args.data_directory + args.name)
-
-
+    plot(scores, os.path.join('poly_' + args.name, args.name))
