@@ -58,8 +58,8 @@ def poly(data, label, n_folds=10, scale=True, verbose=True,
     logger.info('Building classifiers ...')
     classifiers = collections.OrderedDict()
     classifiers['Multilayer Perceptron'] = {
-        'clf': MLP(verbose=0, patience=500, learning_rate=1,
-                   n_hidden=10, n_deep=2, l1_norm=0, drop=0),
+        'clf': MLP(verbose=0, patience=100, learning_rate=0.1,
+                   n_hidden=50, n_deep=2, l1_norm=0.001, drop=0.2),
         'parameters': {}}
     classifiers['Nearest Neighbors'] = {
         'clf': KNeighborsClassifier(),
@@ -167,6 +167,8 @@ def poly(data, label, n_folds=10, scale=True, verbose=True,
     # saving confusion matrices
     with open('poly_' + project_name + '/confusions.pkl', 'wb') as f:
         p.dump(confusions, f, protocol=2)
+
+    print(scores.astype('float').describe().transpose()[['mean', 'std', 'min','max']])
     return scores, confusions, predictions
 
 
@@ -287,7 +289,7 @@ if __name__ == '__main__':
     label = np.load(args.label)
 
     logger.info(
-        'Starting classification with {} workers'.format(PROCESSORS))
+        'Starting classification with {} workers'.format(args.concurrency))
 
     scores, confusions, predictions = poly(data, label, n_folds=5,
                                            project_name=args.name,
