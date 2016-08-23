@@ -4,8 +4,8 @@ language: python
 
 sudo: false
 
-cache:
- apt: true
+cache: pip
+apt: true
 
 addons:
   apt:
@@ -15,13 +15,15 @@ addons:
     - liblapack-dev
     - gfortran
 python:
-  - "2.7"
+#  - "2.7"
   - "3.4"
   - "3.5"
 
 install:
-  - pip install pep8 python-coveralls pytest-cov keras numpy scipy pytest matplotlib
-  - pip install pandas
+  - travis_wait pip install numpy
+  - travis_wait pip install --verbose scipy
+  - pip install pep8 python-coveralls pytest-cov keras numpy pytest matplotlib mlp h5py
+  - pip install pandas statsmodels
   - pip install scikit-learn
 # Skip setup.py for now
 #  - pip install -e .
