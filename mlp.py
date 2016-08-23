@@ -1,8 +1,8 @@
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout
 from keras.optimizers import Adadelta
-from keras.regularizers import l1
-from keras.callbacks import EarlyStopping
+from keras.regularizers import l1l2
+from keras.callbacks import EarlyStopping, Callback
 from sklearn.cross_validation import StratifiedShuffleSplit
 from sklearn.metrics import roc_auc_score, f1_score
 from sklearn.preprocessing import LabelEncoder
@@ -41,15 +41,16 @@ class BaseMLP(BaseEstimator, ClassifierMixin):
          labels provided
     '''
     def __init__(self, n_hidden=1000, n_deep=4,
-                 l1_norm=0.01, drop=0.1,
+                 l1_norm=0, l2_norm=0, drop=0,
                  early_stop=True, max_epoch=5000,
                  patience=200,
-                 learning_rate=1, verbose=2):
+                 learning_rate=1, verbose=0):
         self.max_epoch = max_epoch
         self.early_stop = early_stop
         self.n_hidden = n_hidden
         self.n_deep = n_deep
         self.l1_norm = l1_norm
+        self.l2_norm = l2_norm
         self.drop = drop
         self.patience = patience
         self.verbose = verbose
@@ -67,15 +68,18 @@ class BaseMLP(BaseEstimator, ClassifierMixin):
         else:
             out_dim = self.n_class
 
-        self.build_model(X.shape[1], out_dim)
-        #if self.verbose:
-        temp = [layer['output_dim']
-                for layer in self.model.get_config()['layers']
-                if layer['name'] == 'Dense']
-        print('Model:{}'.format(temp))
-        print('l1: {}, drop: {}, lr: {}, patience: {}'.format(
-            self.l1_norm, self.drop, self.learning_rate,
-            self.patience))
+        if hasattr(self, 'model'):
+            self.reset_model()
+        else:
+            self.build_model(X.shape[1], out_dim)
+        if self.verbose:
+            temp = [layer['output_dim'] for layer in
+                    self.model.get_config()['layers']
+                    if layer['name'] == 'Dense']
+            print('Model:{}'.format(temp))
+            print('l1: {}, drop: {}, lr: {}, patience: {}'.format(
+                self.l1_norm, self.drop, self.learning_rate,
+                self.patience))
 
         return self
 
@@ -89,9 +93,14 @@ class BaseMLP(BaseEstimator, ClassifierMixin):
 
         self.model = build_model(in_dim, out_dim=out_dim,
                                  n_hidden=self.n_hidden, l1_norm=self.l1_norm,
+                                 l2_norm=self.l2_norm,
                                  n_deep=self.n_deep, drop=self.drop,
                                  learning_rate=self.learning_rate)
+        self.w0 = self.model.get_weights()
         return self
+
+    def reset_model(self):
+        self.model.set_weights(self.w0)
 
     def feed_forward(self, X):
         # Feeds the model with X and returns the output of
@@ -107,7 +116,8 @@ class BaseMLP(BaseEstimator, ClassifierMixin):
 
     def predict_proba(self, X):
         proba = self.model.predict(X, verbose=self.verbose)
-
+        proba = (proba - proba.min())
+        proba = proba/proba.max()
         if proba.shape[1] == 1:
             proba = np.array(proba).reshape((X.shape[0], -1))
             temp = (1-proba.sum(axis=1)).reshape(X.shape[0], -1)
@@ -121,7 +131,7 @@ class BaseMLP(BaseEstimator, ClassifierMixin):
         return self.le.inverse_transform(prediction)
 
     def auc(self, X, y):
-        prediction = self.predict(X)
+        prediction = self.predict_proba(X)[:, 1]
         return roc_auc_score(y, prediction)
 
     def f1(self, X, y):
@@ -132,10 +142,33 @@ class BaseMLP(BaseEstimator, ClassifierMixin):
             return f1_score(y, prediction)
 
 
+class TestLossHistory(Callback):
+
+    def __init__(self, X_test, y_test, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.X_test = X_test
+        self.y_test = y_test
+
+    def on_train_begin(self, logs={}):
+        self.test_losses = []
+
+    def on_epoch_end(self, batch, logs={}):
+        loss = self.model.evaluate(self.X_test, self.y_test, verbose=0,
+                                   batch_size=self.X_test.shape[0])
+        self.test_losses.append(loss)
+
+
 class MLP(BaseMLP):
 
-    def fit(self, X, y):
-        super(MLP, self).fit(X, y)
+    def fit(self, X, y, X_test=None, y_test=None):
+        super().fit(X, y)
+
+        callbacks = []
+        test = X_test is not None and y_test is not None
+        if test:
+            self.test_loss = TestLossHistory(X_test, y_test)
+            callbacks.append(self.test_loss)
+
         if self.n_class > 2:
             y = unroll(self.y_)
         else:
@@ -151,23 +184,24 @@ class MLP(BaseMLP):
             stop = EarlyStopping(monitor='val_loss',
                                  patience=self.patience,
                                  verbose=self.verbose)
-            self.model.fit(x_train, y_train,
-                           nb_epoch=self.max_epoch,
-                           # batch_size=64,
-                           verbose=self.verbose,
-                           callbacks=[stop],
-                           show_accuracy=True,
-                           validation_data=(x_val, y_val))
+            callbacks.append(stop)
+
+            self.history = self.model.fit(
+                x_train, y_train, nb_epoch=self.max_epoch,
+                verbose=self.verbose, callbacks=callbacks, show_accuracy=False,
+                validation_data=(x_val, y_val))
+
         else:
-            self.model.fit(X, y, nb_epoch=self.max_epoch,
-                           verbose=self.verbose,
-                           show_accuracy=True)
+            self.history = self.model.fit(
+                X, y, nb_epoch=self.max_epoch, verbose=self.verbose,
+                show_accuracy=False, callbacks=callbacks)
 
         return self
 
 
 def build_model(in_dim, out_dim=1,
                 n_hidden=100, l1_norm=0.0,
+                l2_norm=0,
                 n_deep=5, drop=0.1,
                 learning_rate=0.1):
     model = Sequential()
@@ -175,18 +209,18 @@ def build_model(in_dim, out_dim=1,
     model.add(Dense(
         input_dim=in_dim,
         output_dim=n_hidden,
-        init='glorot_uniform',
+        init='glorot_normal',
         activation='tanh',
-        W_regularizer=l1(l1_norm)))
+        W_regularizer=l1l2(l1=l1_norm, l2=l2_norm)))
 
     # do X layers
     for layer in range(n_deep-1):
         model.add(Dropout(drop))
         model.add(Dense(
             output_dim=np.round(n_hidden/2**(layer+1)),
-            init='glorot_uniform',
+            init='glorot_normal',
             activation='tanh',
-            W_regularizer=l1(l1_norm)))
+            W_regularizer=l1l2(l1=l1_norm, l2=l2_norm)))
 
     # Output layer
     if out_dim == 1:
@@ -195,7 +229,7 @@ def build_model(in_dim, out_dim=1,
         activation = 'softmax'
 
     model.add(Dense(out_dim,
-                    init='glorot_uniform',
+                    init='glorot_normal',
                     activation=activation))
 
     # Optimization algorithms
