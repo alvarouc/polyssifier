@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 import sys
 import argparse
 import numpy as np
@@ -47,6 +47,18 @@ def make_voter(estimators, y, voting='hard'):
 def poly(data, label, n_folds=10, scale=True, verbose=True,
          exclude=[], feature_selection=False, save=True, scoring='auc',
          project_name='', concurrency=1):
+    '''Polyssifier  main function: 
+
+    Computes  various  classifiers  in cross  validation  fashion  for
+    reporting scores. 
+    
+    Input
+    -----
+    data: numpy matrix with each row as an observation.
+    label: vector of labels for data rows. It should be of length equal to the number of rows in data.
+    
+    '''
+    
 
     data = data.astype(np.float)
     label = label.astype(np.int)
