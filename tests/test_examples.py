@@ -6,14 +6,16 @@ from sklearn.datasets import make_moons, make_classification
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+NSAMPLES = 500
+
 
 @pytest.mark.medium
 def test_run():
-    data, label = make_moons(n_samples=1000, noise=0.4)
+    data, label = make_moons(n_samples=NSAMPLES, noise=0.4)
     scores, confusions, predictions = poly(data, label, n_folds=2, verbose=1,
                                            feature_selection=False, save=False,
                                            project_name='test1')
-    data, label = make_classification(n_samples=1000, n_features=20,
+    data, label = make_classification(n_samples=NSAMPLES, n_features=20,
                                       n_informative=5, n_redundant=2,
                                       n_repeated=0, n_classes=2,
                                       n_clusters_per_class=2, weights=None,
