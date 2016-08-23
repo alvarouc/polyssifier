@@ -4,7 +4,6 @@ import warnings
 from polyssifier import poly, plot
 from sklearn.datasets import make_moons, make_classification
 
-warnings.filterwarnings('ignore')
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
@@ -16,7 +15,7 @@ def test_run():
                                            project_name='test1')
     data, label = make_classification(n_samples=1000, n_features=20,
                                       n_informative=5, n_redundant=2,
-                                      n_repeated=0, n_classes=5,
+                                      n_repeated=0, n_classes=2,
                                       n_clusters_per_class=2, weights=None,
                                       flip_y=0.01, class_sep=1.0,
                                       hypercube=True, shift=0.0,

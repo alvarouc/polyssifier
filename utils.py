@@ -72,9 +72,8 @@ def build_classifiers(exclude, scale, feature_selection, nCols):
     # classifiers['Voting'] = {}
 
     def name(x):
-        x['clf']._final_estimator.__class__.__name__.lower()
+        return x['clf']._final_estimator.__class__.__name__.lower()
 
-    temp = int(np.round(nCols / 5))
     for key, val in classifiers.items():
         if not scale and not feature_selection:
             break
@@ -91,7 +90,8 @@ def build_classifiers(exclude, scale, feature_selection, nCols):
             new_dict[name(classifiers[key]) + '__' +
                      keyp] = classifiers[key]['parameters'][keyp]
         classifiers[key]['parameters'] = new_dict
-        classifiers[key]['parameters']['selectkbest__k'] = np.arange(
-            temp, nCols - temp, temp).tolist()
+        if nCols > 5 and feature_selection:
+            classifiers[key]['parameters']['selectkbest__k'] = np.linspace(
+                np.round(nCols / 5), nCols, 5).astype('int').tolist()
 
     return classifiers
