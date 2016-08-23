@@ -22,7 +22,7 @@ python:
 install:
   - travis_wait pip install numpy
   - travis_wait pip install --verbose scipy
-  - pip install pep8 python-coveralls pytest-cov keras numpy pytest matplotlib mlp
+  - pip install pep8 python-coveralls pytest-cov keras numpy pytest matplotlib mlp h5py
   - pip install pandas
   - pip install scikit-learn
 # Skip setup.py for now
