@@ -17,7 +17,7 @@ from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
-from .utils import build_classifiers
+from poly_utils import build_classifiers
 
 
 sys.setrecursionlimit(10000)
