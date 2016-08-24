@@ -1,4 +1,4 @@
-[![Coverage Status](https://coveralls.io/repos/alvarouc/polyssifier/badge.svg?branch=master&service=github)](https://coveralls.io/github/alvarouc/polyssifier?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/alvarouc/polyssifier/badge.svg?branch=master)](https://coveralls.io/github/alvarouc/polyssifier?branch=master)
 [![Build Status](https://travis-ci.org/alvarouc/polyssifier.svg)](https://travis-ci.org/alvarouc/polyssifier)
 
 Polyssifier
