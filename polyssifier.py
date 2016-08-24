@@ -17,14 +17,12 @@ from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
-from poly_utils import build_classifiers
+from .poly_utils import build_classifiers
 
 
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-PROCESSORS = int(multiprocessing.cpu_count() // 2)
 
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
