@@ -3,7 +3,6 @@ import sys
 import argparse
 import numpy as np
 import pickle as p
-import multiprocessing
 from multiprocessing import Manager, Pool
 import logging
 import os
@@ -69,6 +68,8 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
         index=range(n_folds))
     predictions = pd.DataFrame(columns=classifiers.keys(),
                                index=range(data.shape[0]))
+    test_prob = pd.DataFrame(columns=classifiers.keys(),
+                             index=range(data.shape[0]))
     confusions = {}
     # !fitted_clfs =
     # pd.DataFrame(columns=classifiers.keys(), index = range(n_folds))
@@ -104,15 +105,19 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     for clf_name in classifiers:
         temp = np.zeros((n_class, n_class))
         temp_pred = np.zeros((data.shape[0], ))
+        temp_prob = np.zeros((data.shape[0], ))
         for n in range(n_folds):
-            train_score, test_score, prediction, confusion = result.pop(0)
+            train_score, test_score, prediction, prob, confusion = result.pop(
+                0)
             scores.loc[n, (clf_name, 'train')] = train_score
             scores.loc[n, (clf_name, 'test')] = test_score
             temp += confusion
+            temp_prob[kf[n][1]] = prob
             temp_pred[kf[n][1]] = _le.inverse_transform(prediction)
 
         confusions[clf_name] = temp
         predictions[clf_name] = temp_pred
+        test_prob[clf_name] = temp_prob
 
     # saving confusion matrices
     if save:
@@ -122,7 +127,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     if verbose:
         print(scores.astype('float').describe().transpose()
               [['mean', 'std', 'min', 'max']])
-    return scores, confusions, predictions
+    return scores, confusions, predictions, test_prob
 
 
 def _scorer(clf, X, y):
@@ -169,11 +174,16 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     # Scores
     test_score = _scorer(clf, X, y)
     ypred = clf.predict(X)
+    if hasattr(clf, 'predict_proba'):
+        yprob = clf.predict_proba(X)
+    elif hasattr(clf, 'decision_function'):
+        yprob = clf.decision_function(X)
+
     confusion = confusion_matrix(y, ypred)
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
         clf_name, n_fold, train_score, test_score, duration))
-    return (train_score, test_score, ypred, confusion)
+    return (train_score, test_score, ypred, yprob, confusion)
 
 
 def plot(scores, file_name='temp', min_val=None):
@@ -246,7 +256,7 @@ if __name__ == '__main__':
     logger.info(
         'Starting classification with {} workers'.format(args.concurrency))
 
-    scores, confusions, predictions = poly(data, label, n_folds=5,
-                                           project_name=args.name,
-                                           concurrency=int(args.concurrency))
+    scores, confusions, predictions, test_prob = \
+        poly(data, label, n_folds=5, project_name=args.name,
+             concurrency=int(args.concurrency))
     plot(scores, os.path.join('poly_' + args.name, args.name))
