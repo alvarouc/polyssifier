@@ -5,6 +5,7 @@ setup(
     version='0.1.6',
     install_requires=[
         'mlp',
+        'pandas',
         'sklearn',
         'numpy'],
     description='Data exploration tool for assessing optimal classification methods',
