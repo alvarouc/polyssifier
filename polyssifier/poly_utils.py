@@ -11,11 +11,21 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 
-def make_voter(estimators, y, voting='hard'):
-    estimators = list(estimators.items())
-    clf = VotingClassifier(estimators, voting)
-    clf.estimators_ = [estim for name, estim in estimators]
-    return clf
+class MyVoter(object):
+    """Voter that receive fitted classifiers
+
+    """
+
+    def __init__(self, estimators):
+        self.estimators_ = estimators
+
+    def predict(self, X):
+        predictions = np.asarray(
+            [clf.predict(X) for clf in self.estimators_]).T
+        maj = np.apply_along_axis(
+            lambda x: np.argmax(np.bincount(x)), axis=1,
+            arr=predictions.astype('int'))
+        return maj
 
 
 def build_classifiers(exclude, scale, feature_selection, nCols):

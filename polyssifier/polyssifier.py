@@ -16,8 +16,7 @@ from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
-from .poly_utils import build_classifiers
-
+from .poly_utils import build_classifiers, MyVoter
 
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
@@ -101,14 +100,18 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
         result = pool.starmap(fit_clf, args2)
         pool.close()
 
+    fitted_clfs = {key: [] for key in classifiers}
+
     # Gather results
     for clf_name in classifiers:
         temp = np.zeros((n_class, n_class))
         temp_pred = np.zeros((data.shape[0], ))
         temp_prob = np.zeros((data.shape[0], ))
+        clfs = fitted_clfs[clf_name]
         for n in range(n_folds):
-            train_score, test_score, prediction, prob, confusion = result.pop(
-                0)
+            train_score, test_score, prediction, prob, confusion,\
+                fitted_clf = result.pop(0)
+            clfs.append(fitted_clf)
             scores.loc[n, (clf_name, 'train')] = train_score
             scores.loc[n, (clf_name, 'test')] = test_score
             temp += confusion
@@ -118,6 +121,26 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
         confusions[clf_name] = temp
         predictions[clf_name] = temp_pred
         test_prob[clf_name] = temp_prob
+
+    # Voting
+    fitted_clfs = pd.DataFrame(fitted_clfs)
+    scores['Voting', 'train'] = np.zeros((n_folds, ))
+    scores['Voting', 'test'] = np.zeros((n_folds, ))
+    temp = np.zeros((n_class, n_class))
+    temp_pred = np.zeros((data.shape[0], ))
+    for n, (train, test) in enumerate(kf):
+        clf = MyVoter(fitted_clfs.loc[n].values)
+        X, y = data[train, :], label[train]
+        scores.loc[n, ('Voting', 'train')] = _scorer(clf, X, y)
+        X, y = data[test, :], label[test]
+        scores.loc[n, ('Voting', 'test')] = _scorer(clf, X, y)
+        temp_pred[test] = clf.predict(X)
+        temp += confusion_matrix(y, temp_pred[test])
+
+    confusions['Voting'] = temp
+    predictions['Voting'] = temp_pred
+    test_prob['Voting'] = temp_pred
+    ######
 
     # saving confusion matrices
     if save:
@@ -137,9 +160,11 @@ def _scorer(clf, X, y):
             ypred = clf.predict_proba(X)[:, 1]
         elif hasattr(clf, 'decision_function'):
             ypred = clf.decision_function(X)
+        else:
+            ypred = clf.predict(X)
         score = roc_auc_score(y, ypred)
     else:
-        score = f1_score(y, clf.predict(X), 'weighted')
+        score = f1_score(y, clf.predict(X))
     return score
 
 
@@ -183,7 +208,10 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
         clf_name, n_fold, train_score, test_score, duration))
-    return (train_score, test_score, ypred, yprob, confusion)
+    return (train_score, test_score,
+            ypred, yprob,  # predictions and probabilities
+            confusion,  # confusion matrix
+            clf)  # fitted clf
 
 
 def plot(scores, file_name='temp', min_val=None):
@@ -256,7 +284,6 @@ if __name__ == '__main__':
     logger.info(
         'Starting classification with {} workers'.format(args.concurrency))
 
-    scores, confusions, predictions, test_prob = \
-        poly(data, label, n_folds=5, project_name=args.name,
-             concurrency=int(args.concurrency))
+    scores, confusions, predictions, test_prob = poly(data, label, n_folds=5, project_name=args.name,
+                                                      concurrency=int(args.concurrency))
     plot(scores, os.path.join('poly_' + args.name, args.name))
