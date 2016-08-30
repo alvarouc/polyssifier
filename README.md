@@ -6,12 +6,29 @@ Polyssifier
 
 Polyssifier runs a multitude of machine learning classifiers on your data. It reports scores, confusion matrices, predictions, and a plot of the scores ranked by classifier performance.
 
+## Installation
+```bash
+pip install polyssifier
+```
+
+## Usage
+```python
+from polyssifier import poly, plot
+
+data = np.load("/path/to/data.npy")
+label = np.load("/path/to/labels.npy")
+scores, confusions, predictions, probs = poly(data,label, n_folds=8, exclude=['Multilayer Perceptron'], verbose=1, concurrency=4)
+plot(scores)
+```
+
+
 ### Requirements
  - Python 3.3 or higher.
  - Keras
  - Sklearn
  - Numpy
  - Pandas
+ - MLP
 
 #### Optional
  - Nvidia GPU
