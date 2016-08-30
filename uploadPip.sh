@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # First change manually the version
-version=$(python setup.py --version)
+version="$(python setup.py --version)"
 echo "Current version $version"
 read -p "Enter new version:"  newVersion
 sed -i "s/$version/$newVersion/g" setup.py
