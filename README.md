@@ -11,13 +11,13 @@ Polyssifier runs a multitude of machine learning classifiers on your data. It re
 pip install polyssifier
 ```
 
-## Usage
+## How to use
 ```python
 from polyssifier import poly, plot
 
 data = np.load("/path/to/data.npy")
 label = np.load("/path/to/labels.npy")
-scores, confusions, predictions, probs = poly(data,label, n_folds=8, exclude=['Multilayer Perceptron'], verbose=1, concurrency=4)
+scores, confusions, predictions, probs = poly(data,label, n_folds=8, verbose=1, concurrency=4)
 plot(scores)
 ```
 
