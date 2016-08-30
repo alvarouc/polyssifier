@@ -50,10 +50,7 @@ plot(scores)
 
 Not compatible with Python 2 for the moment. We need a replacement for the "starmap" method in multiprocessing 
 
-Example: on sample/example.ipynb
-Example:
-
-https://github.com/MRN-Code/polyssifier/blob/master/sample/example.ipynb
+Example: on [sample/example.ipynb](sample/example.ipynb)
 
 It includes the following classifiers:
 
