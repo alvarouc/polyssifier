@@ -12,7 +12,8 @@ NSAMPLES = 500
 def test_run():
     data, label = make_moons(n_samples=NSAMPLES, noise=0.4)
     scores, confusions, predictions, test_proba = \
-        poly(data, label, n_folds=2, verbose=1, feature_selection=False,
+        poly(data, label, n_folds=2, verbose=1,
+             feature_selection=False,
              exclude=['Multilayer Perceptron'],
              save=False, project_name='test1')
     # data, label = make_classification(n_samples=NSAMPLES, n_features=20,

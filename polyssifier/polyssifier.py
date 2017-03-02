@@ -78,7 +78,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
     skf = StratifiedKFold(n_splits=n_folds, random_state=1988)
     skf.get_n_splits(np.zeros(data.shape[0]), label)
-    kf = list(sfk.split(np.zeros(data.shape[0],label)))
+    kf = list(skf.split(np.zeros(data.shape[0]),label))
 
     # Parallel processing of tasks
     manager = Manager()
