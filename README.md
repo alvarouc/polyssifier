@@ -4,7 +4,7 @@
 Polyssifier
 ===========
 
-Polyssifier runs a multitude of machine learning classifiers on your data. It reports scores, confusion matrices, predictions, and a plot of the scores ranked by classifier performance.
+Polyssifier runs a multitude of machine learning classifiers on your data, reports scores, confusion matrices, predictions, and plots the scores ranked by classifier performance.
 
 ## Installation
 ```bash
@@ -20,7 +20,6 @@ label = np.load("/path/to/labels.npy")
 scores, confusions, predictions, probs = poly(data,label, n_folds=8, verbose=1, concurrency=4)
 plot(scores)
 ```
-
 
 ### Requirements
  - Python 3.3 or higher.
