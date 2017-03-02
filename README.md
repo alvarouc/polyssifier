@@ -21,6 +21,10 @@ scores, confusions, predictions, probs = poly(data,label, n_folds=8, verbose=1, 
 plot(scores)
 ```
 
+```bash
+poly data.npy label.npy --concurrency 10
+```
+
 ### Requirements
  - Python 3.3 or higher.
  - Keras

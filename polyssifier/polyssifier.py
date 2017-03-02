@@ -264,7 +264,7 @@ def make_argument_parser():
     parser.add_argument('--name', default='default',
                         help='Experiment name')
     parser.add_argument('--concurrency', default='1',
-                        help='Experiment name')
+                        help='Number of allowed concurrent processes')
 
     return parser
 
