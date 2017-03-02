@@ -9,7 +9,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from sklearn.cross_validation import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score
 from sklearn.externals import joblib
@@ -20,7 +20,7 @@ from .poly_utils import build_classifiers, MyVoter
 
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
@@ -46,8 +46,8 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     predictions  = Cross validated predicitons for each classifier
     '''
 
-    assert label.shape[0] == data.shape[
-        0], "Label dimesions do not match data number of rows"
+    assert label.shape[0] == data.shape[0],\
+        "Label dimesions do not match data number of rows"
     _le = LabelEncoder()
     _le.fit(label)
     label = _le.transform(label)
@@ -59,7 +59,8 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     if not verbose:
         logger.setLevel(logging.ERROR)
     logger.info('Building classifiers ...')
-    classifiers = build_classifiers(exclude, scale, feature_selection,
+    classifiers = build_classifiers(exclude, scale,
+                                    feature_selection,
                                     data.shape[1])
 
     scores = pd.DataFrame(columns=pd.MultiIndex.from_product(
@@ -75,7 +76,9 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
     logger.info('Initialization, done.')
 
-    kf = list(StratifiedKFold(label, n_folds=n_folds, random_state=1988))
+    skf = StratifiedKFold(n_splits=n_folds, random_state=1988)
+    skf.get_n_splits(np.zeros(data.shape[0]), label)
+    kf = list(sfk.split(np.zeros(data.shape[0],label)))
 
     # Parallel processing of tasks
     manager = Manager()
