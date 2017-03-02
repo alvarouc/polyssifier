@@ -25,6 +25,7 @@ def test_run():
                                       random_state=None)
     scores, confusions, predictions, test_proba = \
         poly(data, label, n_folds=3, verbose=1, feature_selection=False,
+             exclude=['Multilayer Perceptron'],
              save=False, project_name='test2')
 
     scores, confusions, predictions, test_proba = \
