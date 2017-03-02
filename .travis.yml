@@ -10,9 +10,11 @@ apt: true
 addons:
   apt:
     packages:
+    - build-essential
     - libatlas-dev
     - libatlas-base-dev
     - liblapack-dev
+    - libstdc++6
     - gfortran
 python:
 #  - "2.7"
