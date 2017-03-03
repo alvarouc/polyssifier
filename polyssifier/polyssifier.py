@@ -173,8 +173,16 @@ def _scorer(clf, X, y):
 
 def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     '''
-    Run fit method from val with X and y
-    clf_name is a string with the classifier name
+    args: shared dictionary that contains 
+        X: all data 
+        y: all labels
+        kf: list of train and test indexes for each fold
+    clf_name: name of the classifier model
+    val: dictionary with
+        clf: sklearn compatible classifier 
+        parameters: dictionary with parameters, can be used for grid search
+    n_fold: number of folds
+    project_name: string with the project folder name to save model
     '''
     train, test = args[0]['kf'][n_fold]
     X = args[0]['X'][train, :]
