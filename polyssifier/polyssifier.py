@@ -198,7 +198,7 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
         clf = deepcopy(val['clf'])
         if val['parameters']:
             clf = GridSearchCV(clf, val['parameters'], cv=3,
-                               scoring=_scorer)
+                               scoring=_scorer, n_jobs=-1)
         clf.fit(X, y)
         if save:
             joblib.dump(clf, file_name)
