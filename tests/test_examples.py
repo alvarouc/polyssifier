@@ -6,13 +6,13 @@ from sklearn.datasets import make_moons, make_classification
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-NSAMPLES = 500
+NSAMPLES = 1000
 
 @pytest.mark.medium
 def test_run():
     data, label = make_moons(n_samples=NSAMPLES, noise=0.4)
     scores, confusions, predictions, test_proba = \
-        poly(data, label, n_folds=2, verbose=1,
+        poly(data, label, n_folds=5, verbose=1,
              feature_selection=False,
              exclude=['Multilayer Perceptron'],
              save=False, project_name='test1')
