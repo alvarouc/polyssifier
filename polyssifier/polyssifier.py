@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from copy import deepcopy
 from sklearn.model_selection import StratifiedKFold
-from sklearn.grid_search import GridSearchCV
+from dklearn.model_selection import DaskGridSearchCV as GridSearchCV
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score
 from sklearn.externals import joblib
 import time
@@ -197,7 +197,7 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
         logger.info('Training {} {}'.format(clf_name, n_fold))
         clf = deepcopy(val['clf'])
         if val['parameters']:
-            clf = GridSearchCV(clf, val['parameters'], n_jobs=1, cv=3,
+            clf = GridSearchCV(clf, val['parameters'], cv=3,
                                scoring=_scorer)
         clf.fit(X, y)
         if save:
