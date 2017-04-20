@@ -1,0 +1,6 @@
+scipy
+numpy
+pandas
+matplotlib
+sklearn
+dask_searchcv 
