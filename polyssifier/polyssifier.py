@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from copy import deepcopy
 from sklearn.model_selection import StratifiedKFold
-from dklearn.model_selection import DaskGridSearchCV as GridSearchCV
+from dask_searchcv import GridSearchCV
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score
 from sklearn.externals import joblib
 import time
