@@ -1,6 +1,5 @@
 import pytest
 import warnings
-
 from polyssifier import poly, plot
 from sklearn.datasets import make_moons, make_classification
 
