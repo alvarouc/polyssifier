@@ -238,7 +238,7 @@ def plot(scores, file_name='temp', min_val=None):
     nc = df.shape[0]
 
     ax1 = data.plot(kind='bar', yerr=error, colormap='Blues',
-                    figsize=(nc * 2, 5), alpha=0.7)
+                    figsize=(nc * 2, 5), alpha=1)
     ax1.set_xticklabels([])
     ax1.set_xlabel('')
     ax1.yaxis.grid(True)
@@ -255,6 +255,7 @@ def plot(scores, file_name='temp', min_val=None):
                  rotation='90', color='black', fontsize=15)
     ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
                ncol=2, fancybox=True, shadow=True)
+    plt.tight_layout()
     plt.savefig(file_name + '.pdf')
     plt.savefig(file_name + '.svg', transparent=False)
     return (ax1)
