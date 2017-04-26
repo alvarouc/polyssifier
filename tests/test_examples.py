@@ -33,4 +33,4 @@ def test_run():
     #                   'Voting'],
     #          feature_selection=True,
     #          project_name='test3')
-    # plot(scores)
+    plot(scores)

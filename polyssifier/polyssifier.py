@@ -239,6 +239,7 @@ def plot(scores, file_name='temp', min_val=None):
 
     ax1 = data.plot(kind='bar', yerr=error, colormap='Blues',
                     figsize=(nc * 2, 5), alpha=1)
+    ax1.set_axis_bgcolor((.7, .7, .7))
     ax1.set_xticklabels([])
     ax1.set_xlabel('')
     ax1.yaxis.grid(True)
