@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
     name='polyssifier',
     packages=['polyssifier'],
-    version='0.1.9.1',
+    version='0.2.0',
     install_requires=[
         'mlp',
         'pandas',
@@ -12,7 +12,7 @@ setup(
     author='Alvaro Ulloa',
     author_email='alvarouc@gmail.com',
     url='https://github.com/alvarouc/polyssifier',
-    download_url='https://github.com/alvarouc/polyssifier/tarball/0.1.9.1',
+    download_url='https://github.com/alvarouc/polyssifier/tarball/0.2.0',
     keywords=['classification', 'machine learning', 'data science'],
     classifiers=[],
 )
