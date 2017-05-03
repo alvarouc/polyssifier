@@ -78,7 +78,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
     skf = StratifiedKFold(n_splits=n_folds, random_state=1988)
     skf.get_n_splits(np.zeros(data.shape[0]), label)
-    kf = list(skf.split(np.zeros(data.shape[0]),label))
+    kf = list(skf.split(np.zeros(data.shape[0]), label))
 
     # Parallel processing of tasks
     manager = Manager()
@@ -173,8 +173,8 @@ def _scorer(clf, X, y):
 
 def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     '''
-    args: shared dictionary that contains 
-        X: all data  
+    args: shared dictionary that contains
+        X: all data
         y: all labels
         kf: list of train and test indexes for each fold
     clf_name: name of the classifier model
@@ -300,4 +300,3 @@ if __name__ == '__main__':
     scores, confusions, predictions, test_prob = poly(data, label, n_folds=5, project_name=args.name,
                                                       concurrency=int(args.concurrency))
     plot(scores, os.path.join('poly_' + args.name, args.name))
-
