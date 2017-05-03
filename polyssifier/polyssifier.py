@@ -174,7 +174,7 @@ def _scorer(clf, X, y):
 def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     '''
     args: shared dictionary that contains 
-        X: all data 
+        X: all data  
         y: all labels
         kf: list of train and test indexes for each fold
     clf_name: name of the classifier model
@@ -237,16 +237,18 @@ def plot(scores, file_name='temp', min_val=None):
 
     nc = df.shape[0]
 
-    ax1 = data.plot(kind='bar', yerr=error, colormap='Blues',
+    ax1 = data.plot(kind='bar', yerr=error, colormap='coolwarm',
                     figsize=(nc * 2, 5), alpha=1)
-    ax1.set_axis_bgcolor((.7, .7, .7))
+    #ax1.set_axis_bgcolor((.7, .7, .7))
+    ax1.legend(loc='lower center', bbox_to_anchor=(0.5, 1.05),
+               ncol=2, fancybox=True, shadow=True)
+
     ax1.set_xticklabels([])
     ax1.set_xlabel('')
     ax1.yaxis.grid(True)
 
     temp = np.array(data)
     ylim = np.max(temp.min() - .1, 0) if min_val is None else min_val
-
     ax1.set_ylim(ylim, 1)
     for n, rect in enumerate(ax1.patches):
         if n >= nc:
@@ -254,8 +256,6 @@ def plot(scores, file_name='temp', min_val=None):
         ax1.text(rect.get_x() - rect.get_width() / 2., ylim + (1 - ylim) * .01,
                  data.index[n], ha='center', va='bottom',
                  rotation='90', color='black', fontsize=15)
-    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
-               ncol=2, fancybox=True, shadow=True)
     plt.tight_layout()
     plt.savefig(file_name + '.pdf')
     plt.savefig(file_name + '.svg', transparent=False)
