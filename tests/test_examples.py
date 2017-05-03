@@ -6,7 +6,7 @@ from sklearn.datasets import make_moons, make_classification
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-NSAMPLES = 1000
+NSAMPLES = 100
 
 @pytest.mark.medium
 def test_run():
@@ -20,7 +20,7 @@ def test_run():
                                       random_state=1988)
     scores, confusions, predictions, test_proba = \
         poly(data, label, n_folds=5, verbose=1, feature_selection=False,
-             exclude=['Multilayer Perceptron'],
+             #exclude=['Multilayer Perceptron'],
              save=False, project_name='test2')
 
     # scores, confusions, predictions, test_proba = \

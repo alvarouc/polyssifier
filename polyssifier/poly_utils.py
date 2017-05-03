@@ -4,6 +4,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neural_network import MLPClassifier as MLP
 import collections
 import numpy as np
 from sklearn.feature_selection import SelectKBest, f_regression
@@ -32,11 +33,10 @@ def build_classifiers(exclude, scale, feature_selection, nCols):
     classifiers = collections.OrderedDict()
 
     if 'Multilayer Perceptron' not in exclude:
-        from mlp import MLP
         classifiers['Multilayer Perceptron'] = {
-            'clf': MLP(verbose=0, patience=100, learning_rate=0.1,
-                       n_hidden=50, n_deep=2, l1_norm=0.001, drop=0.2),
-            'parameters': {}}
+            'clf': MLP(),
+            'parameters': {'hidden_layer_sizes': [(100, 50), (50, 25)]}
+        }
 
     if 'Nearest Neighbors' not in exclude:
         classifiers['Nearest Neighbors'] = {
