@@ -1,1 +1,1 @@
-from .polyssifier import poly, plot
+from .polyssifier import poly

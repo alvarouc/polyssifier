@@ -35,7 +35,8 @@ def build_classifiers(exclude, scale, feature_selection, nCols):
     if 'Multilayer Perceptron' not in exclude:
         classifiers['Multilayer Perceptron'] = {
             'clf': MLP(),
-            'parameters': {'hidden_layer_sizes': [(100, 50), (50, 25)]}
+            'parameters': {'hidden_layer_sizes': [(100, 50), (50, 25)],
+                           'max_iter': [500]}
         }
 
     if 'Nearest Neighbors' not in exclude:

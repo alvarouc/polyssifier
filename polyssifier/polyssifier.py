@@ -16,29 +16,12 @@ import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
 from .poly_utils import build_classifiers, MyVoter
+from .report import Report
 
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-
-class Report(object):
-    """Report class that contains results from runnning polyssifier
-    """
-
-    def __init__(self, scores, confusions, predictions,
-                 test_prob, coefficients):
-        self.scores = scores
-        self.confusions = confusions
-        self.predicitons = predictions
-        self.test_proba = test_prob
-        self.coefficients = coefficients
-
-    def plot(self, path='temp'):
-        plot(self.scores, path)
-
-    def plot_features(self, ntop=10, path='temp'):
-        plot_features(self.coefficients, ntop, path)
 
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
@@ -245,7 +228,10 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     if hasattr(clf, 'steps'):
         temp = clf.steps[-1][1]
     elif hasattr(clf, 'best_estimator_'):
-        temp = clf.best_estimator_.steps[-1][1]
+        if hasattr(clf.best_estimator_, 'steps'):
+            temp = clf.best_estimator_.steps[-1][1]
+        else:
+            temp = clf.best_estimator_
     try:
         if hasattr(temp, 'coef_'):
             coefficients = temp.coef_
@@ -261,61 +247,6 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
             confusion,  # confusion matrix
             coefficients,  # Coefficients for feature ranking
             clf)  # fitted clf
-
-
-def plot_features(coefs, ntop=10, file_name='temp'):
-    fs = {key: np.array(val).squeeze()
-          for key, val in coefs.items()
-          if val[0] is not None}
-
-    for key, val in fs.items():
-        plt.figure()
-        mean = np.mean(val, axis=0)
-        std = np.std(val, axis=0)
-        idx = np.argsort(np.abs(mean))[:ntop][::-1]
-        plt.bar(range(ntop), mean[idx], yerr=std[idx],
-                tick_label=[str(x) for x in idx])
-        plt.title('{}: Feature importance'.format(key))
-        plt.xlabel('Feature index')
-        plt.tight_layout()
-        plt.savefig(file_name + '_' + key + '_feature_ranking.png')
-
-
-def plot(scores, file_name='temp', min_val=None):
-
-    df = scores.apply(np.mean).unstack().join(
-        scores.apply(np.std).unstack(), lsuffix='_mean', rsuffix='_std')
-    df.columns = ['Test score', 'Train score', 'Test std', 'Train std']
-    df.sort_values('Test score', ascending=False, inplace=True)
-    error = df[['Train std', 'Test std']]
-    error.columns = ['Train score', 'Test score']
-    data = df[['Train score', 'Test score']]
-
-    nc = df.shape[0]
-
-    ax1 = data.plot(kind='bar', yerr=error, colormap='coolwarm',
-                    figsize=(nc * 2, 5), alpha=1)
-    #ax1.set_axis_bgcolor((.7, .7, .7))
-    ax1.legend(loc='lower center', bbox_to_anchor=(0.5, 1.05),
-               ncol=2, fancybox=True, shadow=True)
-
-    ax1.set_xticklabels([])
-    ax1.set_xlabel('')
-    ax1.yaxis.grid(True)
-
-    temp = np.array(data)
-    ylim = np.max(temp.min() - .1, 0) if min_val is None else min_val
-    ax1.set_ylim(ylim, 1)
-    for n, rect in enumerate(ax1.patches):
-        if n >= nc:
-            break
-        ax1.text(rect.get_x() - rect.get_width() / 2., ylim + (1 - ylim) * .01,
-                 data.index[n], ha='center', va='bottom',
-                 rotation='90', color='black', fontsize=15)
-    plt.tight_layout()
-    plt.savefig(file_name + '.pdf')
-    plt.savefig(file_name + '.svg', transparent=False)
-    return (ax1)
 
 
 def make_argument_parser():

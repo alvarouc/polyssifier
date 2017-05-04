@@ -7,13 +7,13 @@ from sklearn.datasets import make_moons, make_classification
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 NSAMPLES = 1000
-data, label = make_classification(n_samples=NSAMPLES, n_features=100,
-                                  n_informative=50, n_redundant=50,
+data, label = make_classification(n_samples=NSAMPLES, n_features=50,
+                                  n_informative=10, n_redundant=10,
                                   n_repeated=0, n_classes=2,
                                   n_clusters_per_class=2, weights=None,
-                                  flip_y=0.01, class_sep=1.0,
+                                  flip_y=0.01, class_sep=2.0,
                                   hypercube=True, shift=0.0,
-                                  scale=1.0, shuffle=True,
+                                  scale=1.0, shuffle=False,
                                   random_state=1988)
 
 
