@@ -9,8 +9,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from sklearn.model_selection import StratifiedKFold
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score
 from sklearn.externals import joblib
 import time
@@ -21,6 +20,25 @@ from .poly_utils import build_classifiers, MyVoter
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+class Report(object):
+    """Report class that contains results from runnning polyssifier
+    """
+
+    def __init__(self, scores, confusions, predictions,
+                 test_prob, coefficients):
+        self.scores = scores
+        self.confusions = confusions
+        self.predicitons = predictions
+        self.test_proba = test_prob
+        self.coefficients = coefficients
+
+    def plot(self, path='temp'):
+        plot(self.scores, path)
+
+    def plot_features(self, ntop=10, path='temp'):
+        plot_features(self.coefficients, ntop, path)
 
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
@@ -71,6 +89,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     test_prob = pd.DataFrame(columns=classifiers.keys(),
                              index=range(data.shape[0]))
     confusions = {}
+    coefficients = {}
     # !fitted_clfs =
     # pd.DataFrame(columns=classifiers.keys(), index = range(n_folds))
 
@@ -107,19 +126,21 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
     # Gather results
     for clf_name in classifiers:
+        coefficients[clf_name] = []
         temp = np.zeros((n_class, n_class))
         temp_pred = np.zeros((data.shape[0], ))
         temp_prob = np.zeros((data.shape[0], ))
         clfs = fitted_clfs[clf_name]
         for n in range(n_folds):
             train_score, test_score, prediction, prob, confusion,\
-                fitted_clf = result.pop(0)
+                coefs, fitted_clf = result.pop(0)
             clfs.append(fitted_clf)
             scores.loc[n, (clf_name, 'train')] = train_score
             scores.loc[n, (clf_name, 'test')] = test_score
             temp += confusion
             temp_prob[kf[n][1]] = prob
             temp_pred[kf[n][1]] = _le.inverse_transform(prediction)
+            coefficients[clf_name].append(coefs)
 
         confusions[clf_name] = temp
         predictions[clf_name] = temp_pred
@@ -153,7 +174,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     if verbose:
         print(scores.astype('float').describe().transpose()
               [['mean', 'std', 'min', 'max']])
-    return scores, confusions, predictions, test_prob
+    return Report(scores, confusions, predictions, test_prob, coefficients)
 
 
 def _scorer(clf, X, y):
@@ -219,10 +240,45 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
         clf_name, n_fold, train_score, test_score, duration))
+
+    # Feature importance
+    if hasattr(clf, 'steps'):
+        temp = clf.steps[-1][1]
+    elif hasattr(clf, 'best_estimator_'):
+        temp = clf.best_estimator_.steps[-1][1]
+    try:
+        if hasattr(temp, 'coef_'):
+            coefficients = temp.coef_
+        elif hasattr(temp, 'feature_importances_'):
+            coefficients = temp.feature_importances_
+        else:
+            coefficients = None
+    except:
+        coefficients = None
+
     return (train_score, test_score,
             ypred, yprob,  # predictions and probabilities
             confusion,  # confusion matrix
+            coefficients,  # Coefficients for feature ranking
             clf)  # fitted clf
+
+
+def plot_features(coefs, ntop=10, file_name='temp'):
+    fs = {key: np.array(val).squeeze()
+          for key, val in coefs.items()
+          if val[0] is not None}
+
+    for key, val in fs.items():
+        plt.figure()
+        mean = np.mean(val, axis=0)
+        std = np.std(val, axis=0)
+        idx = np.argsort(np.abs(mean))[:ntop][::-1]
+        plt.bar(range(ntop), mean[idx], yerr=std[idx],
+                tick_label=[str(x) for x in idx])
+        plt.title('{}: Feature importance'.format(key))
+        plt.xlabel('Feature index')
+        plt.tight_layout()
+        plt.savefig(file_name + '_' + key + '_feature_ranking.png')
 
 
 def plot(scores, file_name='temp', min_val=None):
@@ -281,6 +337,7 @@ def make_argument_parser():
 
     return parser
 
+
 if __name__ == '__main__':
 
     parser = make_argument_parser()
@@ -297,6 +354,7 @@ if __name__ == '__main__':
     logger.info(
         'Starting classification with {} workers'.format(args.concurrency))
 
-    scores, confusions, predictions, test_prob = poly(data, label, n_folds=5, project_name=args.name,
-                                                      concurrency=int(args.concurrency))
-    plot(scores, os.path.join('poly_' + args.name, args.name))
+    report = poly(data, label, n_folds=5, project_name=args.name,
+                  concurrency=int(args.concurrency))
+    report.plot(os.path.join('poly_' + args.name, args.name))
+    report.plot_features(os.path.join('poly_' + args.name, args.name))
