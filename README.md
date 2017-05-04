@@ -13,12 +13,15 @@ pip install polyssifier
 
 ## How to use
 ```python
-from polyssifier import poly, plot
-
+from polyssifier import poly
+# Load data
 data = np.load("/path/to/data.npy")
 label = np.load("/path/to/labels.npy")
-scores, confusions, predictions, probs = poly(data,label, n_folds=8, verbose=1, concurrency=4)
-plot(scores)
+# Run analysis
+report = poly(data,label, n_folds=8, verbose=1, concurrency=4)
+# Plot results
+report.plot_scores()
+report.plot_features(ntop=10)
 ```
 
 ```bash
@@ -38,8 +41,9 @@ poly data.npy label.npy --concurrency 10
  - CUDA
 
 ### Features
- - Cross validated results.
-   - Report with f1 score (scoring='f1') or ROC (scoring='auc') 
+ - Cross validated scores.
+   - Report with f1 score (scoring='f1') or ROC (scoring='auc')
+ - Feature ranking for compatible models (Logistic Regression, Linear SVM, Random Forest)
  - Parallel processing. 
    - Control the number of threads with 'concurrency'.
    - We recommend setting concurrency to half the number of Cores in your system.
@@ -69,8 +73,8 @@ It includes the following classifiers:
 
 You can exclude some of this classifiers by providing a list of names as follows:
 ```python
-from polyssifier import poly, plot
+from polyssifier import poly
 
-scores, confusions, predictions = poly(data,label, n_folds=8, exclude=['Multilayer Perceptron'], verbose=1, concurrency=4)
-plot(scores)
+report = poly(data,label, n_folds=8,
+              exclude=['Multilayer Perceptron'])
 ```

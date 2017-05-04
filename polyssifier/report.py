@@ -17,8 +17,8 @@ class Report(object):
         self.test_proba = test_prob
         self.coefficients = coefficients
 
-    def plot(self, path='temp'):
-        plot(self.scores, path)
+    def plot_scores(self, path='temp'):
+        plot_scores(self.scores, path)
 
     def plot_features(self, ntop=10, path='temp',
                       coef_names=None):
@@ -26,7 +26,6 @@ class Report(object):
                       coef_names=None,
                       ntop=ntop, file_name=path)
 
-import pdb
 def plot_features(coefs, coef_names=None,
                   ntop=10, file_name='temp'):
     fs = {key: np.array(val).squeeze()
@@ -74,7 +73,7 @@ def plot_features(coefs, coef_names=None,
 
 
 
-def plot(scores, file_name='temp', min_val=None):
+def plot_scores(scores, file_name='temp', min_val=None):
 
     df = scores.apply(np.mean).unstack().join(
         scores.apply(np.std).unstack(), lsuffix='_mean', rsuffix='_std')

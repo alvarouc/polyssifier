@@ -287,5 +287,5 @@ if __name__ == '__main__':
 
     report = poly(data, label, n_folds=5, project_name=args.name,
                   concurrency=int(args.concurrency))
-    report.plot(os.path.join('poly_' + args.name, args.name))
+    report.plot_scores(os.path.join('poly_' + args.name, args.name))
     report.plot_features(os.path.join('poly_' + args.name, args.name))
