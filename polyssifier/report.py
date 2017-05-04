@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from utils.logger import make_logger
+from scipy.stats import rankdata
+from functools import partial
 
 log = make_logger('Report')
 
@@ -26,6 +28,7 @@ class Report(object):
                       coef_names=None,
                       ntop=ntop, file_name=path)
 
+
 def plot_features(coefs, coef_names=None,
                   ntop=10, file_name='temp'):
     fs = {key: np.array(val).squeeze()
@@ -34,7 +37,7 @@ def plot_features(coefs, coef_names=None,
 
     n_coefs = fs[list(fs.keys())[0]].shape[1]
     if coef_names is None:
-        coef_names = np.array([str(c) for c in range(n_coefs)])
+        coef_names = np.array([str(c+1) for c in range(n_coefs)])
 
     for key, val in fs.items():
         figure_path = file_name + '_' + key + '_feature_ranking.png'
@@ -44,26 +47,26 @@ def plot_features(coefs, coef_names=None,
         mean = np.mean(val, axis=0)
         std = np.std(val, axis=0)
         idx = np.argsort(np.abs(mean))
-        topm = mean[idx[-ntop:]][::-1]
-        tops = std[idx[-ntop:]][::-1]
+        topm = mean[idx][-ntop:][::-1]
+        tops = std[idx][-ntop:][::-1]
         plt.subplot(211)
         plt.bar(range(ntop), topm, yerr=tops,
-                tick_label=coef_names[idx[-ntop:]])
+                tick_label=coef_names[idx][-ntop:][::-1])
         plt.title('{}: Feature importance'.format(key))
         plt.xlabel('Feature index')
 
         # plotting coefficients rank
-        rank = np.apply_along_axis(np.argsort, axis=1,
-                                   arr=np.abs(val)) + 1
+        rank = n_coefs - np.apply_along_axis(
+            partial(rankdata, method='max'), axis=1, arr=np.abs(val))
         rank_mean = rank.mean(axis=0)
         rank_std = rank.std(axis=0)
         idx = np.argsort(rank_mean)
-        topm = rank_mean[idx[:ntop]]
-        tops = rank_std[idx[:ntop]]
+        topm = rank_mean[idx][:ntop]
+        tops = rank_std[idx][:ntop]
 
         plt.subplot(212)
         plt.bar(range(ntop), topm, yerr=tops,
-                tick_label=coef_names[idx[-ntop:]])
+                tick_label=coef_names[idx][:ntop])
         plt.title('{}: Feature rank'.format(key))
         plt.xlabel('Feature index')
         plt.grid(axis='y')

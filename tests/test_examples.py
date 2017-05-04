@@ -6,7 +6,7 @@ from sklearn.datasets import make_moons, make_classification
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-NSAMPLES = 1000
+NSAMPLES = 100
 data, label = make_classification(n_samples=NSAMPLES, n_features=50,
                                   n_informative=10, n_redundant=10,
                                   n_repeated=0, n_classes=2,
