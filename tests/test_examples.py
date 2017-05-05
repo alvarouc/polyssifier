@@ -1,8 +1,8 @@
 import pytest
 import warnings
 
-from polyssifier import poly, plot
-from sklearn.datasets import make_moons, make_classification
+from polyssifier import poly
+from sklearn.datasets import make_classification
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
