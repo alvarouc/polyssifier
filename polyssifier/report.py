@@ -15,7 +15,7 @@ class Report(object):
                  test_prob, coefficients):
         self.scores = scores
         self.confusions = confusions
-        self.predicitons = predictions
+        self.predictions = predictions
         self.test_proba = test_prob
         self.coefficients = coefficients
 
