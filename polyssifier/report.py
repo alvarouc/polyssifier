@@ -74,8 +74,6 @@ def plot_features(coefs, coef_names=None,
         plt.savefig(figure_path)
 
 
-
-
 def plot_scores(scores, file_name='temp', min_val=None):
 
     df = scores.apply(np.mean).unstack().join(
