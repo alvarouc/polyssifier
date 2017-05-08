@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.logger import make_logger
+from .logger import make_logger
 from scipy.stats import rankdata
 from functools import partial
 
