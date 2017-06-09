@@ -16,8 +16,11 @@ from sklearn.linear_model import LinearRegression
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
+from sklearn import datasets
+
+#These are commented out for now
 #from .poly_utils import build_classifiers, MyVoter
-from .report import Report
+#from .report import Report
 
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
@@ -25,6 +28,13 @@ logger.setLevel(logging.INFO)
 
 def main():
     print("testing")
+    iris = datasets.load_iris()
+    X = iris.data
+    Y = iris.target
+    print(X)
+    print(Y)
+    print(linear_regress(X, Y))
+    print(multivariate_regress(X, Y, 5))
 
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
@@ -55,11 +65,39 @@ def linear_regress(independent_variables, predictor):
     '''
     :param independent_variables: the data (numpy matrix) for which we will use to predict the predictor
     :param predictor: the data (vector) which we want to predict
-    :return: the cross validation score for the linear regression model
+    :return: the mean cross validation score given 10 partitions of the dataset
+    '''
+    regr = LinearRegression()
+    return np.mean(cross_val_score(regr, independent_variables, predictor, cv=10))
+
+def multivariate_regress(independent_variables, predictor, degree):
+    '''
+    :param independent_variables: the data (numpy matrix) for which we will use to predict the predictor
+    :param predictor: the data (vector) which we want to predict
+    :param degree: how many instances of each independent_variable type will be replicated
+    :return: the mean cross validation score given 10 partitions of the dataset
     '''
 
-    regr = LinearRegression()
-    return cross_val_score(regr, independent_variables, predictor)
+    tup = independent_variables.shape
+    width = tup[0]
+    height = tup[1]
+    copy = np.copy(independent_variables)
+
+    for i in range(degree - 1):
+        to_concat = np.zeros((width, height))
+        to_concat.flags.writeable = True
+        for j in range(width):
+            for k in range(height):
+                to_multiply = 1
+                for l in range(i + 1):
+                    to_concat = to_multiply * independent_variables[j][k]
+                print(j)
+                print(k)
+                to_concat[j][k] = to_multiply
+        np.concatenate(copy, to_concat)
+
+    return linear_regress(copy, predictor, degree)
+
 
 if __name__ == "__main__":
     main()
