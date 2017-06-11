@@ -54,6 +54,8 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     label = _le.transform(label)
     n_class = len(np.unique(label))
 
+    #If the user wishes to save the intermediate steps and there is not already a polyssifier models directory then
+    #this statement creates one.
     if save and not os.path.exists('poly_{}/models'.format(project_name)):
         os.makedirs('poly_{}/models'.format(project_name))
 
