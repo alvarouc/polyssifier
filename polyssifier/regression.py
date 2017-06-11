@@ -26,16 +26,16 @@ sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+#Currently, this main method is used for testing
 def main():
     print("testing")
+    #This sets the returning arary to not print in scientific notation
+    np.set_printoptions(suppress=True)
     iris = datasets.load_iris()
     X = iris.data
     Y = iris.target
     print(X)
-    print(Y)
-    print(linear_regress(X, Y))
     print(multivariate_regress(X, Y, 5))
-
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
          feature_selection=False, save=True, scoring='auc',
@@ -78,26 +78,35 @@ def multivariate_regress(independent_variables, predictor, degree):
     :return: the mean cross validation score given 10 partitions of the dataset
     '''
 
-    tup = independent_variables.shape
-    width = tup[0]
-    height = tup[1]
-    copy = np.copy(independent_variables)
+    #First we make an empty matrix which is the size of what we wish to pass through to linear regress
+    height_of_pass_through = independent_variables.shape[0]
+    width_of_pass_through = degree * independent_variables.shape[1]
+    to_pass_through = np.zeros(shape=(height_of_pass_through, width_of_pass_through))
 
-    for i in range(degree - 1):
-        to_concat = np.zeros((width, height))
-        to_concat.flags.writeable = True
-        for j in range(width):
-            for k in range(height):
-                to_multiply = 1
-                for l in range(i + 1):
-                    to_concat = to_multiply * independent_variables[j][k]
-                print(j)
-                print(k)
-                to_concat[j][k] = to_multiply
-        np.concatenate(copy, to_concat)
+    #These are the width and height of each "exponeneted" matrix
+    height_exponential_matrix = independent_variables.shape[0]
+    width_exponential_matrix = independent_variables.shape[1]
 
-    return linear_regress(copy, predictor, degree)
+    for i in range(degree):
+        to_add_in = exponent_matrix(independent_variables, (i + 1))
+        for j in range(height_exponential_matrix):
+            for k in range(width_exponential_matrix):
+                to_pass_through.itemset((j, k + i * width_exponential_matrix), (to_add_in.item(j, k)))
+    print(to_pass_through)
+    return linear_regress(to_pass_through, predictor)
 
+def exponent_matrix(matrix, exponent):
+    '''
+    :param matrix: the numpy matrix which will be scaled
+    :param exponent: the exponent which each individual entry in the matrix will be raised to
+    :return: a new matrix (the old one is not modified) where each value is the old matrix's value raised
+    to the exponent
+    '''
+    to_return = np.copy(matrix)
+    for i in range(to_return.shape[0]):
+        for j in range(to_return.shape[1]):
+            to_return.itemset((i,j), ((matrix.item(i,j)**exponent)))
+    return to_return
 
 if __name__ == "__main__":
     main()
