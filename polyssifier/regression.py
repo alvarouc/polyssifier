@@ -12,7 +12,8 @@ from copy import deepcopy
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_score
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score
 from sklearn.externals import joblib
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, BayesianRidge, Perceptron
+from sklearn.gaussian_process import GaussianProcessRegressor
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
@@ -34,8 +35,11 @@ def main():
     iris = datasets.load_iris()
     X = iris.data
     Y = iris.target
-    print(X)
-    print(multivariate_regress(X, Y, 5))
+    print(linear_regress(X, Y))
+    print(multivariate_regress(X, Y, 3))
+    print(gaussian_proccess_regression(X, Y))
+    print(bayesian_ridge_regression(X, Y))
+    print(perceptron_regression(X, Y))
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
          feature_selection=False, save=True, scoring='auc',
@@ -92,7 +96,6 @@ def multivariate_regress(independent_variables, predictor, degree):
         for j in range(height_exponential_matrix):
             for k in range(width_exponential_matrix):
                 to_pass_through.itemset((j, k + i * width_exponential_matrix), (to_add_in.item(j, k)))
-    print(to_pass_through)
     return linear_regress(to_pass_through, predictor)
 
 def exponent_matrix(matrix, exponent):
@@ -107,6 +110,20 @@ def exponent_matrix(matrix, exponent):
         for j in range(to_return.shape[1]):
             to_return.itemset((i,j), ((matrix.item(i,j)**exponent)))
     return to_return
+
+def gaussian_proccess_regression(independent_variables, predictor):
+
+    #The kernel used by default in this Gaussian Regression is the radial basis function kernel
+    regr = GaussianProcessRegressor()
+    return np.mean(cross_val_score(regr, independent_variables, predictor, cv=10))
+
+def bayesian_ridge_regression(independent_variables, predictor):
+    regr = BayesianRidge()
+    return np.mean(cross_val_score(regr, independent_variables, predictor, cv=10))
+
+def perceptron_regression(independent_variables, predictor):
+    regr = Perceptron()
+    return np.mean(cross_val_score(regr, independent_variables, predictor, cv=10))
 
 if __name__ == "__main__":
     main()
