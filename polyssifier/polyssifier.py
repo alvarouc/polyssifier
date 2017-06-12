@@ -15,7 +15,7 @@ from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
-from .poly_utils import build_classifiers, MyVoter
+from .poly_utils import build_classifiers, MyVoter, build_regressors
 from .report import Report
 
 sys.setrecursionlimit(10000)
@@ -62,7 +62,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     if not verbose:
         logger.setLevel(logging.ERROR)
     logger.info('Building classifiers ...')
-    classifiers = build_classifiers(exclude, scale,
+    classifiers = build_regressors(exclude, scale,
                                     feature_selection,
                                     data.shape[1])
 
