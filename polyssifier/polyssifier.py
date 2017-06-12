@@ -9,7 +9,7 @@ import os
 import pandas as pd
 from copy import deepcopy
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_score
-from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score
+from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score, mean_squared_error
 from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
@@ -166,9 +166,9 @@ def _scorer(reg, X, y):
     - X = input data matrix
     - y = estimated values
     Output:
-    - Cross validation score given 10 folds
+    - The mean square error
     '''
-    return np.mean(cross_val_score(reg, X, y, cv=10))
+    return mean_squared_error(y, reg.predict(X))
 
 
 def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
