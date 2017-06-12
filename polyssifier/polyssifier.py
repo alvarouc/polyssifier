@@ -216,7 +216,8 @@ def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
     elif hasattr(reg, 'decision_function'):
         yprob = reg.decision_function(X)
 
-    # confusion = confusion_matrix(y, ypred)
+    confusion = {}
+
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
         reg_name, n_fold, train_score, test_score, duration))
