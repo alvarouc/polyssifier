@@ -172,7 +172,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         if feature_selection:
             steps.append(SelectKBest(f_regression, k='all'))
         steps.append(regressors[key]['reg'])
-        regressors[key]['clf'] = make_pipeline(*steps)
+        regressors[key]['reg'] = make_pipeline(*steps)
         # Reorganize paramenter list for grid search
         new_dict = {}
         for keyp in regressors[key]['parameters']:
