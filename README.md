@@ -34,7 +34,6 @@ poly data.npy label.npy --concurrency 10
  - Sklearn
  - Numpy
  - Pandas
- - MLP
 
 #### Optional
  - Nvidia GPU
@@ -47,8 +46,6 @@ poly data.npy label.npy --concurrency 10
  - Parallel processing. 
    - Control the number of threads with 'concurrency'.
    - We recommend setting concurrency to half the number of Cores in your system.
- - Support for Nvidia GPUs (MLP only). 
-   - Set theano flag "device=gpu".
  - Saves trained models for future use in case of server malfunction. 
    - Set project_name for identifying a experiment.
  - Activate feature selection step setting 
@@ -61,7 +58,7 @@ Example: on [sample/example.ipynb](sample/example.ipynb)
 
 It includes the following classifiers:
 
-- Multilayer Perceptron (see mlp.py )
+- Multilayer Perceptron
 - Nearest Neighbors
 - Linear SVM
 - RBF SVM

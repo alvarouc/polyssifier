@@ -7,7 +7,6 @@ from multiprocessing import Manager, Pool
 import logging
 import os
 import pandas as pd
-import matplotlib.pyplot as plt
 from copy import deepcopy
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score
@@ -160,6 +159,20 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
 
 def _scorer(clf, X, y):
+    '''Function that scores a classifier according to what is available as a
+    predict function.
+    Input:
+    - clf = Fitted classifier object
+    - X = input data matrix
+    - y = estimated labels
+    Output:
+    - AUC score for binary classification or F1 for multiclass
+
+    The order of priority is as follows:
+    - predict_proba
+    - decision_function
+    - predict
+    '''
     n_class = len(np.unique(y))
     if n_class == 2:
         if hasattr(clf, 'predict_proba'):
@@ -176,6 +189,7 @@ def _scorer(clf, X, y):
 
 def fit_model(args, clf_name, val, n_fold, project_name, save, scoring):
     '''
+    Multiprocess safe function that fits classifiers
     args: shared dictionary that contains
         X: all data
         y: all labels

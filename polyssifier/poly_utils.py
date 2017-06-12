@@ -14,11 +14,15 @@ from sklearn.preprocessing import StandardScaler
 
 
 class MyVoter(object):
-    """Voter that receive fitted classifiers
-
+    """
+    Voter Classifier
+    Receives fitted classifiers and runs majority voting
     """
 
     def __init__(self, estimators):
+        '''
+        estimators: List of fitted classifiers
+        '''
         self.estimators_ = estimators
 
     def predict(self, X):
@@ -31,13 +35,17 @@ class MyVoter(object):
 
 def build_classifiers(exclude, scale, feature_selection, nCols):
     '''
-    This method builds an ordered dictionary of classifiers, where the key is the name of the
-    classifier and the value of each key contains a standard dictionary with two keys itself. The first key called
-    'clf' points to the classifier object, which is created by scikit learn. The second key called 'parameters'
-    points to another regular map containing the parameters which are associated with the particular classifier model.
-    These parameters are used by grid search in polyssifier.py when finding the best model. If parameters are not
-    defined then grid search is not performed on that particular classifier model, so the model's default parameters
-    are used instead to find the best model for the particular data.
+    Input:
+    - exclude: list of names of classifiers to exclude from the analysis
+    - scale: True or False. Scale data before fitting classifier
+    - feature_selection: True or False. Run feature selection before
+    fitting classifier
+    - nCols: Number of columns in input dataset to classifiers
+
+    Output:
+    Dictionary with classifier name as keys.
+    - 'clf': Classifier object
+    - 'parameters': Dictionary with parameters of 'clf' as keys
     '''
     classifiers = collections.OrderedDict()
 
