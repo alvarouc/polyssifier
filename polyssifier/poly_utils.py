@@ -29,7 +29,6 @@ class MyVoter(object):
             arr=predictions.astype('int'))
         return maj
 
-
 def build_classifiers(exclude, scale, feature_selection, nCols):
     '''
     This method builds an ordered dictionary of classifiers, where the key is the name of the
@@ -172,7 +171,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             steps.append(StandardScaler())
         if feature_selection:
             steps.append(SelectKBest(f_regression, k='all'))
-        steps.append(regressors[key]['clf'])
+        steps.append(regressors[key]['reg'])
         regressors[key]['clf'] = make_pipeline(*steps)
         # Reorganize paramenter list for grid search
         new_dict = {}
