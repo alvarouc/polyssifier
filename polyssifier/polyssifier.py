@@ -17,12 +17,9 @@ from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
 from .poly_utils import build_classifiers, MyVoter, build_regressors
 from .report import Report
-
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
          feature_selection=False, save=True, scoring='auc',
@@ -62,21 +59,21 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     if not verbose:
         logger.setLevel(logging.ERROR)
     logger.info('Building classifiers ...')
-    classifiers = build_regressors(exclude, scale,
+    regressors = build_regressors(exclude, scale,
                                     feature_selection,
                                     data.shape[1])
 
     scores = pd.DataFrame(columns=pd.MultiIndex.from_product(
-        [classifiers.keys(), ['train', 'test']]),
+        [regressors.keys(), ['train', 'test']]),
         index=range(n_folds))
-    predictions = pd.DataFrame(columns=classifiers.keys(),
+    predictions = pd.DataFrame(columns=regressors.keys(),
                                index=range(data.shape[0]))
-    test_prob = pd.DataFrame(columns=classifiers.keys(),
+    test_prob = pd.DataFrame(columns=regressors.keys(),
                              index=range(data.shape[0]))
     confusions = {}
     coefficients = {}
-    # !fitted_clfs =
-    # pd.DataFrame(columns=classifiers.keys(), index = range(n_folds))
+    # !fitted_regs =
+    # pd.DataFrame(columns=regressors.keys(), index = range(n_folds))
 
     logger.info('Initialization, done.')
 
@@ -95,60 +92,60 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     args[0] = shared
 
     args2 = []
-    for clf_name, val in classifiers.items():
+    for reg_name, val in regressors.items():
         for n_fold in range(n_folds):
-            args2.append((args, clf_name, val, n_fold, project_name,
+            args2.append((args, reg_name, val, n_fold, project_name,
                           save, scoring))
 
     if concurrency == 1:
-        result = list(starmap(fit_clf, args2))
+        result = list(starmap(fit_model, args2))
     else:
         pool = Pool(processes=concurrency)
-        result = pool.starmap(fit_clf, args2)
+        result = pool.starmap(fit_model, args2)
         pool.close()
 
-    fitted_clfs = {key: [] for key in classifiers}
+    fitted_regs = {key: [] for key in regressors}
 
     # Gather results
-    for clf_name in classifiers:
-        coefficients[clf_name] = []
+    for reg_name in regressors:
+        coefficients[reg_name] = []
         temp = np.zeros((n_class, n_class))
         temp_pred = np.zeros((data.shape[0], ))
         temp_prob = np.zeros((data.shape[0], ))
-        clfs = fitted_clfs[clf_name]
+        regs = fitted_regs[reg_name]
         for n in range(n_folds):
             train_score, test_score, prediction, prob, confusion,\
-                coefs, fitted_clf = result.pop(0)
-            clfs.append(fitted_clf)
-            scores.loc[n, (clf_name, 'train')] = train_score
-            scores.loc[n, (clf_name, 'test')] = test_score
+                coefs, fitted_reg = result.pop(0)
+            regs.append(fitted_reg)
+            scores.loc[n, (reg_name, 'train')] = train_score
+            scores.loc[n, (reg_name, 'test')] = test_score
             temp += confusion
             temp_prob[kf[n][1]] = prob
             temp_pred[kf[n][1]] = _le.inverse_transform(prediction)
-            coefficients[clf_name].append(coefs)
+            coefficients[reg_name].append(coefs)
 
-        confusions[clf_name] = temp
-        predictions[clf_name] = temp_pred
-        test_prob[clf_name] = temp_prob
+        confusions[reg_name] = temp
+        predictions[reg_name] = temp_pred
+        test_prob[reg_name] = temp_prob
 
     # Voting
-    fitted_clfs = pd.DataFrame(fitted_clfs)
-    scores['Voting', 'train'] = np.zeros((n_folds, ))
-    scores['Voting', 'test'] = np.zeros((n_folds, ))
-    temp = np.zeros((n_class, n_class))
-    temp_pred = np.zeros((data.shape[0], ))
-    for n, (train, test) in enumerate(kf):
-        clf = MyVoter(fitted_clfs.loc[n].values)
-        X, y = data[train, :], label[train]
-        scores.loc[n, ('Voting', 'train')] = _scorer(clf, X, y)
-        X, y = data[test, :], label[test]
-        scores.loc[n, ('Voting', 'test')] = _scorer(clf, X, y)
-        temp_pred[test] = clf.predict(X)
-        temp += confusion_matrix(y, temp_pred[test])
+#    fitted_regs = pd.DataFrame(fitted_regs)
+#    scores['Voting', 'train'] = np.zeros((n_folds, ))
+#    scores['Voting', 'test'] = np.zeros((n_folds, ))
+#    temp = np.zeros((n_class, n_class))
+#    temp_pred = np.zeros((data.shape[0], ))
+#    for n, (train, test) in enumerate(kf):
+#        reg = MyVoter(fitted_regs.loc[n].values)
+#        X, y = data[train, :], label[train]
+#        scores.loc[n, ('Voting', 'train')] = _scorer(reg, X, y)
+#        X, y = data[test, :], label[test]
+#        scores.loc[n, ('Voting', 'test')] = _scorer(reg, X, y)
+#        temp_pred[test] = reg.predict(X)
+#        temp += confusion_matrix(y, temp_pred[test])
 
-    confusions['Voting'] = temp
-    predictions['Voting'] = temp_pred
-    test_prob['Voting'] = temp_pred
+#    confusions['Voting'] = temp
+#    predictions['Voting'] = temp_pred
+#    test_prob['Voting'] = temp_pred
     ######
 
     # saving confusion matrices
@@ -177,13 +174,13 @@ def _scorer(clf, X, y):
     return score
 
 
-def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
+def fit_model(args, clf_name, val, n_fold, project_name, save, scoring):
     '''
     args: shared dictionary that contains
         X: all data
         y: all labels
         kf: list of train and test indexes for each fold
-    clf_name: name of the classifier model
+    clf_name: name of the classifier or regressor model
     val: dictionary with
         clf: sklearn compatible classifier 
         parameters: dictionary with parameters, can be used for grid search
