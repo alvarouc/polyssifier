@@ -239,7 +239,7 @@ def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
         coefficients = None
 
     return (train_score, test_score,
-            ypred, yprob,  # predictions and probabilities
+            ypred,  # predictions and probabilities
             coefficients,  # Coefficients for feature ranking
             reg)  # fitted reg
 
