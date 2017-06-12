@@ -158,11 +158,11 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     return Report(scores, confusions, predictions, test_prob, coefficients)
 
 
-def _scorer(clf, X, y):
+def _scorer(reg, X, y):
     '''Function that scores a classifier according to what is available as a
     predict function.
     Input:
-    - clf = Fitted classifier object
+    - reg = Fitted classifier object
     - X = input data matrix
     - y = estimated labels
     Output:
@@ -175,28 +175,28 @@ def _scorer(clf, X, y):
     '''
     n_class = len(np.unique(y))
     if n_class == 2:
-        if hasattr(clf, 'predict_proba'):
-            ypred = clf.predict_proba(X)[:, 1]
-        elif hasattr(clf, 'decision_function'):
-            ypred = clf.decision_function(X)
+        if hasattr(reg, 'predict_proba'):
+            ypred = reg.predict_proba(X)[:, 1]
+        elif hasattr(reg, 'decision_function'):
+            ypred = reg.decision_function(X)
         else:
-            ypred = clf.predict(X)
+            ypred = reg.predict(X)
         score = roc_auc_score(y, ypred)
     else:
-        score = f1_score(y, clf.predict(X))
+        score = f1_score(y, reg.predict(X))
     return score
 
 
-def fit_model(args, clf_name, val, n_fold, project_name, save, scoring):
+def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
     '''
     Multiprocess safe function that fits classifiers
     args: shared dictionary that contains
         X: all data
         y: all labels
         kf: list of train and test indexes for each fold
-    clf_name: name of the classifier or regressor model
+    reg_name: name of the classifier or regressor model
     val: dictionary with
-        clf: sklearn compatible classifier 
+        reg: sklearn compatible classifier 
         parameters: dictionary with parameters, can be used for grid search
     n_fold: number of folds
     project_name: string with the project folder name to save model
@@ -205,46 +205,46 @@ def fit_model(args, clf_name, val, n_fold, project_name, save, scoring):
     X = args[0]['X'][train, :]
     y = args[0]['y'][train]
     file_name = 'poly_{}/models/{}_{}.p'.format(
-        project_name, clf_name, n_fold + 1)
+        project_name, reg_name, n_fold + 1)
     start = time.time()
     if os.path.isfile(file_name):
         logger.info('Loading {} {}'.format(file_name, n_fold))
-        clf = joblib.load(file_name)
+        reg = joblib.load(file_name)
     else:
-        logger.info('Training {} {}'.format(clf_name, n_fold))
-        clf = deepcopy(val['clf'])
+        logger.info('Training {} {}'.format(reg_name, n_fold))
+        reg = deepcopy(val['reg'])
         if val['parameters']:
-            clf = GridSearchCV(clf, val['parameters'], n_jobs=1, cv=3,
+            reg = GridSearchCV(reg, val['parameters'], n_jobs=1, cv=3,
                                scoring=_scorer)
-        clf.fit(X, y)
+        reg.fit(X, y)
         if save:
-            joblib.dump(clf, file_name)
+            joblib.dump(reg, file_name)
 
-    train_score = _scorer(clf, X, y)
+    train_score = _scorer(reg, X, y)
 
     X = args[0]['X'][test, :]
     y = args[0]['y'][test]
     # Scores
-    test_score = _scorer(clf, X, y)
-    ypred = clf.predict(X)
-    if hasattr(clf, 'predict_proba'):
-        yprob = clf.predict_proba(X)
-    elif hasattr(clf, 'decision_function'):
-        yprob = clf.decision_function(X)
+    test_score = _scorer(reg, X, y)
+    ypred = reg.predict(X)
+    if hasattr(reg, 'predict_proba'):
+        yprob = reg.predict_proba(X)
+    elif hasattr(reg, 'decision_function'):
+        yprob = reg.decision_function(X)
 
     confusion = confusion_matrix(y, ypred)
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
-        clf_name, n_fold, train_score, test_score, duration))
+        reg_name, n_fold, train_score, test_score, duration))
 
     # Feature importance
-    if hasattr(clf, 'steps'):
-        temp = clf.steps[-1][1]
-    elif hasattr(clf, 'best_estimator_'):
-        if hasattr(clf.best_estimator_, 'steps'):
-            temp = clf.best_estimator_.steps[-1][1]
+    if hasattr(reg, 'steps'):
+        temp = reg.steps[-1][1]
+    elif hasattr(reg, 'best_estimator_'):
+        if hasattr(reg.best_estimator_, 'steps'):
+            temp = reg.best_estimator_.steps[-1][1]
         else:
-            temp = clf.best_estimator_
+            temp = reg.best_estimator_
     try:
         if hasattr(temp, 'coef_'):
             coefficients = temp.coef_
@@ -259,7 +259,7 @@ def fit_model(args, clf_name, val, n_fold, project_name, save, scoring):
             ypred, yprob,  # predictions and probabilities
             confusion,  # confusion matrix
             coefficients,  # Coefficients for feature ranking
-            clf)  # fitted clf
+            reg)  # fitted reg
 
 
 def make_argument_parser():
