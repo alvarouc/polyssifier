@@ -8,7 +8,7 @@ import logging
 import os
 import pandas as pd
 from copy import deepcopy
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
+from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_score
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score
 from sklearn.externals import joblib
 import time
@@ -159,32 +159,16 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
 
 def _scorer(reg, X, y):
-    '''Function that scores a classifier according to what is available as a
+    '''Function that scores a regressor according to what is available as a
     predict function.
     Input:
-    - reg = Fitted classifier object
+    - reg = Fitted regressor object
     - X = input data matrix
-    - y = estimated labels
+    - y = estimated values
     Output:
-    - AUC score for binary classification or F1 for multiclass
-
-    The order of priority is as follows:
-    - predict_proba
-    - decision_function
-    - predict
+    - Cross validation score given 10 folds
     '''
-    n_class = len(np.unique(y))
-    if n_class == 2:
-        if hasattr(reg, 'predict_proba'):
-            ypred = reg.predict_proba(X)[:, 1]
-        elif hasattr(reg, 'decision_function'):
-            ypred = reg.decision_function(X)
-        else:
-            ypred = reg.predict(X)
-        score = roc_auc_score(y, ypred)
-    else:
-        score = f1_score(y, reg.predict(X))
-    return score
+    return np.mean(cross_val_score(reg, X, y, cv=10))
 
 
 def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
@@ -232,7 +216,7 @@ def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
     elif hasattr(reg, 'decision_function'):
         yprob = reg.decision_function(X)
 
-    confusion = confusion_matrix(y, ypred)
+    # confusion = confusion_matrix(y, ypred)
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
         reg_name, n_fold, train_score, test_score, duration))
@@ -280,7 +264,6 @@ def make_argument_parser():
                         help='Number of allowed concurrent processes')
 
     return parser
-
 
 if __name__ == '__main__':
 
