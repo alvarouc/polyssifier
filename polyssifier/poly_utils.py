@@ -13,11 +13,15 @@ from sklearn.preprocessing import StandardScaler
 
 
 class MyVoter(object):
-    """Voter that receive fitted classifiers
-
+    """
+    Voter Classifier
+    Receives fitted classifiers and runs majority voting
     """
 
     def __init__(self, estimators):
+        '''
+        estimators: List of fitted classifiers
+        '''
         self.estimators_ = estimators
 
     def predict(self, X):
@@ -30,6 +34,20 @@ class MyVoter(object):
 
 
 def build_classifiers(exclude, scale, feature_selection, nCols):
+    '''
+    Input: 
+    - exclude: list of names of classifiers to exclude from the analysis
+    - scale: True or False. Scale data before fitting classifier
+    - feature_selection: True or False. Run feature selection before 
+    fitting classifier
+    - nCols: Number of columns in input dataset to classifiers
+
+    Output: 
+    Dictionary with classifier name as keys. 
+    - 'clf': Classifier object
+    - 'parameters': Dictionary with parameters of 'clf' as keys
+    '''
+    
     classifiers = collections.OrderedDict()
 
     if 'Multilayer Perceptron' not in exclude:
