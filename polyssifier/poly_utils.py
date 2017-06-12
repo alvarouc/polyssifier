@@ -32,8 +32,13 @@ class MyVoter(object):
 
 def build_classifiers(exclude, scale, feature_selection, nCols):
     '''
-    This method builds an OrderedDict (similar to a map) of classifiers, where the key is the name of the 
-    classifiers and the value contains the classifier object itself and some associated parameters.
+    This method builds an ordered dictionary of classifiers, where the key is the name of the
+    classifier and the value of each key contains a standard dictionary with two keys itself. The first key called
+    'clf' points to the classifier object, which is created by scikit learn. The second key called 'parameters'
+    points to another regular map containing the parameters which are associated with the particular classifier model.
+    These parameters are used by grid search in polyssifier.py when finding the best model. If parameters are not
+    defined then grid search is not performed on that particular classifier model, so the model's default parameters
+    are used instead to find the best model for the particular data.
     '''
     classifiers = collections.OrderedDict()
 
@@ -118,8 +123,13 @@ def build_classifiers(exclude, scale, feature_selection, nCols):
 
 def build_regressors(exclude, scale, feature_selection, nCols):
     '''
-    This method builds an OrderedDict (similar to a map) of classifiers, where the key is the name of the
-    classifiers and the value contains the classifier object itself and some associated parameters.
+    This method builds an ordered dictionary of regressors, where the key is the name of the
+    regressor and the value of each key contains a standard dictionary with two keys itself. The first key called
+    'reg' points to the regression object, which is created by scikit learn. The second key called 'parameters'
+    points to another regular map containing the parameters which are associated with the particular regression model.
+    These parameters are used by grid search in polyssifier.py when finding the best model. If parameters are not
+    defined then grid search is not performed on that particular regression model, so the model's default parameters
+    are used instead to find the best model for the particular data.
     '''
     regressors = collections.OrderedDict()
 
@@ -147,5 +157,31 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'parameters': {}
         }
 
+    def name(x):
+        """
+        :param x: The name of the regressor
+        :return: The class of the final regression estimator in lower case form
+        """
+        return x['reg']._final_estimator.__class__.__name__.lower()
+
+    for key, val in regressors.items():
+        if not scale and not feature_selection:
+            break
+        steps = []
+        if scale:
+            steps.append(StandardScaler())
+        if feature_selection:
+            steps.append(SelectKBest(f_regression, k='all'))
+        steps.append(regressors[key]['clf'])
+        regressors[key]['clf'] = make_pipeline(*steps)
+        # Reorganize paramenter list for grid search
+        new_dict = {}
+        for keyp in regressors[key]['parameters']:
+            new_dict[name(regressors[key]) + '__' +
+                     keyp] = regressors[key]['parameters'][keyp]
+        regressors[key]['parameters'] = new_dict
+        if nCols > 5 and feature_selection:
+            regressors[key]['parameters']['selectkbest__k'] = np.linspace(
+                np.round(nCols / 5), nCols, 5).astype('int').tolist()
 
     return regressors
