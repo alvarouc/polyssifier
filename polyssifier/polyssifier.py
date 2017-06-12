@@ -113,7 +113,8 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
         temp_prob = np.zeros((data.shape[0], ))
         regs = fitted_regs[reg_name]
         for n in range(n_folds):
-            train_score, test_score, prediction, prob, confusion,\
+
+            train_score, test_score, prediction,\
                 coefs, fitted_reg = result.pop(0)
             regs.append(fitted_reg)
             scores.loc[n, (reg_name, 'train')] = train_score
