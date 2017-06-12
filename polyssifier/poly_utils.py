@@ -2,9 +2,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import LinearSVC, SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression, BayesianRidge, Perceptron
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier as MLP
+from sklearn.gaussian_process import GaussianProcessRegressor
 import collections
 import numpy as np
 from sklearn.feature_selection import SelectKBest, f_regression
@@ -30,6 +31,10 @@ class MyVoter(object):
 
 
 def build_classifiers(exclude, scale, feature_selection, nCols):
+    '''
+    This method builds an OrderedDict (similar to a map) of classifiers, where the key is the name of the 
+    classifiers and the value contains the classifier object itself and some associated parameters.
+    '''
     classifiers = collections.OrderedDict()
 
     if 'Multilayer Perceptron' not in exclude:
@@ -83,6 +88,10 @@ def build_classifiers(exclude, scale, feature_selection, nCols):
     # classifiers['Voting'] = {}
 
     def name(x):
+        """
+        :param x: The name of the classifier
+        :return: The class of the final estimator in lower case form
+        """
         return x['clf']._final_estimator.__class__.__name__.lower()
 
     for key, val in classifiers.items():
@@ -106,3 +115,37 @@ def build_classifiers(exclude, scale, feature_selection, nCols):
                 np.round(nCols / 5), nCols, 5).astype('int').tolist()
 
     return classifiers
+
+def build_regressors(exclude, scale, feature_selection, nCols):
+    '''
+    This method builds an OrderedDict (similar to a map) of classifiers, where the key is the name of the
+    classifiers and the value contains the classifier object itself and some associated parameters.
+    '''
+    regressors = collections.OrderedDict()
+
+    if 'Linear Regression' not in exclude:
+        regressors['Linear Regression'] = {
+            'reg': LinearRegression(),
+            'parameters': {}
+        }
+
+    if 'Bayesian Ridge' not in exclude:
+        regressors['Bayesian Ridge'] = {
+            'reg': BayesianRidge(),
+            'parameters': {}
+        }
+
+    if 'Perceptron' not in exclude:
+        regressors['Perceptron'] = {
+            'reg': Perceptron(),
+            'parameters': {}
+        }
+
+    if 'GaussianProcessRegressor' not in exclude:
+        regressors['GaussianProcessRegressor'] = {
+            'reg': GaussianProcessRegressor(),
+            'parameters': {}
+        }
+
+
+    return regressors
