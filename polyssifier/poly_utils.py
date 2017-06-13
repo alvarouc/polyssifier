@@ -190,12 +190,6 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'parameters': {}
         }
 
-    if 'MultiTaskElasticNet' not in exclude:
-        regressors['MultiTaskElasticNet'] = {
-            'reg': MultiTaskElasticNet(),
-            'parameters': {}
-        }
-
     if 'Lars' not in exclude:
         regressors['Lars'] = {
             'reg': Lars(),
