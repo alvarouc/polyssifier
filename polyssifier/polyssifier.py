@@ -55,9 +55,12 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     if save and not os.path.exists('poly_{}/models'.format(project_name)):
         os.makedirs('poly_{}/models'.format(project_name))
 
+    #Whether or not intermeciate steps will be printed out.
     if not verbose:
         logger.setLevel(logging.ERROR)
     logger.info('Building classifiers ...')
+
+    #The main regressors dictionary
     regressors = build_regressors(exclude, scale,
                                     feature_selection,
                                     data.shape[1])
@@ -76,6 +79,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
     logger.info('Initialization, done.')
 
+    # This provides train/test indices to split data in train/test sets.
     skf = StratifiedKFold(n_splits=n_folds, random_state=1988)
     skf.get_n_splits(np.zeros(data.shape[0]), label)
     kf = list(skf.split(np.zeros(data.shape[0]), label))
@@ -162,9 +166,9 @@ def _scorer(reg, X, y):
     Input:
     - reg = Fitted regressor object
     - X = input data matrix
-    - y = estimated values
+    - y = corresponding values to the data matrix
     Output:
-    - The mean square error
+    - The mean square error of the regressor function for that training data set
     '''
     return mean_squared_error(y, reg.predict(X))
 
