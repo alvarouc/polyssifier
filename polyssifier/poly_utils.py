@@ -161,7 +161,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'GaussianProcessRegressor' not in exclude:
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
-            'parameters': {}
+            'parameters': {'normalize_y': [True, False]}
         }
 
     def name(x):
