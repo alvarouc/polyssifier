@@ -130,7 +130,8 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
     #This will assign the appropriate cross_val_predictions
     for key in regressors:
-        predictions[str(key)] = cross_val_predict(regressors[key]['reg'], shared['X'], cv=kf)
+        #predictions[str(key)] = cross_val_predict(regressors[key]['reg'], shared['X'], cv=kf)
+        print(key)
 
 
     # Voting
