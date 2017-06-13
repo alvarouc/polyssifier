@@ -128,11 +128,16 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
         test_prob[reg_name] = temp_prob
 
 
-    #This will assign the appropriate cross_val_predictions
-    regressorobjects = getRegressors(regressors)
-    for key in regressorobjects:
-        predictions[key] = cross_val_predict(regressorobjects.get(key), shared['X'],y=label, cv=kf)
-        print(regressors[key]['reg'])
+    #NOTE: This was the old method of calculating the cross validation predictions. This is not valid as it
+    #does not used the scaled estimators. It is being left here for now.
+    # regressorobjects = getRegressors(regressors)
+    #for key in regressorobjects:
+    #    predictions[key] = cross_val_predict(regressorobjects.get(key), shared['X'],y=label, cv=kf)
+    #    print(regressors[key]['reg'])
+
+    #This loop calculates the cross validation predictions for each regressor pipeline.
+    for key in regressors:
+        predictions[key] = cross_val_predict(regressors.get(key)['reg'], shared['X'], y=label, cv=kf)
 
 
     # Voting
