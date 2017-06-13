@@ -213,10 +213,9 @@ def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
     # Scores
     test_score = _scorer(reg, X, y)
     ypred = reg.predict(X)
-    if hasattr(reg, 'predict_proba'):
-        yprob = reg.predict_proba(X)
-    elif hasattr(reg, 'decision_function'):
-        yprob = reg.decision_function(X)
+
+    # yprob is not used anywhere in the function. It is just being commented out for now.
+    # yprob = reg.predict_proba(X)
 
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
