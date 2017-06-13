@@ -129,8 +129,8 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
 
     #This will assign the appropriate cross_val_predictions
-    for key, value in regressors.items():
-        predictions[str(key)] = cross_val_predict(regressors.get('reg'), data, cv=kf)
+    for key in regressors:
+        predictions[str(key)] = cross_val_predict(regressors.get(key).get('reg'), data, cv=kf)
 
 
     # Voting
