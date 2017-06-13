@@ -196,6 +196,12 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'parameters': {}
         }
 
+    if 'ElasticNet' not in exclude:
+        regressors['ElasticNet'] = {
+            'reg': ElasticNet()
+            'parameters': {}
+        }
+
     def name(x):
         """
         :param x: The name of the regressor
@@ -225,6 +231,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
 
     return regressors
 
+#This function is not used, but once was.
 def getRegressors(regressors):
     toReturn = collections.OrderedDict()
     if 'Linear Regression' in regressors:
