@@ -213,8 +213,8 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     test_score = _scorer(reg, X, y)
     ypred = reg.predict(X)
 
-    # yprob is not used anywhere in the function. It is just being commented out for now.
-    yprob = reg.predict_proba(X)
+    # yprob doesn't really go well with regression, so it is going to be zero for now.
+    yprob = 0
 
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
