@@ -172,14 +172,13 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'parameters': {}
         }
 
-    #This code is commented out. One by one each regression type will be uncommented.
+    if 'Lasso' not in exclude:
+        regressors['Lasso'] = {
+           'reg': Lasso(),
+           'parameters': {}
+        }
 
-    # if 'Lasso' not in exclude:
-    #     regressors['Lasso'] = {
-    #         'reg': Lasso(),
-    #         'parameters': {}
-    #     }
-    #
+    # This code is commented out. One by one each regression type will be uncommented.
     # if 'MultiTaskLasso' not in exclude:
     #     regressors['MultiTaskLasso'] = {
     #         'reg': MultiTaskLasso(),
