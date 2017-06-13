@@ -127,7 +127,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
         confusions[reg_name] = temp
         test_prob[reg_name] = temp_prob
 
-    
+
     #This loop calculates the cross validation predictions for each regressor pipeline.
     for key in regressors:
         predictions[key] = cross_val_predict(regressors.get(key)['reg'], shared['X'], y=label, cv=kf)
