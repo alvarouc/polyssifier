@@ -212,7 +212,7 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     # Scores
     test_score = _scorer(reg, X, y)
     ypred = reg.predict(X)
-    yprob = reg.predict_proba(X)
+    yprob = 0
 
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
