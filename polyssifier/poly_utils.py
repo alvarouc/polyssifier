@@ -192,3 +192,15 @@ def build_regressors(exclude, scale, feature_selection, nCols):
                 np.round(nCols / 5), nCols, 5).astype('int').tolist()
 
     return regressors
+
+def getRegressors(regressors):
+    toreturn = []
+    if 'Linear Regression' in regressors:
+        toreturn.append(LinearRegression())
+    if 'Bayesian Ridge' in regressors:
+        toreturn.append(BayesianRidge())
+    if 'Perceptron' in regressors:
+        toreturn.append(Perceptron())
+    if 'GaussianProcessRegressor' in regressors:
+        toreturn.append(GaussianProcessRegressor())
+    return toreturn
