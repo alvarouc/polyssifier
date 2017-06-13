@@ -125,10 +125,13 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
             coefficients[reg_name].append(coefs)
 
         confusions[reg_name] = temp
-
-        #This will added in the appropriate predictions
-        predictions[reg_name] = cross_val_predict(regressors.get(reg_name).get('reg'), data, cv=kf)
         test_prob[reg_name] = temp_prob
+
+
+    #This will assign the appropriate cross_val_predictions
+    for key, value in regressors:
+        predictions[str(key)] = cross_val_predict(regressors.get('reg'), data, cv=kf)
+
 
     # Voting
 #    fitted_regs = pd.DataFrame(fitted_regs)
