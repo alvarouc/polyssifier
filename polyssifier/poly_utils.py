@@ -172,37 +172,39 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'parameters': {}
         }
 
-    if 'Lasso' not in exclude:
-        regressors['Lasso'] = {
-            'reg': Lasso(),
-            'parameters': {}
-        }
+    #This code is commented out. One by one each regression type will be uncommented.
 
-    if 'MultiTaskLasso' not in exclude:
-        regressors['MultiTaskLasso'] = {
-            'reg': MultiTaskLasso(),
-            'parameters': {}
-        }
-
-    if 'Lars' not in exclude:
-        regressors['Lars'] = {
-            'reg': Lars(),
-            'parameters': {}
-        }
-
-    if 'LassoLars' not in exclude:
-        regressors['LassoLars'] = {
-            'reg': LassoLars(),
-            'parameters': {}
-        }
-
-    if 'OrthogonalMatchingPursuit' not in exclude:
-        regressors['OrthogonalMatchingPursuit'] = {
-            'reg': OrthogonalMatchingPursuit(),
-            'parameters': {}
-        }
-
-
+    # if 'Lasso' not in exclude:
+    #     regressors['Lasso'] = {
+    #         'reg': Lasso(),
+    #         'parameters': {}
+    #     }
+    #
+    # if 'MultiTaskLasso' not in exclude:
+    #     regressors['MultiTaskLasso'] = {
+    #         'reg': MultiTaskLasso(),
+    #         'parameters': {}
+    #     }
+    # 
+    # if 'Lars' not in exclude:
+    #     regressors['Lars'] = {
+    #         'reg': Lars(),
+    #         'parameters': {}
+    #     }
+    #
+    # if 'LassoLars' not in exclude:
+    #     regressors['LassoLars'] = {
+    #         'reg': LassoLars(),
+    #         'parameters': {}
+    #     }
+    #
+    # if 'OrthogonalMatchingPursuit' not in exclude:
+    #     regressors['OrthogonalMatchingPursuit'] = {
+    #         'reg': OrthogonalMatchingPursuit(),
+    #         'parameters': {}
+    #     }
+    #
+    #
 
 
     def name(x):
