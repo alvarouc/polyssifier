@@ -14,7 +14,7 @@ from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
-from .poly_utils import build_classifiers, MyVoter, build_regressors
+from .poly_utils import build_classifiers, MyVoter, build_regressors, getRegressors
 from .report import Report
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
@@ -129,8 +129,9 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
 
     #This will assign the appropriate cross_val_predictions
-    for key in regressors:
-        #predictions[str(key)] = cross_val_predict(regressors[key]['reg'], shared['X'], cv=kf)
+    regressorobjects = getRegressors(regressors)
+    for key in regressorobjects:
+        predictions[key] = cross_val_predict(regressorobjects.get(key), shared['X'],y=label, cv=kf)
         print(regressors[key]['reg'])
 
 
