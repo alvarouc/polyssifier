@@ -185,7 +185,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     #         'reg': MultiTaskLasso(),
     #         'parameters': {}
     #     }
-    # 
+    #
     # if 'Lars' not in exclude:
     #     regressors['Lars'] = {
     #         'reg': Lars(),
