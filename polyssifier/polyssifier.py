@@ -8,7 +8,7 @@ import logging
 import os
 import pandas as pd
 from copy import deepcopy
-from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_score
+from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_predict
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score, mean_squared_error
 from sklearn.externals import joblib
 import time
@@ -125,7 +125,9 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
             coefficients[reg_name].append(coefs)
 
         confusions[reg_name] = temp
-        predictions[reg_name] = temp_pred
+
+        #This will added in the appropriate predictions
+        predictions[reg_name] = cross_val_predict(regressors.get(reg_name).get('reg'), data, cv=kf)
         test_prob[reg_name] = temp_prob
 
     # Voting
