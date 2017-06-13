@@ -2,7 +2,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import LinearSVC, SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression, LinearRegression, BayesianRidge, Perceptron
+from sklearn.linear_model import (LogisticRegression, LinearRegression, BayesianRidge, Perceptron, Ridge, Lasso,
+                                MultiTaskLasso, ElasticNet, MultiTaskElasticNet, Lars, LassoLars,
+                                OrthogonalMatchingPursuit)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier as MLP
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -161,8 +163,59 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'GaussianProcessRegressor' not in exclude:
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
-            'parameters': {'kernel': ['sigmoid_kernel', 'rbf_kernel']}
+            'parameters': {}
         }
+
+    if 'Ridge' not in exclude:
+        regressors['Ridge'] = {
+            'reg': Ridge(),
+            'parameters': {}
+        }
+
+    if 'Lasso' not in exclude:
+        regressors['Lasso'] = {
+            'reg': Lasso(),
+            'parameters': {}
+        }
+
+    if 'MultiTaskLasso' not in exclude:
+        regressors['MultiTaskLasso'] = {
+            'reg': MultiTaskLasso(),
+            'parameters': {}
+        }
+
+    if 'ElasticNet' not in exclude:
+        regressors['ElasticNet'] = {
+            'reg': ElasticNet(),
+            'parameters': {}
+        }
+
+    if 'MultiTaskElasticNet' not in exclude:
+        regressors['MultiTaskElasticNet'] = {
+            'reg': MultiTaskElasticNet(),
+            'parameters': {}
+        }
+
+    if 'Lars' not in exclude:
+        regressors['Lars'] = {
+            'reg': Lars(),
+            'parameters': {}
+        }
+
+    if 'LassoLars' not in exclude:
+        regressors['LassoLars'] = {
+            'reg': LassoLars(),
+            'parameters': {}
+        }
+
+    if 'OrthogonalMatchingPursuit' not in exclude:
+        regressors['OrthogonalMatchingPursuit'] = {
+            'reg': OrthogonalMatchingPursuit(),
+            'parameters': {}
+        }
+
+
+
 
     def name(x):
         """
