@@ -184,12 +184,6 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'parameters': {}
         }
 
-    if 'ElasticNet' not in exclude:
-        regressors['ElasticNet'] = {
-            'reg': ElasticNet(),
-            'parameters': {}
-        }
-
     if 'Lars' not in exclude:
         regressors['Lars'] = {
             'reg': Lars(),
