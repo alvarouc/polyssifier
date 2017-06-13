@@ -184,12 +184,11 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'parameters': {}
         }
 
-    # This code is commented out. One by one each regression type will be uncommented.
-    # if 'LassoLars' not in exclude:
-    #     regressors['LassoLars'] = {
-    #         'reg': LassoLars(),
-    #         'parameters': {}
-    #     }
+    if 'LassoLars' not in exclude:
+        regressors['LassoLars'] = {
+            'reg': LassoLars(),
+            'parameters': {}
+        }
     #
     # if 'OrthogonalMatchingPursuit' not in exclude:
     #     regressors['OrthogonalMatchingPursuit'] = {
