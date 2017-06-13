@@ -189,15 +189,12 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'reg': LassoLars(),
             'parameters': {}
         }
-    #
-    # if 'OrthogonalMatchingPursuit' not in exclude:
-    #     regressors['OrthogonalMatchingPursuit'] = {
-    #         'reg': OrthogonalMatchingPursuit(),
-    #         'parameters': {}
-    #     }
-    #
-    #
 
+    if 'OrthogonalMatchingPursuit' not in exclude:
+        regressors['OrthogonalMatchingPursuit'] = {
+            'reg': OrthogonalMatchingPursuit(),
+            'parameters': {}
+        }
 
     def name(x):
         """
