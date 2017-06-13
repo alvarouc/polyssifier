@@ -101,10 +101,10 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
                           save, scoring))
 
     if concurrency == 1:
-        result = list(starmap(fit_model, args2))
+        result = list(starmap(fit_reg, args2))
     else:
         pool = Pool(processes=concurrency)
-        result = pool.starmap(fit_model, args2)
+        result = pool.starmap(fit_reg, args2)
         pool.close()
 
     fitted_regs = {key: [] for key in regressors}
@@ -172,7 +172,7 @@ def _scorer(reg, X, y):
     return mean_squared_error(y, reg.predict(X))
 
 
-def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
+def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     '''
     Multiprocess safe function that fits classifiers
     args: shared dictionary that contains
@@ -214,7 +214,7 @@ def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
     ypred = reg.predict(X)
 
     # yprob is not used anywhere in the function. It is just being commented out for now.
-    # yprob = reg.predict_proba(X)
+    yprob = reg.predict_proba(X)
 
     duration = time.time() - start
     logger.info('{0:25} {1:2}: Train {2:.2f}/Test {3:.2f}, {4:.2f} sec'.format(
@@ -239,7 +239,7 @@ def fit_model(args, reg_name, val, n_fold, project_name, save, scoring):
         coefficients = None
 
     return (train_score, test_score,
-            ypred,  # predictions and probabilities
+            ypred, yprob,  # predictions and probabilities
             coefficients,  # Coefficients for feature ranking
             reg)  # fitted reg
 
