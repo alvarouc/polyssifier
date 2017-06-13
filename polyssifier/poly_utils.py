@@ -194,13 +194,13 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     return regressors
 
 def getRegressors(regressors):
-    toreturn = []
+    toReturn = collections.OrderedDict()
     if 'Linear Regression' in regressors:
-        toreturn.append(LinearRegression())
+        toReturn['Linear Regression'] = LinearRegression()
     if 'Bayesian Ridge' in regressors:
-        toreturn.append(BayesianRidge())
+        toReturn['Bayesian Ridge'] = BayesianRidge()
     if 'Perceptron' in regressors:
-        toreturn.append(Perceptron())
+        toReturn['Perceptron'] = Perceptron()
     if 'GaussianProcessRegressor' in regressors:
-        toreturn.append(GaussianProcessRegressor())
-    return toreturn
+        toReturn['GaussianProcessRegressor'] = GaussianProcessRegressor()
+    return toReturn
