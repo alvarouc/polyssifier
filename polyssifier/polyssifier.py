@@ -8,7 +8,7 @@ import logging
 import os
 import pandas as pd
 from copy import deepcopy
-from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_predict
+from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_predict, KFold
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score, mean_squared_error
 from sklearn.externals import joblib
 import time
@@ -80,7 +80,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     logger.info('Initialization, done.')
 
     # This provides train/test indices to split data in train/test sets.
-    skf = StratifiedKFold(n_splits=n_folds, random_state=1988)
+    skf = KFold(n_splits=n_folds, random_state=1988)
     skf.get_n_splits(np.zeros(data.shape[0]), label)
     kf = list(skf.split(np.zeros(data.shape[0]), label))
 
