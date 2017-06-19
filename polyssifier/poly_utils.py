@@ -13,6 +13,7 @@ import numpy as np
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.gaussian_process.kernels import RBF
 
 
 class MyVoter(object):
@@ -196,14 +197,16 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['Perceptron'] = {
             'reg': Perceptron(),
             'parameters': {'penalty': ['None', 'l2', 'l1', 'elasticnet'],
-                           'alpha': [0.00001, 0.0001, 0.001, 0.01, 0.1]}
+                           'alpha': [0.00001, 0.0001, 0.001, 0.01, 0.1],
+                           'n_iter': [5, 25, 50, 200],}
         }
 
     if 'GaussianProcessRegressor' not in exclude:
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
             'parameters': {
-                'alpha': [0.0000000001, 0.000000001, 0.00000001, 0.0000001]
+                'alpha': [0.0000000001, 0.000000001, 0.00000001, 0.0000001],
+                'kernel': [RBF(x) for x in [1, 10, 100]]
             }
         }
 
