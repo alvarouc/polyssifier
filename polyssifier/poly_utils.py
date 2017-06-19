@@ -157,25 +157,33 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Perceptron' not in exclude:
         regressors['Perceptron'] = {
             'reg': Perceptron(),
-            'parameters': {'penalty': ['None', 'l1', 'l2', 'elasticnet']}
+            'parameters': {
+                #'penalty': ['None', 'l1', 'l2', 'elasticnet']
+            }
         }
 
     if 'GaussianProcessRegressor' not in exclude:
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
-            'parameters': {'alpha': [0.0000000001, 0.00000000015, 0.000000001]}
+            'parameters': {
+                #'alpha': [0.0000000001, 0.00000000015, 0.000000001]
+            }
         }
 
     if 'Ridge' not in exclude:
         regressors['Ridge'] = {
             'reg': Ridge(),
-            'parameters': {'normalize': [True, False]}
+            'parameters': {
+                #'normalize': [True, False]
+                }
         }
 
     if 'Lasso' not in exclude:
         regressors['Lasso'] = {
             'reg': Lasso(),
-            'parameters': {'alpha': [0.25, 0.5, 0.75, 1.0]}
+            'parameters': {
+                #'alpha': [0.25, 0.5, 0.75, 1.0]
+            }
         }
 
     if 'Lars' not in exclude:
