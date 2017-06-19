@@ -163,7 +163,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'GaussianProcessRegressor' not in exclude:
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
-            'parameters': {}
+            'parameters': {'alpha': [0.0000000001, 0.00000000015, 0.000000001]}
         }
 
     if 'Ridge' not in exclude:
@@ -175,8 +175,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Lasso' not in exclude:
         regressors['Lasso'] = {
            'reg': Lasso(),
-           'parameters': {'alpha': [0.25, 0.5, 0.75, 1.0],
-                          'normalize': [True, False],}
+           'parameters': {'alpha': [0.25, 0.5, 0.75, 1.0]}
         }
 
     if 'Lars' not in exclude:
