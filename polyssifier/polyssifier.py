@@ -14,7 +14,8 @@ from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
-from .poly_utils import build_classifiers, MyVoter, build_regressors, getRegressors, MyRegressionAverager
+from .poly_utils import build_classifiers, MyVoter, build_regressors, getRegressors, MyRegressionAverager, \
+    MyRegressionMedianer
 from .report import Report
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
@@ -145,7 +146,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     temp = np.zeros((n_class, n_class))
     temp_pred = np.zeros((data.shape[0], ))
     for n, (train, test) in enumerate(kf):
-        reg = MyRegressionAverager(fitted_regs.loc[n].values)
+        reg = MyRegressionMedianer(fitted_regs.loc[n].values)
         X, y = data[train, :], label[train]
         scores.loc[n, ('Averaging', 'train')] = _scorer(reg, X, y)
         X, y = data[test, :], label[test]
