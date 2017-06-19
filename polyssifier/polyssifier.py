@@ -139,11 +139,6 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
         test_prob[reg_name] = temp_prob
 
 
-    #This loop calculates the cross validation predictions for each regressor pipeline.
-    #for key in regressors:
-    #    predictions[key] = cross_val_predict(regressors.get(key)['reg'], shared['X'], y=label, cv=kf)
-
-
     # Voting
 #    fitted_regs = pd.DataFrame(fitted_regs)
 #    scores['Voting', 'train'] = np.zeros((n_folds, ))
