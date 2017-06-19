@@ -22,7 +22,7 @@ logger.setLevel(logging.INFO)
 
 mean_squared_error = False
 r_squared = False
-def poly(data, label, n_folds=10, scale=True, exclude=[],
+def polyr(data, label, n_folds=10, scale=True, exclude=[],
          feature_selection=False, save=True, scoring='r_squared',
          project_name='', concurrency=1, verbose=True):
     '''
@@ -120,7 +120,6 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     # Gather results
     for reg_name in regressors:
         coefficients[reg_name] = []
-        temp = np.zeros((n_class, n_class))
         temp_pred = np.zeros((data.shape[0], ))
         temp_prob = np.zeros((data.shape[0], ))
         regs = fitted_regs[reg_name]
@@ -134,35 +133,8 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
             temp_pred[kf[n][1]] = prediction
             coefficients[reg_name].append(coefs)
 
-        confusions[reg_name] = temp
         predictions[reg_name] = temp_pred
         test_prob[reg_name] = temp_prob
-
-
-    # Voting
-#    fitted_regs = pd.DataFrame(fitted_regs)
-#    scores['Voting', 'train'] = np.zeros((n_folds, ))
-#    scores['Voting', 'test'] = np.zeros((n_folds, ))
-#    temp = np.zeros((n_class, n_class))
-#    temp_pred = np.zeros((data.shape[0], ))
-#    for n, (train, test) in enumerate(kf):
-#        reg = MyVoter(fitted_regs.loc[n].values)
-#        X, y = data[train, :], label[train]
-#        scores.loc[n, ('Voting', 'train')] = _scorer(reg, X, y)
-#        X, y = data[test, :], label[test]
-#        scores.loc[n, ('Voting', 'test')] = _scorer(reg, X, y)
-#        temp_pred[test] = reg.predict(X)
-#        temp += confusion_matrix(y, temp_pred[test])
-
-#    confusions['Voting'] = temp
-#    predictions['Voting'] = temp_pred
-#    test_prob['Voting'] = temp_pred
-    ######
-
-    # saving confusion matrices
-    if save:
-        with open('poly_' + project_name + '/confusions.pkl', 'wb') as f:
-            p.dump(confusions, f, protocol=2)
 
     if verbose:
         print(scores.astype('float').describe().transpose()
