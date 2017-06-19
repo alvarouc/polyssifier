@@ -14,7 +14,7 @@ from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
-from .poly_utils import build_classifiers, MyVoter, build_regressors, getRegressors
+from .poly_utils import build_classifiers, MyVoter, build_regressors, getRegressors, MyRegressionAverager
 from .report import Report
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
@@ -135,6 +135,24 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
 
         predictions[reg_name] = temp_pred
         test_prob[reg_name] = temp_prob
+
+    #This performs the voting.
+
+    # Voting
+    fitted_regs = pd.DataFrame(fitted_regs)
+    scores['Voting', 'train'] = np.zeros((n_folds, ))
+    scores['Voting', 'test'] = np.zeros((n_folds, ))
+    temp = np.zeros((n_class, n_class))
+    temp_pred = np.zeros((data.shape[0], ))
+    for n, (train, test) in enumerate(kf):
+        reg = MyRegressionAverager(fitted_regs.loc[n].values)
+        X, y = data[train, :], label[train]
+        scores.loc[n, ('Voting', 'train')] = _scorer(reg, X, y)
+        X, y = data[test, :], label[test]
+        scores.loc[n, ('Voting', 'test')] = _scorer(reg, X, y)
+        temp_pred[test] = reg.predict(X)
+
+    predictions['Voting'] = temp_pred
 
     if verbose:
         print(scores.astype('float').describe().transpose()
