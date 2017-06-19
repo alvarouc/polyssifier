@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 
 mean_squared_error = False
 r_squared = False
-def poly(data, label, n_folds=10, scale=True, exclude=[],
+def polyr(data, label, n_folds=10, scale=True, exclude=[],
          feature_selection=False, save=True, scoring='r_squared',
          project_name='', concurrency=1, verbose=True):
     '''
@@ -59,10 +59,10 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     label = _le.transform(label)
     n_class = len(np.unique(label))
 
-    #If the user wishes to save the intermediate steps and there is not already a polyssifier models directory then
+    #If the user wishes to save the intermediate steps and there is not already a polyrssifier models directory then
     #this statement creates one.
-    if save and not os.path.exists('poly_{}/models'.format(project_name)):
-        os.makedirs('poly_{}/models'.format(project_name))
+    if save and not os.path.exists('polyr_{}/models'.format(project_name)):
+        os.makedirs('polyr_{}/models'.format(project_name))
 
     #Whether or not intermeciate steps will be printed out.
     if not verbose:
@@ -137,23 +137,23 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
         predictions[reg_name] = temp_pred
         test_prob[reg_name] = temp_prob
 
-    #This performs the averaging of the predictions of the regressors.
+    #This performs the Median of the predictions of the regressors.
 
-    # Averaging
+    # Median
     fitted_regs = pd.DataFrame(fitted_regs)
-    scores['Averaging', 'train'] = np.zeros((n_folds, ))
-    scores['Averaging', 'test'] = np.zeros((n_folds, ))
+    scores['Median', 'train'] = np.zeros((n_folds, ))
+    scores['Median', 'test'] = np.zeros((n_folds, ))
     temp = np.zeros((n_class, n_class))
     temp_pred = np.zeros((data.shape[0], ))
     for n, (train, test) in enumerate(kf):
         reg = MyRegressionMedianer(fitted_regs.loc[n].values)
         X, y = data[train, :], label[train]
-        scores.loc[n, ('Averaging', 'train')] = _scorer(reg, X, y)
+        scores.loc[n, ('Median', 'train')] = _scorer(reg, X, y)
         X, y = data[test, :], label[test]
-        scores.loc[n, ('Averaging', 'test')] = _scorer(reg, X, y)
+        scores.loc[n, ('Median', 'test')] = _scorer(reg, X, y)
         temp_pred[test] = reg.predict(X)
 
-    predictions['Averaging'] = temp_pred
+    predictions['Median'] = temp_pred
 
     if verbose:
         print(scores.astype('float').describe().transpose()
@@ -194,7 +194,7 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     train, test = args[0]['kf'][n_fold]
     X = args[0]['X'][train, :]
     y = args[0]['y'][train]
-    file_name = 'poly_{}/models/{}_{}.p'.format(
+    file_name = 'polyr_{}/models/{}_{}.p'.format(
         project_name, reg_name, n_fold + 1)
     start = time.time()
     if os.path.isfile(file_name):
@@ -283,7 +283,7 @@ if __name__ == '__main__':
     logger.info(
         'Starting classification with {} workers'.format(args.concurrency))
 
-    report = poly(data, label, n_folds=5, project_name=args.name,
+    report = polyr(data, label, n_folds=5, project_name=args.name,
                   concurrency=int(args.concurrency))
-    report.plot_scores(os.path.join('poly_' + args.name, args.name))
-    report.plot_features(os.path.join('poly_' + args.name, args.name))
+    report.plot_scores(os.path.join('polyr_' + args.name, args.name))
+    report.plot_features(os.path.join('polyr_' + args.name, args.name))
