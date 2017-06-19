@@ -201,13 +201,14 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'OrthogonalMatchingPursuit' not in exclude:
         regressors['OrthogonalMatchingPursuit'] = {
             'reg': OrthogonalMatchingPursuit(),
-            'parameters': {}
+            'parameters': {} #Best to leave default parameters
         }
 
     if 'ElasticNet' not in exclude:
         regressors['ElasticNet'] = {
             'reg': ElasticNet(),
-            'parameters': {}
+            'parameters': {'alpha': [0.25, 0.50, 0.75, 1.00],
+                           'l1_ratio': [0.00, 0.25, 0.50, 0.75, 1.00]}
         }
 
     def name(x):
