@@ -158,7 +158,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['Perceptron'] = {
             'reg': Perceptron(),
             'parameters': {
-                #'penalty': ['None', 'l1', 'l2', 'elasticnet']
+                'penalty': ['None', 'l1', 'l2', 'elasticnet']
             }
         }
 
@@ -166,7 +166,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
             'parameters': {
-                #'alpha': [0.0000000001, 0.00000000015, 0.000000001]
+                'alpha': [0.0000000001, 0.00000000015, 0.000000001]
             }
         }
 
@@ -174,7 +174,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['Ridge'] = {
             'reg': Ridge(),
             'parameters': {
-                #'normalize': [True, False]
+                'normalize': [True, False]
                 }
         }
 
@@ -182,7 +182,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['Lasso'] = {
             'reg': Lasso(),
             'parameters': {
-                #'alpha': [0.25, 0.5, 0.75, 1.0]
+                'alpha': [0.25, 0.5, 0.75, 1.0]
             }
         }
 
