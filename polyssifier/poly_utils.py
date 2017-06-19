@@ -157,7 +157,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Perceptron' not in exclude:
         regressors['Perceptron'] = {
             'reg': Perceptron(),
-            'parameters': {}
+            'parameters': {'penalty': ['None', 'l2', 'l1', 'elasticnet']}
         }
 
     if 'GaussianProcessRegressor' not in exclude:
@@ -175,7 +175,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Lasso' not in exclude:
         regressors['Lasso'] = {
            'reg': Lasso(),
-           'parameters': {'alpha': [0.5, 1.0],
+           'parameters': {'alpha': [0.25, 0.5, 0.75, 1.0],
                           'normalize': [True, False],}
         }
 
