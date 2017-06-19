@@ -95,9 +95,9 @@ def plot_scores(scores, file_name='temp', min_val=None):
     ax1.set_xticklabels([])
     ax1.set_xlabel('')
     ax1.yaxis.grid(True)
-
     temp = np.array(data)
-    ax1.set_ylim(0, 1)
+    ylim = 0
+    ax1.set_ylim(ylim, 1)
     for n, rect in enumerate(ax1.patches):
         if n >= nc:
             break
