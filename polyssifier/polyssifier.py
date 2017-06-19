@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 mean_squared_error = False
 r_squared = False
 def poly(data, label, n_folds=10, scale=True, exclude=[],
-         feature_selection=False, save=True, scoring='auc',
+         feature_selection=False, save=True, scoring='r_squared',
          project_name='', concurrency=1, verbose=True):
     '''
     Input
@@ -34,7 +34,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     exclude      = list of classifiers to exclude from the analysis
     feature_selection = whether to use feature selection or not (anova)
     save         = whether to save intermediate steps or not
-    scoring      = Type of score to use ['auc', 'f1']
+    scoring      = Type of score to use ['mean_squared_error', 'r_squared']
     project_name = prefix used to save the intermediate steps
     concurrency  = number of parallel jobs to run
     verbose      = whether to print or not results
