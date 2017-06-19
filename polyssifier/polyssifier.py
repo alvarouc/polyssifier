@@ -22,7 +22,7 @@ logger.setLevel(logging.INFO)
 
 mean_squared_error = False
 r_squared = False
-def polyr(data, label, n_folds=10, scale=True, exclude=[],
+def poly(data, label, n_folds=10, scale=True, exclude=[],
          feature_selection=False, save=True, scoring='r_squared',
          project_name='', concurrency=1, verbose=True):
     '''
@@ -60,8 +60,8 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
 
     #If the user wishes to save the intermediate steps and there is not already a polyssifier models directory then
     #this statement creates one.
-    if save and not os.path.exists('polyr_{}/models'.format(project_name)):
-        os.makedirs('polyr_{}/models'.format(project_name))
+    if save and not os.path.exists('poly_{}/models'.format(project_name)):
+        os.makedirs('poly_{}/models'.format(project_name))
 
     #Whether or not intermeciate steps will be printed out.
     if not verbose:
@@ -175,7 +175,7 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     train, test = args[0]['kf'][n_fold]
     X = args[0]['X'][train, :]
     y = args[0]['y'][train]
-    file_name = 'polyr_{}/models/{}_{}.p'.format(
+    file_name = 'poly_{}/models/{}_{}.p'.format(
         project_name, reg_name, n_fold + 1)
     start = time.time()
     if os.path.isfile(file_name):
@@ -264,7 +264,7 @@ if __name__ == '__main__':
     logger.info(
         'Starting classification with {} workers'.format(args.concurrency))
 
-    report = polyr(data, label, n_folds=5, project_name=args.name,
+    report = poly(data, label, n_folds=5, project_name=args.name,
                   concurrency=int(args.concurrency))
-    report.plot_scores(os.path.join('polyr_' + args.name, args.name))
-    report.plot_features(os.path.join('polyr_' + args.name, args.name))
+    report.plot_scores(os.path.join('poly_' + args.name, args.name))
+    report.plot_features(os.path.join('poly_' + args.name, args.name))
