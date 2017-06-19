@@ -163,7 +163,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'GaussianProcessRegressor' not in exclude:
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
-            'parameters': {}
+            'parameters': {'kernel': ['rbf', 'poly']}
         }
 
     if 'Ridge' not in exclude:
