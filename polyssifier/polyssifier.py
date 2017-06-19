@@ -131,7 +131,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
             scores.loc[n, (reg_name, 'train')] = train_score
             scores.loc[n, (reg_name, 'test')] = test_score
             temp_prob[kf[n][1]] = prob
-            temp_pred[kf[n][1]] = _le.inverse_transform(prediction)
+            temp_pred[kf[n][1]] = prediction
             coefficients[reg_name].append(coefs)
 
         confusions[reg_name] = temp
