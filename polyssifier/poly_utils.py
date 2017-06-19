@@ -54,6 +54,25 @@ class MyRegressionAverager(object):
         avg = np.average(predictions, axis=1)
         return avg
 
+class MyRegressionMedianer(object):
+    """
+    Regression averager
+    Receives fitted regressors and averages the predictions of the regressors.
+    """
+
+    def __init__(self, estimators):
+        '''
+        estimators: List of fitted regressors
+        '''
+        self.estimators_ = estimators
+
+    def predict(self, X):
+        predictions = np.asarray(
+            [reg.predict(X) for reg in self.estimators_]).T
+
+        avg = np.median(predictions, axis=1)
+        return avg
+
 def build_classifiers(exclude, scale, feature_selection, nCols):
     '''
     Input:
