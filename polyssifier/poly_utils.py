@@ -157,7 +157,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Perceptron' not in exclude:
         regressors['Perceptron'] = {
             'reg': Perceptron(),
-            'parameters': {} #Best to leave the default parameters
+            'parameters': {'penalty': ['None', 'l2', 'l1', 'elasticnet']}
         }
 
     if 'GaussianProcessRegressor' not in exclude:
@@ -206,7 +206,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['ElasticNet'] = {
             'reg': ElasticNet(),
             'parameters': {'alpha': [0.25, 0.50, 0.75, 1.00],
-                           'l1_ratio': [0.00, 0.25, 0.50, 0.75, 1.00]}
+                           'l1_ratio': [0.25, 0.50, 0.75, 1.00]}
         }
 
     def name(x):
