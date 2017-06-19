@@ -157,14 +157,15 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Perceptron' not in exclude:
         regressors['Perceptron'] = {
             'reg': Perceptron(),
-            'parameters': {'penalty': ['None', 'l2', 'l1', 'elasticnet']}
+            'parameters': {'penalty': ['None', 'l2', 'l1', 'elasticnet'],
+                           'alpha': [0.00001, 0.0001, 0.001, 0.01, 0.1]}
         }
 
     if 'GaussianProcessRegressor' not in exclude:
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
             'parameters': {
-                'alpha': [0.0000000001, 0.00000000015, 0.000000001]
+                'alpha': [0.0000000001, 0.000000001, 0.00000001, 0.0000001]
             }
         }
 
