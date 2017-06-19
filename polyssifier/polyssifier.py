@@ -60,8 +60,8 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
 
     #If the user wishes to save the intermediate steps and there is not already a polyssifier models directory then
     #this statement creates one.
-    if save and not os.path.exists('poly_{}/models'.format(project_name)):
-        os.makedirs('poly_{}/models'.format(project_name))
+    if save and not os.path.exists('polyr_{}/models'.format(project_name)):
+        os.makedirs('polyr_{}/models'.format(project_name))
 
     #Whether or not intermeciate steps will be printed out.
     if not verbose:
@@ -175,7 +175,7 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     train, test = args[0]['kf'][n_fold]
     X = args[0]['X'][train, :]
     y = args[0]['y'][train]
-    file_name = 'poly_{}/models/{}_{}.p'.format(
+    file_name = 'polyr_{}/models/{}_{}.p'.format(
         project_name, reg_name, n_fold + 1)
     start = time.time()
     if os.path.isfile(file_name):
