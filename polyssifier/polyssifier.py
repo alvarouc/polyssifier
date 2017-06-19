@@ -9,7 +9,7 @@ import os
 import pandas as pd
 from copy import deepcopy
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_predict, KFold
-from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score, mean_squared_error
+from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score, mean_squared_error, r2_score
 from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
@@ -20,6 +20,8 @@ sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+mean_squared_error = False
+r_squared = False
 def poly(data, label, n_folds=10, scale=True, exclude=[],
          feature_selection=False, save=True, scoring='auc',
          project_name='', concurrency=1, verbose=True):
@@ -42,6 +44,12 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     confusions   = confussion matrix for each classifier
     predictions  = Cross validated predicitons for each classifier
     '''
+
+    #This assigns the scoring type
+    if (scoring == 'mean_squared_error'):
+        mean_squared_error = True
+    elif (scoring == 'r_squared'):
+        r_squared = True
 
     assert label.shape[0] == data.shape[0],\
         "Label dimesions do not match data number of rows"
@@ -174,7 +182,10 @@ def _scorer(reg, X, y):
     Output:
     - The mean square error of the regressor function for that training data set
     '''
-    return mean_squared_error(y, reg.predict(X))
+    if mean_squared_error:
+        return mean_squared_error(y, reg.predict(X))
+    else:
+        return r2_score(y, reg.predict(X))
 
 
 def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
