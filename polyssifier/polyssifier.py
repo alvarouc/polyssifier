@@ -130,15 +130,18 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
             regs.append(fitted_reg)
             scores.loc[n, (reg_name, 'train')] = train_score
             scores.loc[n, (reg_name, 'test')] = test_score
+            temp_prob[kf[n][1]] = prob
+            temp_pred[kf[n][1]] = _le.inverse_transform(prediction)
             coefficients[reg_name].append(coefs)
 
         confusions[reg_name] = temp
+        predictions[reg_name] = temp_pred
         test_prob[reg_name] = temp_prob
 
 
     #This loop calculates the cross validation predictions for each regressor pipeline.
-    for key in regressors:
-        predictions[key] = cross_val_predict(regressors.get(key)['reg'], shared['X'], y=label, cv=kf)
+    #for key in regressors:
+    #    predictions[key] = cross_val_predict(regressors.get(key)['reg'], shared['X'], y=label, cv=kf)
 
 
     # Voting
