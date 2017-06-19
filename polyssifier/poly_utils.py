@@ -175,7 +175,8 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Lasso' not in exclude:
         regressors['Lasso'] = {
            'reg': Lasso(),
-           'parameters': {}
+           'parameters': {'alpha': [0.0, 0.5, 1.0],
+                          'normalize': [True, False],}
         }
 
     if 'Lars' not in exclude:
