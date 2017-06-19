@@ -136,23 +136,23 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
         predictions[reg_name] = temp_pred
         test_prob[reg_name] = temp_prob
 
-    #This performs the voting.
+    #This performs the averaging of the predictions of the regressors.
 
-    # Voting
+    # Averaging
     fitted_regs = pd.DataFrame(fitted_regs)
-    scores['Voting', 'train'] = np.zeros((n_folds, ))
-    scores['Voting', 'test'] = np.zeros((n_folds, ))
+    scores['Averaging', 'train'] = np.zeros((n_folds, ))
+    scores['Averaging', 'test'] = np.zeros((n_folds, ))
     temp = np.zeros((n_class, n_class))
     temp_pred = np.zeros((data.shape[0], ))
     for n, (train, test) in enumerate(kf):
         reg = MyRegressionAverager(fitted_regs.loc[n].values)
         X, y = data[train, :], label[train]
-        scores.loc[n, ('Voting', 'train')] = _scorer(reg, X, y)
+        scores.loc[n, ('Averaging', 'train')] = _scorer(reg, X, y)
         X, y = data[test, :], label[test]
-        scores.loc[n, ('Voting', 'test')] = _scorer(reg, X, y)
+        scores.loc[n, ('Averaging', 'test')] = _scorer(reg, X, y)
         temp_pred[test] = reg.predict(X)
 
-    predictions['Voting'] = temp_pred
+    predictions['Averaging'] = temp_pred
 
     if verbose:
         print(scores.astype('float').describe().transpose()
