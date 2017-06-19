@@ -145,13 +145,13 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Linear Regression' not in exclude:
         regressors['Linear Regression'] = {
             'reg': LinearRegression(),
-            'parameters': {}
+            'parameters': {} #Best to leave default parameters
         }
 
     if 'Bayesian Ridge' not in exclude:
         regressors['Bayesian Ridge'] = {
             'reg': BayesianRidge(),
-            'parameters': {}
+            'parameters': {} #Investigate if alpha and lambda parameters should be changed
         }
 
     if 'Perceptron' not in exclude:
@@ -174,7 +174,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['Ridge'] = {
             'reg': Ridge(),
             'parameters': {
-                'normalize': [True, False]
+                'alpha': [0.25, 0.50, 0.75, 1.00]
                 }
         }
 
@@ -182,20 +182,20 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['Lasso'] = {
             'reg': Lasso(),
             'parameters': {
-                'alpha': [0.25, 0.5, 0.75, 1.0]
+                'alpha': [0.25, 0.50, 0.75, 1.00]
             }
         }
 
     if 'Lars' not in exclude:
         regressors['Lars'] = {
             'reg': Lars(),
-            'parameters': {}
+            'parameters': {} #Best to leave the default parameters
         }
 
     if 'LassoLars' not in exclude:
         regressors['LassoLars'] = {
             'reg': LassoLars(),
-            'parameters': {}
+            'parameters': {'alpha': [0.25, 0.50, 0.75, 1.00]}
         }
 
     if 'OrthogonalMatchingPursuit' not in exclude:
