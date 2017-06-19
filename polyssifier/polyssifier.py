@@ -215,7 +215,8 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
         logger.info('Training {} {}'.format(reg_name, n_fold))
         reg = deepcopy(val['reg'])
         if val['parameters']:
-            reg = GridSearchCV(reg, val['parameters'], n_jobs=1, cv=3,
+            kfold = KFold(n_splits=3, random_state=1988)
+            reg = GridSearchCV(reg, val['parameters'], n_jobs=1, cv=kfold,
                                scoring=_scorer)
         reg.fit(X, y)
         if save:
