@@ -97,8 +97,7 @@ def plot_scores(scores, file_name='temp', min_val=None):
     ax1.yaxis.grid(True)
 
     temp = np.array(data)
-    ylim = np.max(temp.min() - .1, 0) if min_val is None else min_val
-    ax1.set_ylim(ylim, 1)
+    ax1.set_ylim(0, 1)
     for n, rect in enumerate(ax1.patches):
         if n >= nc:
             break
