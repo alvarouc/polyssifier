@@ -182,7 +182,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['Lasso'] = {
             'reg': Lasso(),
             'parameters': {
-                'alpha': [0.0, 0.25, 0.5, 0.75, 1.0]
+                'alpha': [0.25, 0.5, 0.75, 1.0]
             }
         }
 
