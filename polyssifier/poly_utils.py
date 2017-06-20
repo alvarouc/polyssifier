@@ -198,7 +198,9 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'reg': Perceptron(),
             'parameters': {'penalty': ['None', 'l2', 'l1', 'elasticnet'],
                            'alpha': [0.00001, 0.0001, 0.001, 0.01, 0.1],
-                           'n_iter': [5, 25, 50, 200],}
+                           'n_iter': [5, 25, 50, 200],
+                           'fit_intercept': [True, False]
+            }
         }
 
     if 'GaussianProcessRegressor' not in exclude:
@@ -206,7 +208,8 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'reg': GaussianProcessRegressor(),
             'parameters': {
                 'alpha': [0.0000000001, 0.000000001, 0.00000001, 0.0000001],
-                'kernel': [RBF(x) for x in [1, 10, 100]]
+                'kernel': [RBF(x) for x in [0.01, 0.1, 1, 10, 100]],
+                'normalize_y': [True, False]
             }
         }
 
