@@ -204,8 +204,8 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
             'parameters': {
-                'alpha': [0.01, 0.1, 1.0],
-                'kernel': [RBF(x) for x in [0.01, 1, 100]],
+                'alpha': [0.01, 0.1, 1.0, 10],
+                'kernel': [RBF(x) for x in [0.01, 1, 100, 1000]],
             }
         }
 
