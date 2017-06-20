@@ -21,10 +21,8 @@ sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-mean_squared_error = False
-r_squared = False
 def polyr(data, label, n_folds=10, scale=True, exclude=[],
-         feature_selection=False, save=True, scoring='r_squared',
+         feature_selection=False, save=True, scoring='r2',
          project_name='', concurrency=1, verbose=True):
     '''
     Input
@@ -35,7 +33,7 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     exclude      = list of classifiers to exclude from the analysis
     feature_selection = whether to use feature selection or not (anova)
     save         = whether to save intermediate steps or not
-    scoring      = Type of score to use ['mean_squared_error', 'r_squared']
+    scoring      = Type of score to use ['mse', 'r2']
     project_name = prefix used to save the intermediate steps
     concurrency  = number of parallel jobs to run
     verbose      = whether to print or not results
@@ -45,12 +43,6 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     confusions   = confussion matrix for each classifier
     predictions  = Cross validated predicitons for each classifier
     '''
-
-    #This assigns the scoring type
-    if (scoring == 'mean_squared_error'):
-        mean_squared_error = True
-    elif (scoring == 'r_squared'):
-        r_squared = True
 
     assert label.shape[0] == data.shape[0],\
         "Label dimesions do not match data number of rows"
@@ -137,9 +129,7 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
         predictions[reg_name] = temp_pred
         test_prob[reg_name] = temp_prob
 
-    #This performs the Median of the predictions of the regressors.
-
-    # Median
+    #This calculated the Median of the predictions of the regressors.
     fitted_regs = pd.DataFrame(fitted_regs)
     scores['Median', 'train'] = np.zeros((n_folds, ))
     scores['Median', 'test'] = np.zeros((n_folds, ))
@@ -148,9 +138,9 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     for n, (train, test) in enumerate(kf):
         reg = MyRegressionMedianer(fitted_regs.loc[n].values)
         X, y = data[train, :], label[train]
-        scores.loc[n, ('Median', 'train')] = _scorer(reg, X, y)
+        scores.loc[n, ('Median', 'train')] = _reg_scorer(reg, X, y, scoring)
         X, y = data[test, :], label[test]
-        scores.loc[n, ('Median', 'test')] = _scorer(reg, X, y)
+        scores.loc[n, ('Median', 'test')] = _reg_scorer(reg, X, y, scoring)
         temp_pred[test] = reg.predict(X)
 
     predictions['Median'] = temp_pred
@@ -161,7 +151,7 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     return Report(scores, confusions, predictions, test_prob, coefficients)
 
 
-def _scorer(reg, X, y):
+def _reg_scorer(reg, X, y, scoring):
     '''Function that scores a regressor according to what is available as a
     predict function.
     Input:
@@ -169,13 +159,13 @@ def _scorer(reg, X, y):
     - X = input data matrix
     - y = corresponding values to the data matrix
     Output:
-    - The mean square error of the regressor function for that training data set
+    - The mean sqaure error or r squared value for the given regressor and data. The default scoring is
+    r squared value.
     '''
-    if mean_squared_error:
+    if scoring == 'mse':
         return mean_squared_error(y, reg.predict(X))
     else:
         return r2_score(y, reg.predict(X))
-
 
 def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     '''
@@ -206,17 +196,17 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
         if val['parameters']:
             kfold = KFold(n_splits=3, random_state=1988)
             reg = GridSearchCV(reg, val['parameters'], n_jobs=1, cv=kfold,
-                               scoring=_scorer)
+                               scoring=_reg_scorer)
         reg.fit(X, y)
         if save:
             joblib.dump(reg, file_name)
 
-    train_score = _scorer(reg, X, y)
+    train_score = _reg_scorer(reg, X, y, scoring)
 
     X = args[0]['X'][test, :]
     y = args[0]['y'][test]
     # Scores
-    test_score = _scorer(reg, X, y)
+    test_score = _reg_scorer(reg, X, y, scoring)
     ypred = reg.predict(X)
     yprob = 0
 
