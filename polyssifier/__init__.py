@@ -1,1 +1,1 @@
-from .polyssifier import polyr
+from .polyssifier import poly, polyr
