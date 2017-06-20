@@ -518,7 +518,13 @@ if __name__ == '__main__':
     logger.info(
         'Starting classification with {} workers'.format(args.concurrency))
 
-    report = polyr(data, label, n_folds=5, project_name=args.name,
-                  concurrency=int(args.concurrency))
+    #If there are more than 50 unique labels, then it is most likely a regression problem. Otherwise it is probably
+    #a classification problem.
+    if(len(np.unique(label)) > 50):
+        report = polyr(data, label, n_folds=5, project_name=args.name,
+                    concurrency=int(args.concurrency))
+    else:
+        report = poly(data, label, n_folds=5, project_name=args.name,
+                       concurrency=int(args.concurrency))
     report.plot_scores(os.path.join('polyr_' + args.name, args.name))
     report.plot_features(os.path.join('polyr_' + args.name, args.name))
