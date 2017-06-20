@@ -93,7 +93,6 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     shared['kf'] = kf
     shared['X'] = data
     shared['y'] = label
-    shared['scoring'] = scoring
     args[0] = shared
 
     args2 = []
@@ -182,6 +181,15 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     n_fold: number of folds
     project_name: string with the project folder name to save model
     '''
+
+    #Creates the scoring string to pass into grid search.
+    if scoring == 'mse':
+        scorestring = 'neg_mean_squared_error'
+    elif scoring == 'r2':
+        scorestring = 'r2'
+    else:
+        scorestring = 'r2'
+
     train, test = args[0]['kf'][n_fold]
     X = args[0]['X'][train, :]
     y = args[0]['y'][train]
@@ -197,7 +205,7 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
         if val['parameters']:
             kfold = KFold(n_splits=3, random_state=1988)
             reg = GridSearchCV(reg, val['parameters'], n_jobs=1, cv=kfold,
-                               scoring=_reg_scorer)
+                               scoring=scorestring)
         reg.fit(X, y)
         if save:
             joblib.dump(reg, file_name)
