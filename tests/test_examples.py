@@ -45,11 +45,3 @@ def test_plot():
                   feature_selection=True,
                   save=False, project_name='test2')
     report.plot_scores()
-
-
-@pytest.mark.medium
-def test_plot():
-    report = poly(data, label, n_folds=5, verbose=1,
-                  feature_selection=True,
-                  save=False, project_name='test2')
-    report.plot_scores()
