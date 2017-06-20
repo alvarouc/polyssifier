@@ -99,14 +99,20 @@ def plot_scores(scores, scoring, file_name='temp', min_val=None):
 
     temp = np.array(data)
     if(scoring == 'r2'):
-        ylim = 0
+        ymax = 1
+        ymin = 0
+    elif(scoring == 'mse'):
+        ymin = np.max(temp.min() - .1, 0) if min_val is None else min_val
+        ymax = np.max(temp.max() - .1, 0)
     else:
-        ylim = np.max(temp.min() - .1, 0) if min_val is None else min_val
-    ax1.set_ylim(ylim, 1)
+        ymin = np.max(temp.min() - .1, 0) if min_val is None else min_val
+        ymax = 1
+    ax1.set_ylim(ymin, ymax)
+
     for n, rect in enumerate(ax1.patches):
         if n >= nc:
             break
-        ax1.text(rect.get_x() - rect.get_width() / 2., ylim + (1 - ylim) * .01,
+        ax1.text(rect.get_x() - rect.get_width() / 2., ymin + (1 - ymin) * .01,
                  data.index[n], ha='center', va='bottom',
                  rotation='90', color='black', fontsize=15)
     plt.tight_layout()
