@@ -12,7 +12,7 @@ class Report(object):
     """
 
     def __init__(self, scores, confusions, predictions,
-                 test_prob, coefficients, scoring):
+                 test_prob, coefficients, scoring = 'auc'):
         self.scores = scores
         self.confusions = confusions
         self.predictions = predictions
@@ -75,7 +75,7 @@ def plot_features(coefs, coef_names=None,
         plt.savefig(figure_path)
 
 
-def plot_scores(scores, scoring, file_name='temp', min_val=None):
+def plot_scores(scores, scoring = 'auc', file_name='temp', min_val=None):
 
     df = scores.apply(np.mean).unstack().join(
         scores.apply(np.std).unstack(), lsuffix='_mean', rsuffix='_std')
