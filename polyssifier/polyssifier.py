@@ -153,7 +153,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     if verbose:
         print(scores.astype('float').describe().transpose()
               [['mean', 'std', 'min', 'max']])
-    return Report(scores, confusions, predictions, test_prob, coefficients, scoring)
+    return Report(scores, confusions, predictions, test_prob, coefficients)
 
 def _scorer(clf, X, y):
     '''Function that scores a classifier according to what is available as a
