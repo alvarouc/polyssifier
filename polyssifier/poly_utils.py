@@ -204,8 +204,8 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
             'parameters': {
-                'alpha': [0.01, 0.1, 1.0, 10],
-                'kernel': [RBF(x) for x in [0.01, 1, 100, 1000]],
+                'alpha': [0.01, 0.1, 1.0, 10.0],
+                'kernel': [RBF(x) for x in [0.01, 1.0, 100.0, 1000.0]],
             }
         }
 
@@ -234,7 +234,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'LassoLars' not in exclude:
         regressors['LassoLars'] = {
             'reg': LassoLars(),
-            'parameters': {'alpha': [0.25, 0.50, 0.75, 1.00]}
+            'parameters': {'alpha': [0.25, 0.50, 0.75, 1.00, 10.0]}
         }
 
     if 'OrthogonalMatchingPursuit' not in exclude:
