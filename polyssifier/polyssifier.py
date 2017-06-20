@@ -148,7 +148,7 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     if verbose:
         print(scores.astype('float').describe().transpose()
               [['mean', 'std', 'min', 'max']])
-    return Report(scores, confusions, predictions, test_prob, coefficients)
+    return Report(scores, confusions, predictions, test_prob, coefficients, scoring)
 
 
 def _reg_scorer(reg, X, y, scoring):
