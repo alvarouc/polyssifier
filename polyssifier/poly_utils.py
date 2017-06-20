@@ -4,7 +4,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import (LogisticRegression, LinearRegression, BayesianRidge, Perceptron, Ridge, Lasso,
                                 MultiTaskLasso, ElasticNet, MultiTaskElasticNet, Lars, LassoLars,
-                                OrthogonalMatchingPursuit)
+                                OrthogonalMatchingPursuit, PassiveAggressiveRegressor)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier as MLP
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -193,13 +193,10 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'parameters': {} #Investigate if alpha and lambda parameters should be changed
         }
 
-    if 'Perceptron' not in exclude:
-        regressors['Perceptron'] = {
-            'reg': Perceptron(),
-            'parameters': {'penalty': ['None', 'l2', 'l1', 'elasticnet'],
-                           'alpha': [0.00001, 0.0001, 0.001, 0.01, 0.1],
-                           'n_iter': [5, 25, 50, 200],
-                           'fit_intercept': [True, False]
+    if 'PassiveAggressiveRegressor' not in exclude:
+        regressors['PassiveAggressiveRegressor'] = {
+            'reg': PassiveAggressiveRegressor(),
+            'parameters': {'C': [0.5, 1.0, 1.5]
             }
         }
 
@@ -207,9 +204,8 @@ def build_regressors(exclude, scale, feature_selection, nCols):
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
             'parameters': {
-                'alpha': [0.0000000001, 0.000000001, 0.00000001, 0.0000001],
-                'kernel': [RBF(x) for x in [0.01, 0.1, 1, 10, 100]],
-                'normalize_y': [True, False]
+                'alpha': [0.01, 0.1, 1.0],
+                'kernel': [RBF(x) for x in [0.01, 1, 100]],
             }
         }
 
