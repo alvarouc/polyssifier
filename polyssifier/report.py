@@ -98,6 +98,9 @@ def plot_scores(scores, scoring, file_name='temp', min_val=None):
     ax1.yaxis.grid(True)
 
     temp = np.array(data)
+
+    #These statements check to see what scoring was used and size the y-axis of the graphical score report
+    # accordingly.
     if(scoring == 'r2'):
         ymax = 1
         ymin = 0
