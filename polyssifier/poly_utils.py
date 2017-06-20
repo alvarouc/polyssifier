@@ -2,7 +2,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import LinearSVC, SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression, LinearRegression, BayesianRidge, Perceptron
+from sklearn.linear_model import (LogisticRegression, LinearRegression, BayesianRidge, Perceptron, Ridge, Lasso,
+                                MultiTaskLasso, ElasticNet, MultiTaskElasticNet, Lars, LassoLars,
+                                OrthogonalMatchingPursuit, PassiveAggressiveRegressor)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier as MLP
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -11,6 +13,7 @@ import numpy as np
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.gaussian_process.kernels import RBF
 
 
 class MyVoter(object):
@@ -32,6 +35,44 @@ class MyVoter(object):
             lambda x: np.argmax(np.bincount(x)), axis=1,
             arr=predictions.astype('int'))
         return maj
+
+class MyRegressionAverager(object):
+    """
+    Regression averager
+    Receives fitted regressors and averages the predictions of the regressors.
+    """
+
+    def __init__(self, estimators):
+        '''
+        estimators: List of fitted regressors
+        '''
+        self.estimators_ = estimators
+
+    def predict(self, X):
+        predictions = np.asarray(
+            [reg.predict(X) for reg in self.estimators_]).T
+
+        avg = np.average(predictions, axis=1)
+        return avg
+
+class MyRegressionMedianer(object):
+    """
+    Regression averager
+    Receives fitted regressors and averages the predictions of the regressors.
+    """
+
+    def __init__(self, estimators):
+        '''
+        estimators: List of fitted regressors
+        '''
+        self.estimators_ = estimators
+
+    def predict(self, X):
+        predictions = np.asarray(
+            [reg.predict(X) for reg in self.estimators_]).T
+
+        avg = np.median(predictions, axis=1)
+        return avg
 
 def build_classifiers(exclude, scale, feature_selection, nCols):
     '''
@@ -143,25 +184,70 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Linear Regression' not in exclude:
         regressors['Linear Regression'] = {
             'reg': LinearRegression(),
-            'parameters': {}
+            'parameters': {} #Best to leave default parameters
         }
 
     if 'Bayesian Ridge' not in exclude:
         regressors['Bayesian Ridge'] = {
             'reg': BayesianRidge(),
-            'parameters': {}
+            'parameters': {} #Investigate if alpha and lambda parameters should be changed
         }
 
-    if 'Perceptron' not in exclude:
-        regressors['Perceptron'] = {
-            'reg': Perceptron(),
-            'parameters': {}
+    if 'PassiveAggressiveRegressor' not in exclude:
+        regressors['PassiveAggressiveRegressor'] = {
+            'reg': PassiveAggressiveRegressor(),
+            'parameters': {'C': [0.5, 1.0, 1.5]
+            }
         }
 
     if 'GaussianProcessRegressor' not in exclude:
         regressors['GaussianProcessRegressor'] = {
             'reg': GaussianProcessRegressor(),
-            'parameters': {}
+            'parameters': {
+                'alpha': [0.01, 0.1, 1.0, 10.0],
+                'kernel': [RBF(x) for x in [0.01, 1.0, 100.0, 1000.0]],
+            }
+        }
+
+    if 'Ridge' not in exclude:
+        regressors['Ridge'] = {
+            'reg': Ridge(),
+            'parameters': {
+                'alpha': [0.25, 0.50, 0.75, 1.00]
+                }
+        }
+
+    if 'Lasso' not in exclude:
+        regressors['Lasso'] = {
+            'reg': Lasso(),
+            'parameters': {
+                'alpha': [0.25, 0.50, 0.75, 1.00]
+            }
+        }
+
+    if 'Lars' not in exclude:
+        regressors['Lars'] = {
+            'reg': Lars(),
+            'parameters': {} #Best to leave the default parameters
+        }
+
+    if 'LassoLars' not in exclude:
+        regressors['LassoLars'] = {
+            'reg': LassoLars(),
+            'parameters': {'alpha': [0.25, 0.50, 0.75, 1.00, 10.0]}
+        }
+
+    if 'OrthogonalMatchingPursuit' not in exclude:
+        regressors['OrthogonalMatchingPursuit'] = {
+            'reg': OrthogonalMatchingPursuit(),
+            'parameters': {} #Best to leave default parameters
+        }
+
+    if 'ElasticNet' not in exclude:
+        regressors['ElasticNet'] = {
+            'reg': ElasticNet(),
+            'parameters': {'alpha': [0.25, 0.50, 0.75, 1.00],
+                           'l1_ratio': [0.25, 0.50, 0.75, 1.00]}
         }
 
     def name(x):
@@ -192,3 +278,16 @@ def build_regressors(exclude, scale, feature_selection, nCols):
                 np.round(nCols / 5), nCols, 5).astype('int').tolist()
 
     return regressors
+
+#This function is not used, but once was.
+def getRegressors(regressors):
+    toReturn = collections.OrderedDict()
+    if 'Linear Regression' in regressors:
+        toReturn['Linear Regression'] = LinearRegression()
+    if 'Bayesian Ridge' in regressors:
+        toReturn['Bayesian Ridge'] = BayesianRidge()
+    if 'Perceptron' in regressors:
+        toReturn['Perceptron'] = Perceptron()
+    if 'GaussianProcessRegressor' in regressors:
+        toReturn['GaussianProcessRegressor'] = GaussianProcessRegressor()
+    return toReturn

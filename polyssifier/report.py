@@ -12,15 +12,16 @@ class Report(object):
     """
 
     def __init__(self, scores, confusions, predictions,
-                 test_prob, coefficients):
+                 test_prob, coefficients, scoring):
         self.scores = scores
         self.confusions = confusions
         self.predictions = predictions
         self.test_proba = test_prob
         self.coefficients = coefficients
+        self.scoring = scoring
 
     def plot_scores(self, path='temp'):
-        plot_scores(self.scores, path)
+        plot_scores(self.scores, self.scoring, path)
 
     def plot_features(self, ntop=10, path='temp',
                       coef_names=None):
@@ -74,7 +75,7 @@ def plot_features(coefs, coef_names=None,
         plt.savefig(figure_path)
 
 
-def plot_scores(scores, file_name='temp', min_val=None):
+def plot_scores(scores, scoring, file_name='temp', min_val=None):
 
     df = scores.apply(np.mean).unstack().join(
         scores.apply(np.std).unstack(), lsuffix='_mean', rsuffix='_std')
@@ -97,12 +98,24 @@ def plot_scores(scores, file_name='temp', min_val=None):
     ax1.yaxis.grid(True)
 
     temp = np.array(data)
-    ylim = np.max(temp.min() - .1, 0) if min_val is None else min_val
-    ax1.set_ylim(ylim, 1)
+
+    #These statements check to see what scoring was used and size the y-axis of the graphical score report
+    # accordingly.
+    if(scoring == 'r2'):
+        ymax = 1
+        ymin = 0
+    elif(scoring == 'mse'):
+        ymin = 0
+        ymax = temp.max()
+    else:
+        ymin = np.max(temp.min() - .1, 0) if min_val is None else min_val
+        ymax = 1
+
+    ax1.set_ylim(ymin, ymax)
     for n, rect in enumerate(ax1.patches):
         if n >= nc:
             break
-        ax1.text(rect.get_x() - rect.get_width() / 2., ylim + (1 - ylim) * .01,
+        ax1.text(rect.get_x() - rect.get_width() / 2., ymin + (1 - ymin) * .01,
                  data.index[n], ha='center', va='bottom',
                  rotation='90', color='black', fontsize=15)
     plt.tight_layout()
