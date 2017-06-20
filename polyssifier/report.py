@@ -12,12 +12,13 @@ class Report(object):
     """
 
     def __init__(self, scores, confusions, predictions,
-                 test_prob, coefficients):
+                 test_prob, coefficients, scoring):
         self.scores = scores
         self.confusions = confusions
         self.predictions = predictions
         self.test_proba = test_prob
         self.coefficients = coefficients
+        self.scoring = scoring
 
     def plot_scores(self, path='temp'):
         plot_scores(self.scores, path)
@@ -74,7 +75,7 @@ def plot_features(coefs, coef_names=None,
         plt.savefig(figure_path)
 
 
-def plot_scores(scores, file_name='temp', min_val=None):
+def plot_scores(scores, scoring, file_name='temp', min_val=None):
 
     df = scores.apply(np.mean).unstack().join(
         scores.apply(np.std).unstack(), lsuffix='_mean', rsuffix='_std')
@@ -95,8 +96,12 @@ def plot_scores(scores, file_name='temp', min_val=None):
     ax1.set_xticklabels([])
     ax1.set_xlabel('')
     ax1.yaxis.grid(True)
+
     temp = np.array(data)
-    ylim = 0
+    if(scoring == 'r2'):
+        ylim = 0
+    else:
+        ylim = np.max(temp.min() - .1, 0) if min_val is None else min_val
     ax1.set_ylim(ylim, 1)
     for n, rect in enumerate(ax1.patches):
         if n >= nc:
