@@ -21,7 +21,7 @@ class Report(object):
         self.scoring = scoring
 
     def plot_scores(self, path='temp'):
-        plot_scores(self.scores, path)
+        plot_scores(self.scores, self.scoring, path)
 
     def plot_features(self, ntop=10, path='temp',
                       coef_names=None):
@@ -110,8 +110,8 @@ def plot_scores(scores, scoring, file_name='temp', min_val=None):
     else:
         ymin = np.max(temp.min() - .1, 0) if min_val is None else min_val
         ymax = 1
-    ax1.set_ylim(ymin, ymax)
 
+    ax1.set_ylim(ymin, ymax)
     for n, rect in enumerate(ax1.patches):
         if n >= nc:
             break
