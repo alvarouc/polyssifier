@@ -105,7 +105,7 @@ def plot_scores(scores, scoring, file_name='temp', min_val=None):
         ymax = 1
         ymin = 0
     elif(scoring == 'mse'):
-        ymin = temp.min()
+        ymin = 0
         ymax = temp.max()
     else:
         ymin = np.max(temp.min() - .1, 0) if min_val is None else min_val
