@@ -37,7 +37,7 @@ before_script:
   - "export PYTHONPATH=$PYTHONPATH:."
 
 script:
-  - KERAS_BACKEND=theano py.test --cov=polyssifier
+  - py.test --cov=polyssifier
 
 after_success:
   - coveralls
