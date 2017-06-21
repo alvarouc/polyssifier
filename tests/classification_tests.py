@@ -1,8 +1,8 @@
 import pytest
 import warnings
 
-from polyssifier import poly, polyr
-from sklearn.datasets import make_classification, load_diabetes
+from polyssifier import poly
+from sklearn.datasets import make_classification
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
