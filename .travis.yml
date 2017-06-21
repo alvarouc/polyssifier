@@ -28,8 +28,6 @@ install:
   - pip install python-coveralls pytest-cov numpy pytest matplotlib h5py 
   - pip install pandas statsmodels
   - pip install scikit-learn
-# Skip setup.py for now
-#  - pip install -e .
 
 before_script:
   - "export DISPLAY=:99.0"
