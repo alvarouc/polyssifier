@@ -228,7 +228,7 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     test_score = _scorer(clf, X, y)
     ypred = clf.predict(X)
     if hasattr(clf, 'predict_proba'):
-        yprob = clf.predict_proba(X)
+        yprob = clf.predict_proba(X)[:, 1]
     elif hasattr(clf, 'decision_function'):
         yprob = clf.decision_function(X)
 
