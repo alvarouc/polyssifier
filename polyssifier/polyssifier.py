@@ -176,9 +176,13 @@ def _scorer(clf, X, y):
     n_class = len(np.unique(y))
     if n_class == 2:
         if hasattr(clf, 'predict_proba'):
-            ypred = clf.predict_proba(X)[:, 1]
+            ypred = clf.predict_proba(X)
+            assert len(ypred.shape) == 1,\
+                'predict proba return shape {}'.format(ypred.shape)
         elif hasattr(clf, 'decision_function'):
             ypred = clf.decision_function(X)
+            assert len(ypred.shape) == 1,\
+                'decision_function return shape {}'.format(ypred.shape)
         else:
             ypred = clf.predict(X)
         score = roc_auc_score(y, ypred)
