@@ -53,9 +53,9 @@ def test_run_regression():
     report = polyr(data, label, n_folds=10, verbose=1,
                   feature_selection=False, scoring='r2',
                   save=False, project_name='test3')
-    assert (report.scores.mean()[:, 'test'] > 0.3).all(),\
+    assert (report.scores.mean()[:, 'test'] > 0.1).all(),\
         'test score below chance'
-    assert (report.scores.mean()[:, 'train'] > 0.3).all(),\
+    assert (report.scores.mean()[:, 'train'] > 0.1).all(),\
         'train score below chance'
 
 @pytest.mark.medium
@@ -63,9 +63,9 @@ def test_feature_selection_regression():
     report = polyr(data, label, n_folds=10, verbose=1,
                   feature_selection=True, scoring='r2',
                   save=False, project_name='test3')
-    assert (report.scores.mean()[:, 'test'] > 0.3).all(),\
+    assert (report.scores.mean()[:, 'test'] > 0.1).all(),\
         'test score below chance'
-    assert (report.scores.mean()[:, 'train'] > 0.3).all(),\
+    assert (report.scores.mean()[:, 'train'] > 0.1).all(),\
         'train score below chance'
 
 @pytest.mark.medium
