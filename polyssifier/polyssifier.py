@@ -176,6 +176,11 @@ def _scorer(clf, X, y):
     if n_class == 2:
         if hasattr(clf, 'predict_proba'):
             ypred = clf.predict_proba(X)
+            try:
+                ypred = ypred[:, 1]
+            except:
+                print('predict proba return shape {}'.format(yprob.shape))
+
             assert len(ypred.shape) == 1,\
                 'predict proba return shape {}'.format(ypred.shape)
         elif hasattr(clf, 'decision_function'):
@@ -240,6 +245,11 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
 
     elif hasattr(clf, 'decision_function'):
         yprob = clf.decision_function(X)
+        try:
+            yprob = yprob[:, 1]
+        except:
+            print('predict proba return shape {}'.format(yprob.shape))
+
         assert len(yprob.shape) == 1,\
             'predict proba return shape {}'.format(ypred.shape)
 
