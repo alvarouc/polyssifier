@@ -15,8 +15,6 @@ data, label = make_classification(n_samples=NSAMPLES, n_features=50,
                                   hypercube=True, shift=0.0,
                                   scale=1.0, shuffle=True,
                                   random_state=1988)
-print('Data: {}'.format(data.shape))
-print('Label: {}'.format(label.shape))
 
 
 @pytest.mark.medium
