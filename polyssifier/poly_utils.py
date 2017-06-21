@@ -3,8 +3,8 @@ from sklearn.svm import LinearSVC, SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import (LogisticRegression, LinearRegression, BayesianRidge, Perceptron, Ridge, Lasso,
-                                MultiTaskLasso, ElasticNet, MultiTaskElasticNet, Lars, LassoLars,
-                                OrthogonalMatchingPursuit, PassiveAggressiveRegressor)
+                                  MultiTaskLasso, ElasticNet, MultiTaskElasticNet, Lars, LassoLars,
+                                  OrthogonalMatchingPursuit, PassiveAggressiveRegressor)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier as MLP
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -36,6 +36,7 @@ class MyVoter(object):
             arr=predictions.astype('int'))
         return maj
 
+
 class MyRegressionAverager(object):
     """
     Regression averager
@@ -55,6 +56,7 @@ class MyRegressionAverager(object):
         avg = np.average(predictions, axis=1)
         return avg
 
+
 class MyRegressionMedianer(object):
     """
     Regression averager
@@ -73,6 +75,7 @@ class MyRegressionMedianer(object):
 
         avg = np.median(predictions, axis=1)
         return avg
+
 
 def build_classifiers(exclude, scale, feature_selection, nCols):
     '''
@@ -169,6 +172,7 @@ def build_classifiers(exclude, scale, feature_selection, nCols):
 
     return classifiers
 
+
 def build_regressors(exclude, scale, feature_selection, nCols):
     '''
     This method builds an ordered dictionary of regressors, where the key is the name of the
@@ -184,20 +188,20 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Linear Regression' not in exclude:
         regressors['Linear Regression'] = {
             'reg': LinearRegression(),
-            'parameters': {} #Best to leave default parameters
+            'parameters': {}  # Best to leave default parameters
         }
 
     if 'Bayesian Ridge' not in exclude:
         regressors['Bayesian Ridge'] = {
             'reg': BayesianRidge(),
-            'parameters': {} #Investigate if alpha and lambda parameters should be changed
+            'parameters': {}  # Investigate if alpha and lambda parameters should be changed
         }
 
     if 'PassiveAggressiveRegressor' not in exclude:
         regressors['PassiveAggressiveRegressor'] = {
             'reg': PassiveAggressiveRegressor(),
             'parameters': {'C': [0.5, 1.0, 1.5]
-            }
+                           }
         }
 
     if 'GaussianProcessRegressor' not in exclude:
@@ -214,7 +218,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
             'reg': Ridge(),
             'parameters': {
                 'alpha': [0.25, 0.50, 0.75, 1.00]
-                }
+            }
         }
 
     if 'Lasso' not in exclude:
@@ -228,7 +232,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'Lars' not in exclude:
         regressors['Lars'] = {
             'reg': Lars(),
-            'parameters': {} #Best to leave the default parameters
+            'parameters': {}  # Best to leave the default parameters
         }
 
     if 'LassoLars' not in exclude:
@@ -240,7 +244,7 @@ def build_regressors(exclude, scale, feature_selection, nCols):
     if 'OrthogonalMatchingPursuit' not in exclude:
         regressors['OrthogonalMatchingPursuit'] = {
             'reg': OrthogonalMatchingPursuit(),
-            'parameters': {} #Best to leave default parameters
+            'parameters': {}  # Best to leave default parameters
         }
 
     if 'ElasticNet' not in exclude:

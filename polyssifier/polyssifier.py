@@ -231,9 +231,14 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     test_score = _scorer(clf, X, y)
     ypred = clf.predict(X)
     if hasattr(clf, 'predict_proba'):
-        yprob = clf.predict_proba(X)[:, 1]
+        yprob = clf.predict_proba(X)
+        assert len(yprob.shape) == 1,\
+            'predict proba return shape {}'.format(ypred.shape)
+
     elif hasattr(clf, 'decision_function'):
         yprob = clf.decision_function(X)
+        assert len(yprob.shape) == 1,\
+            'predict proba return shape {}'.format(ypred.shape)
 
     confusion = confusion_matrix(y, ypred)
     duration = time.time() - start
