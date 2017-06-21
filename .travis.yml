@@ -24,7 +24,7 @@ python:
 
 install:
   - pip install --upgrade pip setuptools wheel
-  - travis_wait pip install --only-binary=numpy,scipy
+  - travis_wait pip install --only-binary=numpy,scipy numpy scipy
   - pip install python-coveralls pytest-cov pytest matplotlib
   - pip install pandas scikit-learn
 
