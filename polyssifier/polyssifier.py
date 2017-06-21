@@ -513,13 +513,14 @@ if __name__ == '__main__':
 
     data = np.load(args.data)
     label = np.load(args.label)
+    labelcopy = deepcopy(label)
 
     logger.info(
         'Starting classification with {} workers'.format(args.concurrency))
 
     #If there are more than 50 unique labels, then it is most likely a regression problem. Otherwise it is probably
     #a classification problem.
-    if(len(np.unique(label)) > 50):
+    if(len(np.unique(labelcopy)) > 50):
         report = polyr(data, label, n_folds=5, project_name=args.name,
                     concurrency=int(args.concurrency))
     else:
