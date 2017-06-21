@@ -14,8 +14,7 @@ from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
-from .poly_utils import build_classifiers, MyVoter, build_regressors, getRegressors, MyRegressionAverager, \
-    MyRegressionMedianer
+from .poly_utils import build_classifiers, MyVoter, build_regressors, MyRegressionMedianer
 from .report import Report
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
