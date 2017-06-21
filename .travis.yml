@@ -24,8 +24,8 @@ python:
 
 install:
   - travis_wait pip install numpy
-  - travis_wait pip install --verbose scipy
-  - pip install pep8 python-coveralls pytest-cov keras numpy pytest matplotlib mlp h5py tensorflow
+  - travis_wait pip install  scipy
+  - pip install python-coveralls pytest-cov numpy pytest matplotlib h5py 
   - pip install pandas statsmodels
   - pip install scikit-learn
 # Skip setup.py for now
