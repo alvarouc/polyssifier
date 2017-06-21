@@ -116,6 +116,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
             scores.loc[n, (clf_name, 'train')] = train_score
             scores.loc[n, (clf_name, 'test')] = test_score
             temp += confusion
+            assert (prob.shape[1] == 1), "The probabilities aren't a vector."
             temp_prob[kf[n][1]] = prob
             temp_pred[kf[n][1]] = _le.inverse_transform(prediction)
             coefficients[clf_name].append(coefs)
