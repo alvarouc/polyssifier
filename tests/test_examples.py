@@ -13,7 +13,7 @@ data, label = make_classification(n_samples=NSAMPLES, n_features=50,
                                   n_clusters_per_class=2, weights=None,
                                   flip_y=0.01, class_sep=2.0,
                                   hypercube=True, shift=0.0,
-                                  scale=1.0, shuffle=False,
+                                  scale=1.0, shuffle=True,
                                   random_state=1988)
 
 
