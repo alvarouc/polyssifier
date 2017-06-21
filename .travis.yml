@@ -24,10 +24,8 @@ python:
 
 install:
   - travis_wait pip install numpy
-# - travis_wait pip install  scipy
   - pip install python-coveralls pytest-cov pytest matplotlib
-  - pip install pandas statsmodels
-  - pip install scikit-learn
+  - pip install pandas scikit-learn
 
 before_script:
   - "export DISPLAY=:99.0"
