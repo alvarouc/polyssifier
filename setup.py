@@ -4,7 +4,6 @@ setup(
     packages=['polyssifier'],
     version='0.2.3',
     install_requires=[
-        'mlp',
         'pandas',
         'sklearn',
         'numpy'],
