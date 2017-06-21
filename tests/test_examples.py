@@ -17,6 +17,8 @@ data, label = make_classification(n_samples=NSAMPLES, n_features=50,
                                   random_state=1988)
 print('Data: {}'.format(data.shape))
 print('Label: {}'.format(label.shape))
+diabetes_data = load_diabetes().data
+diabetes_target = load_diabetes().target
 
 
 @pytest.mark.medium
@@ -50,27 +52,27 @@ def test_plot():
 
 @pytest.mark.medium
 def test_run_regression():
-    report = polyr(data, label, n_folds=10, verbose=1,
+    report = polyr(diabetes_target, diabetes_target, n_folds=10, verbose=1,
                   feature_selection=False, scoring='r2',
                   save=False, project_name='test3')
-    assert (report.scores.mean()[:, 'test'] > 0.1).all(),\
+    assert (report.scores.mean()[:, 'test'] > 0.2).all(),\
         'test score below chance'
-    assert (report.scores.mean()[:, 'train'] > 0.1).all(),\
+    assert (report.scores.mean()[:, 'train'] > 0.2).all(),\
         'train score below chance'
 
 @pytest.mark.medium
 def test_feature_selection_regression():
-    report = polyr(data, label, n_folds=10, verbose=1,
+    report = polyr(diabetes_target, diabetes_target, n_folds=10, verbose=1,
                   feature_selection=True, scoring='r2',
                   save=False, project_name='test3')
-    assert (report.scores.mean()[:, 'test'] > 0.1).all(),\
+    assert (report.scores.mean()[:, 'test'] > 0.2).all(),\
         'test score below chance'
-    assert (report.scores.mean()[:, 'train'] > 0.1).all(),\
+    assert (report.scores.mean()[:, 'train'] > 0.2).all(),\
         'train score below chance'
 
 @pytest.mark.medium
 def test_plot_regression():
-    report = polyr(data, label, n_folds=10, verbose=1,
+    report = polyr(diabetes_target, diabetes_target, n_folds=10, verbose=1,
                   feature_selection=False, scoring='r2',
                   save=False, project_name='test3')
     report.plot_scores()
