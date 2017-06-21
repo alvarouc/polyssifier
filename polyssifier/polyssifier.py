@@ -8,17 +8,20 @@ import logging
 import os
 import pandas as pd
 from copy import deepcopy
-from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_predict, KFold
-from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score, mean_squared_error, r2_score
+from sklearn.model_selection import StratifiedKFold, GridSearchCV, KFold
+from sklearn.metrics import (f1_score, confusion_matrix, roc_auc_score,
+                             mean_squared_error, r2_score)
 from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
-from .poly_utils import build_classifiers, MyVoter, build_regressors, MyRegressionMedianer
+from .poly_utils import (build_classifiers, MyVoter, build_regressors,
+                         MyRegressionMedianer)
 from .report import Report
 sys.setrecursionlimit(10000)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
          feature_selection=False, save=True, scoring='auc',
@@ -154,6 +157,7 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
               [['mean', 'std', 'min', 'max']])
     return Report(scores, confusions, predictions, test_prob, coefficients)
 
+
 def _scorer(clf, X, y):
     '''Function that scores a classifier according to what is available as a
     predict function.
@@ -256,9 +260,10 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
             coefficients,  # Coefficients for feature ranking
             clf)  # fitted clf
 
+
 def polyr(data, label, n_folds=10, scale=True, exclude=[],
-         feature_selection=False, save=True, scoring='r2',
-         project_name='', concurrency=1, verbose=True):
+          feature_selection=False, save=True, scoring='r2',
+          project_name='', concurrency=1, verbose=True):
     '''
     Input
     data         = numpy matrix with as many rows as samples
@@ -286,20 +291,20 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     label = _le.transform(label)
     n_class = len(np.unique(label))
 
-    #If the user wishes to save the intermediate steps and there is not already a polyrssifier models directory then
-    #this statement creates one.
+    # If the user wishes to save the intermediate steps and there is not already a polyrssifier models directory then
+    # this statement creates one.
     if save and not os.path.exists('polyr_{}/models'.format(project_name)):
         os.makedirs('polyr_{}/models'.format(project_name))
 
-    #Whether or not intermeciate steps will be printed out.
+    # Whether or not intermeciate steps will be printed out.
     if not verbose:
         logger.setLevel(logging.ERROR)
     logger.info('Building classifiers ...')
 
-    #The main regressors dictionary
+    # The main regressors dictionary
     regressors = build_regressors(exclude, scale,
-                                    feature_selection,
-                                    data.shape[1])
+                                  feature_selection,
+                                  data.shape[1])
 
     scores = pd.DataFrame(columns=pd.MultiIndex.from_product(
         [regressors.keys(), ['train', 'test']]),
@@ -364,7 +369,7 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
         predictions[reg_name] = temp_pred
         test_prob[reg_name] = temp_prob
 
-    #This calculated the Median of the predictions of the regressors.
+    # This calculated the Median of the predictions of the regressors.
     fitted_regs = pd.DataFrame(fitted_regs)
     scores['Median', 'train'] = np.zeros((n_folds, ))
     scores['Median', 'test'] = np.zeros((n_folds, ))
@@ -402,6 +407,7 @@ def _reg_scorer(reg, X, y, scoring):
     else:
         return r2_score(y, reg.predict(X))
 
+
 def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     '''
     Multiprocess safe function that fits classifiers
@@ -417,7 +423,7 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
     project_name: string with the project folder name to save model
     '''
 
-    #Creates the scoring string to pass into grid search.
+    # Creates the scoring string to pass into grid search.
     if scoring == 'mse':
         scorestring = 'neg_mean_squared_error'
     elif scoring == 'r2':
@@ -501,6 +507,7 @@ def make_argument_parser():
 
     return parser
 
+
 if __name__ == '__main__':
 
     parser = make_argument_parser()
@@ -518,13 +525,13 @@ if __name__ == '__main__':
     logger.info(
         'Starting classification with {} workers'.format(args.concurrency))
 
-    #If there are more than 50 unique labels, then it is most likely a regression problem. Otherwise it is probably
-    #a classification problem.
+    # If there are more than 50 unique labels, then it is most likely a regression problem. Otherwise it is probably
+    # a classification problem.
     if(len(np.unique(labelcopy)) > 50):
         report = polyr(data, label, n_folds=5, project_name=args.name,
-                    concurrency=int(args.concurrency))
+                       concurrency=int(args.concurrency))
     else:
         report = poly(data, label, n_folds=5, project_name=args.name,
-                       concurrency=int(args.concurrency))
+                      concurrency=int(args.concurrency))
     report.plot_scores(os.path.join('polyr_' + args.name, args.name))
     report.plot_features(os.path.join('polyr_' + args.name, args.name))
