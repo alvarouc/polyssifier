@@ -231,9 +231,12 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
     test_score = _scorer(clf, X, y)
     ypred = clf.predict(X)
     if hasattr(clf, 'predict_proba'):
+        # For compatibility with different sklearn versions
         yprob = clf.predict_proba(X)
-        assert len(yprob.shape) == 1,\
-            'predict proba return shape {}'.format(ypred.shape)
+        try:
+            yprob = yprob[:, 1]
+        except:
+            print('predict proba return shape {}'.format(yprob.shape))
 
     elif hasattr(clf, 'decision_function'):
         yprob = clf.decision_function(X)
