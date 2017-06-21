@@ -25,7 +25,7 @@ python:
 install:
   - travis_wait pip install numpy
 # - travis_wait pip install  scipy
-  - pip install python-coveralls pytest-cov pytest matplotlib h5py 
+  - pip install python-coveralls pytest-cov pytest matplotlib
   - pip install pandas statsmodels
   - pip install scikit-learn
 
