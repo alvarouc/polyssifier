@@ -16,7 +16,7 @@ data, label = make_classification(n_samples=NSAMPLES, n_features=50,
                                   scale=1.0, shuffle=True,
                                   random_state=1988)
 
-report_with_features = poly(data, label, n_folds=2, verbose=1,
+report_with_features = poly(data, label, n_folds=10, verbose=1,
                   feature_selection=True,
                   save=False, project_name='test2')
 
@@ -42,4 +42,4 @@ def test_feature_selection():
 @pytest.mark.medium
 def test_plot():
     report_with_features.plot_scores()
-    report_with_features.plot_features(ntop=2)
+    report_with_features.plot_features()
