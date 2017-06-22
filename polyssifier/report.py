@@ -37,7 +37,11 @@ def plot_features(coefs, coef_names=None,
           for key, val in coefs.items()
           if val[0] is not None}
 
-    n_coefs = fs[list(fs.keys())[0]].shape[1]
+    try:
+        n_coefs = fs[list(fs.keys())[0]].shape[1]
+    except IndexError:
+        n_coefs = fs[list(fs.keys())[0]].shape[0]
+
     if coef_names is None:
         coef_names = np.array([str(c+1) for c in range(n_coefs)])
 
