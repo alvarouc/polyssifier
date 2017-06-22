@@ -19,7 +19,6 @@ data, label = make_classification(n_samples=NSAMPLES, n_features=50,
 
 @pytest.mark.medium
 def test_run():
-    global report
     report = poly(data, label, n_folds=2, verbose=1,
                   feature_selection=False,
                   save=False, project_name='test2')
@@ -43,11 +42,18 @@ def test_feature_selection():
 
 @pytest.mark.medium
 def test_plot_no_selection():
+    report = poly(data, label, n_folds=2, verbose=1,
+                  feature_selection=False,
+                  save=False, project_name='test2')
     report.plot_scores()
     report.plot_features()
 
 
-#@pytest.mark.medium
-# def test_plot_with_selection():
-#    report_with_features.plot_scores()
-#    report_with_features.plot_features()
+@pytest.mark.medium
+def test_plot_with_selection():
+    report = poly(data, label, n_folds=2, verbose=1,
+                  feature_selection=False,
+                  save=False, project_name='test2')
+
+    report_with_features.plot_scores()
+    report_with_features.plot_features()

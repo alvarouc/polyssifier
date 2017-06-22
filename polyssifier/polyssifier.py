@@ -155,7 +155,10 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     if verbose:
         print(scores.astype('float').describe().transpose()
               [['mean', 'std', 'min', 'max']])
-    return Report(scores, confusions, predictions, test_prob, coefficients)
+    return Report(scores=scores, confusions=confusions,
+                  predictions=predictions, test_prob=test_prob,
+                  coefficients=coefficients,
+                  feature_selection=feature_selection)
 
 
 def _scorer(clf, X, y):
