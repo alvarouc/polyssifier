@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from .logger import make_logger
 from scipy.stats import rankdata
 from functools import partial
@@ -90,12 +91,18 @@ def plot_scores(scores, scoring='auc', file_name='temp', min_val=None):
     ax1 = data.plot(kind='bar', yerr=error, colormap='coolwarm',
                     figsize=(nc * 2, 5), alpha=1)
     #ax1.set_axis_bgcolor((.7, .7, .7))
-    ax1.legend(loc='lower center', bbox_to_anchor=(0.5, 1.05),
-               ncol=2, fancybox=True, shadow=True)
+    #ax1.legend(loc='lower center', bbox_to_anchor=(0.5, 1.05),
+    #           ncol=2, fancybox=True, shadow=True)
 
     ax1.set_xticklabels([])
     ax1.set_xlabel('')
+    plt.ylabel(scoring, fontsize='large', rotation='horizontal')
     ax1.yaxis.grid(True)
+
+    #This creates the legend for the plot
+    testing_label = mpatches.Patch(color='red', label='Testing Score')
+    training_label = mpatches.Patch(color='blue', label='Training Score')
+    plt.legend(handles=[testing_label, training_label], loc='upper right')
 
     temp = np.array(data)
 

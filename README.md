@@ -32,7 +32,7 @@ from polyssifier import polyr
 data = np.load("/path/to/data.npy")
 target = np.load("/path/to/target.npy")
 # Run analysis
-report = poly(data, target, n_folds=8)
+report = polyr(data, target, n_folds=8)
 # Plot results
 report.plot_scores()
 report.plot_features(ntop=10)
