@@ -39,6 +39,8 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+temp*.png
+.ipynb*
 
 # Translations
 *.mo
@@ -52,3 +54,7 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# figures
+*.pdf
+*.svg
