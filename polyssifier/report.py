@@ -27,11 +27,11 @@ class Report(object):
                       coef_names=None):
         plot_features(coefs=self.coefficients,
                       coef_names=None,
-                      ntop=ntop, file_name=path, scoring=self.scoring)
+                      ntop=ntop, file_name=path)
 
 
 def plot_features(coefs, coef_names=None,
-                  ntop=10, file_name='temp', scoring='auc'):
+                  ntop=10, file_name='temp'):
     fs = {key: np.array(val).squeeze()
           for key, val in coefs.items()
           if val[0] is not None}
@@ -70,7 +70,6 @@ def plot_features(coefs, coef_names=None,
                 tick_label=coef_names[idx][:ntop])
         plt.title('{}: Feature rank'.format(key))
         plt.xlabel('Feature index')
-        plt.ylabel(scoring)
         plt.grid(axis='y')
         plt.tight_layout()
         plt.savefig(figure_path)
@@ -96,6 +95,7 @@ def plot_scores(scores, scoring = 'auc', file_name='temp', min_val=None):
 
     ax1.set_xticklabels([])
     ax1.set_xlabel('')
+    plt.ylabel(scoring)
     ax1.yaxis.grid(True)
 
     temp = np.array(data)
