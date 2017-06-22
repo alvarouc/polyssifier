@@ -11,7 +11,8 @@ diabetes_target = load_diabetes().target
 
 @pytest.mark.medium
 def test_run_regression():
-    report = polyr(diabetes_data, diabetes_target, n_folds=3, verbose=1,
+    report = polyr(diabetes_data, diabetes_target, n_folds=2,
+                   verbose=1, concurrency=1,
                    feature_selection=False, scoring='r2',
                    save=False, project_name='test3')
     assert (report.scores.mean()[:, 'test'] > 0.2).all(),\
@@ -22,7 +23,8 @@ def test_run_regression():
 
 @pytest.mark.medium
 def test_feature_selection_regression():
-    report = polyr(diabetes_data, diabetes_target, n_folds=3, verbose=1,
+    report = polyr(diabetes_data, diabetes_target, n_folds=2,
+                   verbose=1, concurrency=1,
                    feature_selection=True, scoring='r2',
                    save=False, project_name='test3')
     assert (report.scores.mean()[:, 'test'] > 0.2).all(),\
@@ -33,7 +35,7 @@ def test_feature_selection_regression():
 
 @pytest.mark.medium
 def test_plot_regression():
-    report = polyr(diabetes_data, diabetes_target, n_folds=3, verbose=1,
+    report = polyr(diabetes_data, diabetes_target, n_folds=2, verbose=1,
                    feature_selection=False, scoring='r2',
                    save=False, project_name='test3')
     report.plot_scores()

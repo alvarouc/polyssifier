@@ -16,9 +16,10 @@ data, label = make_classification(n_samples=NSAMPLES, n_features=50,
                                   scale=1.0, shuffle=True,
                                   random_state=1988)
 
+
 @pytest.mark.medium
 def test_run():
-    report = poly(data, label, n_folds=5, verbose=1,
+    report = poly(data, label, n_folds=2, verbose=1,
                   feature_selection=False,
                   save=False, project_name='test2')
     assert (report.scores.mean()[:, 'test'] > 0.5).all(),\
@@ -29,7 +30,7 @@ def test_run():
 
 @pytest.mark.medium
 def test_feature_selection():
-    report = poly(data, label, n_folds=5, verbose=1,
+    report = poly(data, label, n_folds=2, verbose=1,
                   feature_selection=True,
                   save=False, project_name='test2')
     assert (report.scores.mean()[:, 'test'] > 0.5).all(),\
@@ -40,7 +41,7 @@ def test_feature_selection():
 
 @pytest.mark.medium
 def test_plot():
-    report = poly(data, label, n_folds=5, verbose=1,
+    report = poly(data, label, n_folds=2, verbose=1,
                   feature_selection=True,
                   save=False, project_name='test2')
     report.plot_scores()
