@@ -42,4 +42,3 @@ def test_feature_selection():
 @pytest.mark.medium
 def test_plot():
     report_with_features.plot_scores()
-    report_with_features.plot_features()
