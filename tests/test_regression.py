@@ -39,3 +39,4 @@ def test_plot_regression():
                    feature_selection=False, scoring='r2',
                    save=False, project_name='test3')
     report.plot_scores()
+    report.plot_features()
