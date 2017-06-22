@@ -47,7 +47,7 @@ def test_plot_no_selection():
     report.plot_features()
 
 
-@pytest.mark.medium
-def test_plot_with_selection():
-    report_with_features.plot_scores()
-    report_with_features.plot_features()
+#@pytest.mark.medium
+# def test_plot_with_selection():
+#    report_with_features.plot_scores()
+#    report_with_features.plot_features()

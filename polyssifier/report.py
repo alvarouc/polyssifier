@@ -13,22 +13,28 @@ class Report(object):
     """
 
     def __init__(self, scores, confusions, predictions,
-                 test_prob, coefficients, scoring='auc'):
+                 test_prob, coefficients, feature_selection,
+                 scoring='auc'):
         self.scores = scores
         self.confusions = confusions
         self.predictions = predictions
         self.test_proba = test_prob
         self.coefficients = coefficients
         self.scoring = scoring
+        self._feature_selection = feature_selection
 
     def plot_scores(self, path='temp'):
         plot_scores(self.scores, self.scoring, path)
 
     def plot_features(self, ntop=10, path='temp',
                       coef_names=None):
-        plot_features(coefs=self.coefficients,
-                      coef_names=None,
-                      ntop=ntop, file_name=path)
+        if self._feature_selection:
+            log.warning(
+                'Feature importance not implemented for feature_selection=True, try setting False')
+        else:
+            plot_features(coefs=self.coefficients,
+                          coef_names=None,
+                          ntop=ntop, file_name=path)
 
 
 def plot_features(coefs, coef_names=None,
@@ -42,6 +48,7 @@ def plot_features(coefs, coef_names=None,
         coef_names = np.array([str(c + 1) for c in range(n_coefs)])
 
     for key, val in fs.items():
+
         figure_path = file_name + '_' + key + '_feature_ranking.png'
         log.info('Plotting %s coefs to %s', key, figure_path)
         plt.figure(figsize=(10, 10))
@@ -91,7 +98,7 @@ def plot_scores(scores, scoring='auc', file_name='temp', min_val=None):
     ax1 = data.plot(kind='bar', yerr=error, colormap='coolwarm',
                     figsize=(nc * 2, 5), alpha=1)
     #ax1.set_axis_bgcolor((.7, .7, .7))
-    #ax1.legend(loc='lower center', bbox_to_anchor=(0.5, 1.05),
+    # ax1.legend(loc='lower center', bbox_to_anchor=(0.5, 1.05),
     #           ncol=2, fancybox=True, shadow=True)
 
     ax1.set_xticklabels([])
@@ -99,7 +106,7 @@ def plot_scores(scores, scoring='auc', file_name='temp', min_val=None):
     plt.ylabel(scoring, fontsize='large', rotation='horizontal')
     ax1.yaxis.grid(True)
 
-    #This creates the legend for the plot
+    # This creates the legend for the plot
     testing_label = mpatches.Patch(color='red', label='Testing Score')
     training_label = mpatches.Patch(color='blue', label='Training Score')
     plt.legend(handles=[testing_label, training_label], loc='upper right')
