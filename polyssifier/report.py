@@ -95,7 +95,7 @@ def plot_scores(scores, scoring = 'auc', file_name='temp', min_val=None):
 
     ax1.set_xticklabels([])
     ax1.set_xlabel('')
-    plt.ylabel(scoring, fontsize='medium', rotation='horizontal')
+    plt.ylabel(scoring, fontsize='large', rotation='horizontal')
     ax1.yaxis.grid(True)
 
     temp = np.array(data)
