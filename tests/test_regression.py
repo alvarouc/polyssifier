@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 diabetes_data = load_diabetes().data
 diabetes_target = load_diabetes().target
 
-report_with_features = polyr(diabetes_data, diabetes_target, n_folds=2,
+report_with_features = polyr(diabetes_data, diabetes_target, n_folds=10,
                    verbose=1, concurrency=1,
                    feature_selection=True, scoring='r2',
                    save=False, project_name='test3')
@@ -34,4 +34,4 @@ def test_feature_selection_regression():
 @pytest.mark.medium
 def test_plot_regression():
     report_with_features.plot_scores()
-    report_with_features.plot_features(ntop=2)
+    report_with_features.plot_features()
