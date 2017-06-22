@@ -45,3 +45,4 @@ def test_plot():
                   feature_selection=True,
                   save=False, project_name='test2')
     report.plot_scores()
+    report.plot_features()
