@@ -34,4 +34,4 @@ def test_feature_selection_regression():
 @pytest.mark.medium
 def test_plot_regression():
     report_with_features.plot_scores()
-    report_with_features.plot_features()
+    report_with_features.plot_features(ntop=2)
