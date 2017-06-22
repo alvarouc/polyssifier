@@ -13,7 +13,7 @@ class Report(object):
     """
 
     def __init__(self, scores, confusions, predictions,
-                 test_prob, coefficients, scoring = 'auc'):
+                 test_prob, coefficients, scoring='auc'):
         self.scores = scores
         self.confusions = confusions
         self.predictions = predictions
@@ -36,9 +36,14 @@ def plot_features(coefs, coef_names=None,
     fs = {key: np.array(val).squeeze()
           for key, val in coefs.items()
           if val[0] is not None}
+<<<<<<< HEAD
     n_coefs = fs[list(fs.keys())[0]].shape[1]
+=======
+
+    n_coefs = fs[list(fs.keys())[0]].shape[-1]
+>>>>>>> b4de48d1bcc1dead989e492db2f82105da7338ea
     if coef_names is None:
-        coef_names = np.array([str(c+1) for c in range(n_coefs)])
+        coef_names = np.array([str(c + 1) for c in range(n_coefs)])
 
     for key, val in fs.items():
         figure_path = file_name + '_' + key + '_feature_ranking.png'
@@ -75,7 +80,7 @@ def plot_features(coefs, coef_names=None,
         plt.savefig(figure_path)
 
 
-def plot_scores(scores, scoring = 'auc', file_name='temp', min_val=None):
+def plot_scores(scores, scoring='auc', file_name='temp', min_val=None):
 
     df = scores.apply(np.mean).unstack().join(
         scores.apply(np.std).unstack(), lsuffix='_mean', rsuffix='_std')
@@ -105,7 +110,7 @@ def plot_scores(scores, scoring = 'auc', file_name='temp', min_val=None):
 
     temp = np.array(data)
 
-    #These statements check to see what scoring was used and size the y-axis of the graphical score report
+    # These statements check to see what scoring was used and size the y-axis of the graphical score report
     # accordingly.
     if(scoring == 'r2'):
         ymax = 1
