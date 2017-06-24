@@ -21,7 +21,7 @@ def test_feature_selection_regression():
     assert (report_with_features.scores.mean()[:, 'train'] > 0.2).all(),\
         'train score below chance'
 
-    for key, ypred in report_with_features.predictions.items():
+    for key, ypred in report_with_features.predictions.iteritems():
         mse = np.linalg.norm(ypred - diabetes_target) / len(diabetes_target)
         assert mse < 5, '{} Prediction error is too high'.format(key)
 
