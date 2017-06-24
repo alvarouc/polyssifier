@@ -311,10 +311,6 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
 
     assert label.shape[0] == data.shape[0],\
         "Label dimesions do not match data number of rows"
-    _le = LabelEncoder()
-    _le.fit(label)
-    label = _le.transform(label)
-    n_class = len(np.unique(label))
 
     # If the user wishes to save the intermediate steps and there is not already a polyrssifier models directory then
     # this statement creates one.
@@ -322,7 +318,9 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
         os.makedirs('polyr_{}/models'.format(project_name))
 
     # Whether or not intermeciate steps will be printed out.
-    if not verbose:
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+    else:
         logger.setLevel(logging.ERROR)
     logger.info('Building classifiers ...')
 
@@ -398,7 +396,6 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     fitted_regs = pd.DataFrame(fitted_regs)
     scores['Median', 'train'] = np.zeros((n_folds, ))
     scores['Median', 'test'] = np.zeros((n_folds, ))
-    temp = np.zeros((n_class, n_class))
     temp_pred = np.zeros((data.shape[0], ))
     for n, (train, test) in enumerate(kf):
         reg = MyRegressionMedianer(fitted_regs.loc[n].values)

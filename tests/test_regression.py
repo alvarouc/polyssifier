@@ -1,6 +1,6 @@
 import pytest
 import warnings
-
+import numpy as np
 from polyssifier import polyr
 from sklearn.datasets import load_diabetes
 
@@ -20,6 +20,10 @@ def test_feature_selection_regression():
         'test score below chance'
     assert (report_with_features.scores.mean()[:, 'train'] > 0.2).all(),\
         'train score below chance'
+
+    for key, ypred in report_with_features.predictions.items():
+        mse = np.linalg.norm(ypred - diabetes_target) / len(diabetes_target)
+        assert mse < 5, '{} Prediction error is too high'.format(key)
 
 
 @pytest.mark.medium
