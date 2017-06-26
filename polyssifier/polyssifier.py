@@ -55,8 +55,11 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     if save and not os.path.exists('poly_{}/models'.format(project_name)):
         os.makedirs('poly_{}/models'.format(project_name))
 
-    if not verbose:
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+    else:
         logger.setLevel(logging.ERROR)
+
     logger.info('Building classifiers ...')
     classifiers = build_classifiers(exclude, scale,
                                     feature_selection,
