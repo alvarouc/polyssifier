@@ -24,7 +24,7 @@ logger.setLevel(logging.INFO)
 
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
-         feature_selection=False, save=True, scoring='auc',
+         feature_selection=False, save=False, scoring='auc',
          project_name='', concurrency=1, verbose=True):
     '''
     Input
