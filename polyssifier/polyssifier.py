@@ -4,7 +4,6 @@ import argparse
 import numpy as np
 import pickle as p
 from multiprocessing import Manager, Pool
-import logging
 import os
 import pandas as pd
 from copy import deepcopy
@@ -18,9 +17,9 @@ from itertools import starmap
 from .poly_utils import (build_classifiers, MyVoter, build_regressors,
                          MyRegressionMedianer)
 from .report import Report
+from .logger import make_logger
 sys.setrecursionlimit(10000)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = make_logger('polyssifier')
 
 
 def poly(data, label, n_folds=10, scale=True, exclude=[],
