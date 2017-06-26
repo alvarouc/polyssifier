@@ -17,6 +17,7 @@ from itertools import starmap
 from .poly_utils import (build_classifiers, MyVoter, build_regressors,
                          MyRegressionMedianer)
 from .report import Report
+import logging
 from .logger import make_logger
 sys.setrecursionlimit(10000)
 logger = make_logger('polyssifier')
