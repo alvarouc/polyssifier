@@ -47,6 +47,8 @@ def plot_features(coefs, coef_names=None,
     n_coefs = fs[list(fs.keys())[0]].shape[-1]
     if coef_names is None:
         coef_names = np.array([str(c + 1) for c in range(n_coefs)])
+    else:
+        coef_names = np.array(coef_names)
 
     for key, val in fs.items():
 
@@ -60,10 +62,6 @@ def plot_features(coefs, coef_names=None,
         topm = mean[idx][-ntop:][::-1]
         tops = std[idx][-ntop:][::-1]
         plt.subplot(211)
-
-        #This is for debugging.
-        pdb.set_trace()
-
         plt.bar(range(ntop), topm, yerr=tops,
                 tick_label=(coef_names[idx][-ntop:][::-1]))
         plt.title('{}: Feature importance'.format(key))
