@@ -185,7 +185,7 @@ def _scorer(clf, X, y):
             try:
                 ypred = ypred[:, 1]
             except:
-                print('predict proba return shape {}'.format(yprob.shape))
+                print('predict proba return shape')
 
             assert len(ypred.shape) == 1,\
                 'predict proba return shape {}'.format(ypred.shape)
@@ -310,7 +310,7 @@ def create_multivariate(data, degree):
         for j in range(height_exponential_matrix):
             for k in range(width_exponential_matrix):
                 to_pass_through.itemset((j, k + i * width_exponential_matrix), (to_add_in.item(j, k)))
-    return to_pass_through, predictor
+    return to_pass_through
 
 def exponent_matrix(matrix, exponent):
     '''
