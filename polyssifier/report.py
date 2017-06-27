@@ -46,7 +46,6 @@ def plot_features(coefs, coef_names=None,
     n_coefs = fs[list(fs.keys())[0]].shape[-1]
     if coef_names is None:
         coef_names = np.array([str(c + 1) for c in range(n_coefs)])
-        print("NO COEFFICIENT NAMES GIVEN")
 
     for key, val in fs.items():
 
