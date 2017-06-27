@@ -33,7 +33,7 @@ class Report(object):
                 'Feature importance not implemented for feature_selection=True, try setting False')
         else:
             plot_features(coefs=self.coefficients,
-                          coef_names=None,
+                          coef_names=coef_names,
                           ntop=ntop, file_name=path)
 
 
@@ -46,6 +46,8 @@ def plot_features(coefs, coef_names=None,
     n_coefs = fs[list(fs.keys())[0]].shape[-1]
     if coef_names is None:
         coef_names = np.array([str(c + 1) for c in range(n_coefs)])
+    else:
+        coef_names = np.array(coef_names)
 
     for key, val in fs.items():
 
@@ -60,7 +62,7 @@ def plot_features(coefs, coef_names=None,
         tops = std[idx][-ntop:][::-1]
         plt.subplot(211)
         plt.bar(range(ntop), topm, yerr=tops,
-                tick_label=coef_names[idx][-ntop:][::-1])
+                tick_label=(coef_names[idx][-ntop:][::-1]))
         plt.title('{}: Feature importance'.format(key))
         plt.xlabel('Feature index')
 
