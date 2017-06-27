@@ -32,7 +32,7 @@ class Report(object):
             log.warning(
                 'Feature importance not implemented for feature_selection=True, try setting False')
 
-         plot_features(coefs=self.coefficients, coef_names=coef_names, ntop=ntop, file_name=path)
+        plot_features(coefs=self.coefficients, coef_names=coef_names, ntop=ntop, file_name=path)
 
 
 def plot_features(coefs, coef_names=None,
