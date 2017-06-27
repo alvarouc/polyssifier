@@ -59,7 +59,7 @@ def plot_features(coefs, coef_names=None,
         topm = mean[idx][-ntop:][::-1]
         tops = std[idx][-ntop:][::-1]
         plt.subplot(211)
-        plt.bar(range(ntop), topm, yerr=tops,
+        plt.bar(range(ntop), topm,
                 tick_label=coef_names[idx][-ntop:][::-1])
         plt.title('{}: Feature importance'.format(key))
         plt.xlabel('Feature index')
