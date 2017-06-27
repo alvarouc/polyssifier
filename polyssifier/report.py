@@ -31,8 +31,10 @@ class Report(object):
         if self._feature_selection:
             log.warning(
                 'Feature importance not implemented for feature_selection=True, try setting False')
-
-        plot_features(coefs=self.coefficients, coef_names=coef_names, ntop=ntop, file_name=path)
+        else:
+            plot_features(coefs=self.coefficients,
+                          coef_names=coef_names,
+                          ntop=ntop, file_name=path)
 
 
 def plot_features(coefs, coef_names=None,
