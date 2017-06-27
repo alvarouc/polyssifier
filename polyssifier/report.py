@@ -38,7 +38,7 @@ class Report(object):
 
 
 def plot_features(coefs, coef_names=None,
-                  ntop=10, file_name='temp'):
+                  ntop=3, file_name='temp'):
     fs = {key: np.array(val).squeeze()
           for key, val in coefs.items()
           if val[0] is not None}
