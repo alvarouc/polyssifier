@@ -4,7 +4,6 @@ import matplotlib.patches as mpatches
 from .logger import make_logger
 from scipy.stats import rankdata
 from functools import partial
-import pdb
 
 log = make_logger('Report')
 
