@@ -56,11 +56,13 @@ def plot_features(coefs, coef_names=None,
         mean = np.mean(val, axis=0)
         std = np.std(val, axis=0)
         idx = np.argsort(np.abs(mean))
+        idx = np.round(idx, decimals=0)
+        idx = idx.astype(int)
         topm = mean[idx][-ntop:][::-1]
         tops = std[idx][-ntop:][::-1]
         plt.subplot(211)
-        plt.bar(range(ntop), topm,
-                tick_label=coef_names[idx][-ntop:][::-1])
+        plt.bar(range(ntop), topm, yerr=tops,
+                tick_label=(coef_names[idx][-ntop:][::-1]))
         plt.title('{}: Feature importance'.format(key))
         plt.xlabel('Feature index')
 
