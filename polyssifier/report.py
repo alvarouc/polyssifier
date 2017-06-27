@@ -26,7 +26,7 @@ class Report(object):
     def plot_scores(self, path='temp'):
         plot_scores(self.scores, self.scoring, path)
 
-    def plot_features(self, ntop=10, path='temp',
+    def plot_features(self, ntop=3, path='temp',
                       coef_names=None):
         if self._feature_selection:
             log.warning(
@@ -38,7 +38,7 @@ class Report(object):
 
 
 def plot_features(coefs, coef_names=None,
-                  ntop=10, file_name='temp'):
+                  ntop=3, file_name='temp'):
     fs = {key: np.array(val).squeeze()
           for key, val in coefs.items()
           if val[0] is not None}
