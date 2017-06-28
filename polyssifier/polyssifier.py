@@ -312,20 +312,6 @@ def create_polynomial(data, degree):
                 to_pass_through.itemset((j, k + i * width_exponential_matrix), (to_add_in.item(j, k)))
     return to_pass_through
 
-# def exponent_matrix(matrix, exponent):
-#     '''
-#     :param matrix: the numpy matrix which will be scaled
-#     :param exponent: the exponent which each individual entry in the matrix will be raised to
-#     :return: a new matrix (the old one is not modified) where each value is the old matrix's value raised
-#     to the exponent
-#     '''
-#     to_return = np.copy(matrix)
-#     for i in range(to_return.shape[0]):
-#         for j in range(to_return.shape[1]):
-#             to_return.itemset((i,j), ((matrix.item(i,j)**exponent)))
-#     return to_return
-
-
 def polyr(data, label, n_folds=10, scale=True, exclude=[],
           feature_selection=False, num_degrees=1, save=False, scoring='r2',
           project_name='', concurrency=1, verbose=True):
@@ -350,7 +336,7 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     predictions  = Cross validated predicitons for each classifier
     '''
     if num_degrees != 1:
-        polynomial_data = create_multivariate(data, num_degrees)
+        polynomial_data = create_polynomial(data, num_degrees)
         return polyr(data = polynomial_data, label = label, n_folds=n_folds, scale=scale, exclude=exclude,
               feature_selection=feature_selection, num_degrees=1, save=save, scoring=scoring,
               project_name=project_name, concurrency=concurrency, verbose=verbose)
