@@ -2,7 +2,7 @@ import pytest
 import warnings
 import numpy as np
 from polyssifier import polyr
-from sklearn.datasets import load_diabetes
+from sklearn.datasets import load_diabetes, load_boston
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 diabetes_data = load_diabetes().data
@@ -39,11 +39,19 @@ def test_run_regression():
         'train score below chance'
 
 @pytest.mark.medium
-def test_polynomial_model():
+def test_polynomial_model_diabetes():
     #Lars excluded as it performs poorly.
     polynomial_report = polyr(diabetes_data, diabetes_target, n_folds=2, num_degrees=3,
                               verbose=1, concurrency=1, feature_selection=False, save=False,
                               project_name='polynomial_test', exclude=['Lars'])
+    assert (polynomial_report.scores.mean()[:, 'test'] > 0.3).all(), \
+        'test score below chance'
+
+@pytest.mark.medium
+def test_polynomial_model_boston():
+    polynomial_report = polyr(load_boston().data, load_boston().target, n_folds=2, num_degrees=3,
+                              verbose=1, concurrency=1, feature_selection=False, save=False,
+                              project_name='polynomial_test')
     assert (polynomial_report.scores.mean()[:, 'test'] > 0.3).all(), \
         'test score below chance'
 
