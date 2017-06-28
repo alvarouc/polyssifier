@@ -7,6 +7,8 @@ from sklearn.datasets import load_diabetes, load_boston
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 diabetes_data = load_diabetes().data
 diabetes_target = load_diabetes().target
+boston_data = load_boston().data
+boston_target = load_boston().target
 
 
 @pytest.mark.medium
@@ -15,7 +17,7 @@ def test_feature_selection_regression():
     report_with_features = polyr(diabetes_data, diabetes_target, n_folds=2,
                                  verbose=1, concurrency=1,
                                  feature_selection=True, scoring='r2',
-                                 save=False, project_name='test3')
+                                 save=False, project_name='test_feature_selection')
     assert (report_with_features.scores.mean()[:, 'test'] > 0.2).all(),\
         'test score below chance'
     assert (report_with_features.scores.mean()[:, 'train'] > 0.2).all(),\
@@ -27,12 +29,24 @@ def test_feature_selection_regression():
 
 
 @pytest.mark.medium
-def test_run_regression():
+def test_run_regression_diabetes():
     global report
     report = polyr(diabetes_data, diabetes_target, n_folds=2,
                    verbose=1, concurrency=1,
                    feature_selection=False, scoring='r2',
-                   save=False, project_name='test3')
+                   save=False, project_name='test_diabetes')
+    assert (report.scores.mean()[:, 'test'] > 0.2).all(),\
+        'test score below chance'
+    assert (report.scores.mean()[:, 'train'] > 0.2).all(),\
+        'train score below chance'
+
+@pytest.mark.medium
+def test_run_regression_boston():
+    global report
+    report = polyr(boston_data, boston_target, n_folds=2,
+                   verbose=1, concurrency=1,
+                   feature_selection=False, scoring='r2',
+                   save=False, project_name='test_boston')
     assert (report.scores.mean()[:, 'test'] > 0.2).all(),\
         'test score below chance'
     assert (report.scores.mean()[:, 'train'] > 0.2).all(),\
@@ -49,7 +63,7 @@ def test_polynomial_model_diabetes():
 
 @pytest.mark.medium
 def test_polynomial_model_boston():
-    polynomial_report = polyr(load_boston().data, load_boston().target, n_folds=10, num_degrees=1,
+    polynomial_report = polyr(boston_data, boston_target, n_folds=10, num_degrees=3,
                               verbose=1, concurrency=1, feature_selection=False, save=False,
                               project_name='polynomial_test_boston')
     assert (polynomial_report.scores.mean()[:, 'test'] > 0.3).all(), \
