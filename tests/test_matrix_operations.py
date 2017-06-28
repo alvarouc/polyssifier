@@ -16,7 +16,7 @@ def test_exponent_matrix():
     assert matrix_3pow == exponent_matrix(matrix, 3)
     assert matrix_4pow == exponent_matrix(matrix, 4)
 
-@pytest
+@pytest.mark.medium
 def test_create_multivariate():
     matrix = np.matrix('5 6; 7 8')
     poly1 = np.matrix('5 6; 7 8')
