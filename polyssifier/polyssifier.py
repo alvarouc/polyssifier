@@ -289,7 +289,7 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
             clf)  # fitted clf
 
 
-def create_multivariate(data, degree):
+def create_polynomial(data, degree):
     '''
     :param data: the data (numpy matrix) which will have its data vectors raised to powers
     :param degree: the degree of the polynomial we wish to predict
@@ -306,24 +306,24 @@ def create_multivariate(data, degree):
     width_exponential_matrix = data.shape[1]
 
     for i in range(degree):
-        to_add_in = exponent_matrix(data, (i + 1))
+        to_add_in = data ** (i + 1)
         for j in range(height_exponential_matrix):
             for k in range(width_exponential_matrix):
                 to_pass_through.itemset((j, k + i * width_exponential_matrix), (to_add_in.item(j, k)))
     return to_pass_through
 
-def exponent_matrix(matrix, exponent):
-    '''
-    :param matrix: the numpy matrix which will be scaled
-    :param exponent: the exponent which each individual entry in the matrix will be raised to
-    :return: a new matrix (the old one is not modified) where each value is the old matrix's value raised
-    to the exponent
-    '''
-    to_return = np.copy(matrix)
-    for i in range(to_return.shape[0]):
-        for j in range(to_return.shape[1]):
-            to_return.itemset((i,j), ((matrix.item(i,j)**exponent)))
-    return to_return
+# def exponent_matrix(matrix, exponent):
+#     '''
+#     :param matrix: the numpy matrix which will be scaled
+#     :param exponent: the exponent which each individual entry in the matrix will be raised to
+#     :return: a new matrix (the old one is not modified) where each value is the old matrix's value raised
+#     to the exponent
+#     '''
+#     to_return = np.copy(matrix)
+#     for i in range(to_return.shape[0]):
+#         for j in range(to_return.shape[1]):
+#             to_return.itemset((i,j), ((matrix.item(i,j)**exponent)))
+#     return to_return
 
 
 def polyr(data, label, n_folds=10, scale=True, exclude=[],
