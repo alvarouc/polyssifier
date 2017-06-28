@@ -9,9 +9,9 @@ def test_exponent_matrix():
     matrix_3pow = np.matrix('1 8; 27 64')
     matrix_4pow = np.matrix('1 16; 81 256')
     assert all(np.array_equal(matrix, exponent_matrix(matrix, 1)))
-    assert all(np.array_equal(matrix_2pow == exponent_matrix(matrix, 2)))
-    assert all(np.array_equal(matrix_3pow == exponent_matrix(matrix, 3)))
-    assert all(np.array_equal(matrix_4pow == exponent_matrix(matrix, 4)))
+    assert all(np.array_equal(matrix_2pow, exponent_matrix(matrix, 2)))
+    assert all(np.array_equal(matrix_3pow, exponent_matrix(matrix, 3)))
+    assert all(np.array_equal(matrix_4pow, exponent_matrix(matrix, 4)))
 
 @pytest.mark.medium
 def test_create_multivariate():
