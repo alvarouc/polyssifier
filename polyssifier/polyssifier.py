@@ -185,7 +185,7 @@ def _scorer(clf, X, y):
             try:
                 ypred = ypred[:, 1]
             except:
-                print('predict proba return shape')
+                print('predict proba return shape{}'.format(ypred.shape))
 
             assert len(ypred.shape) == 1,\
                 'predict proba return shape {}'.format(ypred.shape)
