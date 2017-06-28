@@ -1,9 +1,6 @@
 import pytest
-import warnings
 import numpy as np
 from polyssifier.polyssifier import exponent_matrix, create_multivariate
-
-warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 @pytest.mark.medium
 def test_exponent_matrix():
