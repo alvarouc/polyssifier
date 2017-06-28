@@ -40,11 +40,11 @@ def test_run_regression():
 
 @pytest.mark.medium
 def test_polynomial_model():
-
+    #GaussianProcess excluded to increase speed
     polynomial_report = polyr(diabetes_data, diabetes_target, n_folds=2, num_degrees=3,
                               verbose=1, concurrency=1, feature_selection=False, save=False,
                               project_name='polynomial_test', exclude=['GaussianProcessRegressor'])
-    assert (polynomial_report.scores.mean()[:, 'test'] > 0.2).all(), \
+    assert (polynomial_report.scores.median()[:, 'test'] > 0.2).all(), \
         'test score below chance'
 
 
