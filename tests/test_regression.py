@@ -49,7 +49,7 @@ def test_polynomial_model_diabetes():
 
 @pytest.mark.medium
 def test_polynomial_model_boston():
-    polynomial_report = polyr(load_boston().data, load_boston().target, n_folds=10, num_degrees=2,
+    polynomial_report = polyr(load_boston().data, load_boston().target, n_folds=10, num_degrees=1,
                               verbose=1, concurrency=1, feature_selection=False, save=False,
                               project_name='polynomial_test_boston')
     assert (polynomial_report.scores.mean()[:, 'test'] > 0.3).all(), \
