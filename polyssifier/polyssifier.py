@@ -327,7 +327,7 @@ def exponent_matrix(matrix, exponent):
 
 
 def polyr(data, label, n_folds=10, scale=True, exclude=[],
-          feature_selection=False, num_degrees = 1, save=True, scoring='r2',
+          feature_selection=False, num_degrees=1, save=False, scoring='r2',
           project_name='', concurrency=1, verbose=True):
     '''
     Input
