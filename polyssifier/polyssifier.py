@@ -185,7 +185,7 @@ def _scorer(clf, X, y):
             try:
                 ypred = ypred[:, 1]
             except:
-                print('predict proba return shape {}'.format(yprob.shape))
+                print('predict proba return shape{}'.format(ypred.shape))
 
             assert len(ypred.shape) == 1,\
                 'predict proba return shape {}'.format(ypred.shape)
@@ -289,8 +289,31 @@ def fit_clf(args, clf_name, val, n_fold, project_name, save, scoring):
             clf)  # fitted clf
 
 
+def create_polynomial(data, degree):
+    '''
+    :param data: the data (numpy matrix) which will have its data vectors raised to powers
+    :param degree: the degree of the polynomial we wish to predict
+    :return: a new data matrix of the specified degree (for polynomial fitting purposes)
+    '''
+
+    #First we make an empty matrix which is the size of what we wish to pass through to linear regress
+    height_of_pass_through = data.shape[0]
+    width_of_pass_through = degree * data.shape[1]
+    to_pass_through = np.zeros(shape=(height_of_pass_through, width_of_pass_through))
+
+    #These are the width and height of each "exponeneted" matrix
+    height_exponential_matrix = data.shape[0]
+    width_exponential_matrix = data.shape[1]
+
+    for i in range(degree):
+        to_add_in = data ** (i + 1)
+        for j in range(height_exponential_matrix):
+            for k in range(width_exponential_matrix):
+                to_pass_through.itemset((j, k + i * width_exponential_matrix), (to_add_in.item(j, k)))
+    return to_pass_through
+
 def polyr(data, label, n_folds=10, scale=True, exclude=[],
-          feature_selection=False, save=True, scoring='r2',
+          feature_selection=False, num_degrees=1, save=False, scoring='r2',
           project_name='', concurrency=1, verbose=True):
     '''
     Input
@@ -300,6 +323,7 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     scale        = whether to scale data or not
     exclude      = list of classifiers to exclude from the analysis
     feature_selection = whether to use feature selection or not (anova)
+    num_degrees = the degree of the polynomial model to fit to the data (default is linear)
     save         = whether to save intermediate steps or not
     scoring      = Type of score to use ['mse', 'r2']
     project_name = prefix used to save the intermediate steps
@@ -311,6 +335,11 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     confusions   = confussion matrix for each classifier
     predictions  = Cross validated predicitons for each classifier
     '''
+    if num_degrees != 1:
+        polynomial_data = create_polynomial(data, num_degrees)
+        return polyr(data = polynomial_data, label = label, n_folds=n_folds, scale=scale, exclude=exclude,
+              feature_selection=feature_selection, num_degrees=1, save=save, scoring=scoring,
+              project_name=project_name, concurrency=concurrency, verbose=verbose)
 
     assert label.shape[0] == data.shape[0],\
         "Label dimesions do not match data number of rows"
