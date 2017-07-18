@@ -35,8 +35,7 @@ before_script:
   - "export PYTHONPATH=$PYTHONPATH:."
 
 script:
-  - ls
-  - cd "$TRAVIS_BUILD_DIR/tests"; py.test tests --cov=polyssifier
+  - cd "$TRAVIS_BUILD_DIR/tests"; py.test --cov=polyssifier
 
 after_success:
   - coveralls
