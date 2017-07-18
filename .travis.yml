@@ -35,7 +35,7 @@ before_script:
   - "export PYTHONPATH=$PYTHONPATH:."
 
 script:
-  - py.test --cov=polyssifier
+  - cd tests; py.test tests --cov=polyssifier
 
 after_success:
   - coveralls

@@ -2,9 +2,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import LinearSVC, SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import (LogisticRegression, LinearRegression, BayesianRidge, Perceptron, Ridge, Lasso,
-                                  MultiTaskLasso, ElasticNet, MultiTaskElasticNet, Lars, LassoLars,
-                                  OrthogonalMatchingPursuit, PassiveAggressiveRegressor)
+from sklearn.linear_model import (LogisticRegression,
+                                  LinearRegression,
+                                  BayesianRidge,
+                                  Ridge, Lasso,
+                                  ElasticNet, Lars, LassoLars,
+                                  OrthogonalMatchingPursuit,
+                                  PassiveAggressiveRegressor)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier as MLP
 from sklearn.gaussian_process import GaussianProcessRegressor

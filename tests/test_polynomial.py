@@ -1,5 +1,7 @@
 import pytest
 import numpy as np
+import sys
+sys.path.append('../')
 from polyssifier.polyssifier import create_polynomial
 
 

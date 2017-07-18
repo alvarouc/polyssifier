@@ -1,6 +1,7 @@
 import pytest
 import warnings
-
+import sys
+sys.path.append('../')
 from polyssifier import poly
 from sklearn.datasets import make_classification
 
