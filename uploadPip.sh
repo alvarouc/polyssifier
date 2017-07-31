@@ -9,4 +9,4 @@ git tag "$newVersion" -m "from $version to $newVersion"
 git push --tags origin master
 
 python setup.py sdist
-twine upload dist/*
+twine upload "dist/*$newVersion*"
