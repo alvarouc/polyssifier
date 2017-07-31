@@ -8,5 +8,5 @@ sed -i ".backup" "s/$version/$newVersion/g" setup.py
 git tag "$newVersion" -m "from $version to $newVersion"
 git push --tags origin master
 
-python2 setup.py register -r pypi
-python2 setup.py sdist upload -r pypi
+python setup.py sdist
+twine upload dist/*
