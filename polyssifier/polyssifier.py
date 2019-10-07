@@ -197,7 +197,7 @@ def _scorer(clf, X, y):
             ypred = clf.predict(X)
         score = roc_auc_score(y, ypred)
     else:
-        score = f1_score(y, clf.predict(X))
+        score = f1_score(y, clf.predict(X), average='weighted')
     return score
 
 
