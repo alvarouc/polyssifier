@@ -1,9 +1,12 @@
-import pytest
-import warnings
+import matplotlib  # noqa: E402
+matplotlib.use('Agg')  # noqa: E402
 import sys
-sys.path.append('../')
-from polyssifier import poly
+sys.path.append('../')  # noqa: E402
+from polyssifier import poly  # noqa: E402
+
 from sklearn.datasets import make_classification
+import warnings
+import pytest
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
