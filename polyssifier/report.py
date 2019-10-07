@@ -39,9 +39,17 @@ class Report(object):
 
 def plot_features(coefs, coef_names=None,
                   ntop=3, file_name='temp'):
-    fs = {key: np.array(val).squeeze()
-          for key, val in coefs.items()
-          if val[0] is not None}
+
+    fs = {}
+
+    for key, val in coefs.items():
+
+        if val[0] is not None:
+            val = np.array(val).squeeze()  # [folds, labels, coefs]
+            if len(val.shape) == 2:
+                fs[key] = val
+            else:
+                fs[key] = val.mean(axis=1)
 
     n_coefs = fs[list(fs.keys())[0]].shape[-1]
     if coef_names is None:
@@ -55,9 +63,11 @@ def plot_features(coefs, coef_names=None,
         log.info('Plotting %s coefs to %s', key, figure_path)
         plt.figure(figsize=(10, 10))
         # plotting coefficients weights
+        print(key)
         mean = np.mean(val, axis=0)
         std = np.std(val, axis=0)
         idx = np.argsort(np.abs(mean))
+
         topm = mean[idx][-ntop:][::-1]
         tops = std[idx][-ntop:][::-1]
         plt.subplot(211)
