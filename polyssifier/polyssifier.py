@@ -44,6 +44,10 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     confusions   = confussion matrix for each classifier
     predictions  = Cross validated predicitons for each classifier
     '''
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.ERROR)
 
     assert label.shape[0] == data.shape[0],\
         "Label dimesions do not match data number of rows"
@@ -51,14 +55,10 @@ def poly(data, label, n_folds=10, scale=True, exclude=[],
     _le.fit(label)
     label = _le.transform(label)
     n_class = len(np.unique(label))
+    logger.info(f'Detected {n_class} classes in label')
 
     if save and not os.path.exists('poly_{}/models'.format(project_name)):
         os.makedirs('poly_{}/models'.format(project_name))
-
-    if verbose:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.ERROR)
 
     logger.info('Building classifiers ...')
     classifiers = build_classifiers(exclude, scale,
