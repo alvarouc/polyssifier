@@ -1,12 +1,12 @@
 import matplotlib  # noqa: E402
-matplotlib.use('Agg')  # noqa: E402
-import sys
-sys.path.append('../')  # noqa: E402
+# import sys
+# sys.path.append('../')  # noqa: E402
 from polyssifier import poly  # noqa: E402
 
 from sklearn.datasets import make_classification
 import warnings
 import pytest
+matplotlib.use('Agg')  # noqa: E402
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -53,9 +53,9 @@ def test_plot_no_selection():
 
 @pytest.mark.medium
 def test_plot_with_selection():
-    report = poly(data, label, n_folds=2, verbose=1,
-                  feature_selection=False,
-                  save=False, project_name='test2')
+    report_with_features = poly(data, label, n_folds=2, verbose=1,
+                                feature_selection=False,
+                                save=False, project_name='test2')
 
     report_with_features.plot_scores()
     report_with_features.plot_features()
