@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9"]
+        python-version: ["3.9"]
 
     steps:
     - uses: actions/checkout@v2
@@ -37,24 +37,11 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        python -m pytest --cov=polyssifier tests
-        SUMMARY="$(python -m pytest --cov=polyssifier tests | tail -2 | head -1)"
-        TOKENS=($SUMMARY)
-        echo "COVERAGE=$(echo ${TOKENS[2]})" >> $GITHUB_ENV
-        REF=${{ github.ref }}
-        echo "github.ref: $REF"
-        IFS='/' read -ra PATHS <<< "$REF"
-        BRANCH_NAME="${PATHS[1]}_${PATHS[2]}"
-        echo $BRANCH_NAME
-        echo "BRANCH=$(echo ${BRANCH_NAME})" >> $GITHUB_ENV
+        python -m pytest --cov=polyssifier --cov-report xml tests
+   
 
-    - name: Create the Badge
-      uses: schneegans/dynamic-badges-action@v1.0.0
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
       with:
-        auth: ${{ secrets.GIST_SECRET }}
-        gistID: 7d4c25ef2e97e8de523ef7c1fee26e8e
-        filename: polyssifier__${{ env.BRANCH }}.json
-        label: Test Coverage
-        message: ${{ env.COVERAGE }}
-        color: green
-        namedLogo: jest
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: coverage.xml
