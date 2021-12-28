@@ -1,6 +1,4 @@
-[![Coverage Status](https://coveralls.io/repos/github/alvarouc/polyssifier/badge.svg?branch=master)](https://coveralls.io/github/alvarouc/polyssifier?branch=master)
-
-
+[![Coverage Status](https://coveralls.io/repos/github/alvarouc/polyssifier/badge.svg)](https://coveralls.io/github/alvarouc/polyssifier) 
 ![example workflow](https://github.com/alvarouc/polyssifier/actions/workflows/python-package.yml/badge.svg)
 
 Polyssifier
