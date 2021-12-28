@@ -1,6 +1,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/alvarouc/polyssifier/badge.svg?branch=master)](https://coveralls.io/github/alvarouc/polyssifier?branch=master)
 [![Build Status](https://travis-ci.org/alvarouc/polyssifier.svg)](https://travis-ci.org/alvarouc/polyssifier)
 
+![example workflow](https://github.com/alvarouc/polyssifier/actions/workflows/python-package.yml/badge.svg)
+
 Polyssifier
 ===========
 
