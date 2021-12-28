@@ -10,7 +10,7 @@ from copy import deepcopy
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, KFold
 from sklearn.metrics import (f1_score, confusion_matrix, roc_auc_score,
                              mean_squared_error, r2_score)
-from sklearn.externals import joblib
+import joblib
 import time
 from sklearn.preprocessing import LabelEncoder
 from itertools import starmap
@@ -379,7 +379,7 @@ def polyr(data, label, n_folds=10, scale=True, exclude=[],
     logger.info('Initialization, done.')
 
     # This provides train/test indices to split data in train/test sets.
-    skf = KFold(n_splits=n_folds, random_state=1988)
+    skf = KFold(n_splits=n_folds)  # , random_state=1988)
     skf.get_n_splits(np.zeros(data.shape[0]), label)
     kf = list(skf.split(np.zeros(data.shape[0]), label))
 
@@ -504,7 +504,7 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
         logger.info('Training {} {}'.format(reg_name, n_fold))
         reg = deepcopy(val['reg'])
         if val['parameters']:
-            kfold = KFold(n_splits=3, random_state=1988)
+            kfold = KFold(n_splits=3)  #, random_state=1988)
             reg = GridSearchCV(reg, val['parameters'], n_jobs=1, cv=kfold,
                                scoring=scorestring)
         reg.fit(X, y)
@@ -532,14 +532,11 @@ def fit_reg(args, reg_name, val, n_fold, project_name, save, scoring):
             temp = reg.best_estimator_.steps[-1][1]
         else:
             temp = reg.best_estimator_
-    try:
-        if hasattr(temp, 'coef_'):
-            coefficients = temp.coef_
-        elif hasattr(temp, 'feature_importances_'):
-            coefficients = temp.feature_importances_
-        else:
-            coefficients = None
-    except:
+    if hasattr(temp, 'coef_'):
+        coefficients = temp.coef_
+    elif hasattr(temp, 'feature_importances_'):
+        coefficients = temp.feature_importances_
+    else:
         coefficients = None
 
     return (train_score, test_score,
