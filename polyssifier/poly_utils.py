@@ -125,14 +125,14 @@ def build_classifiers(exclude, scale, feature_selection, nCols):
     if 'Decision Tree' not in exclude:
         classifiers['Decision Tree'] = {
             'clf': DecisionTreeClassifier(max_depth=None,
-                                          max_features='auto'),
+                                          max_features='sqrt'),
             'parameters': {}}
 
     if 'Random Forest' not in exclude:
         classifiers['Random Forest'] = {
             'clf': RandomForestClassifier(max_depth=None,
                                           n_estimators=10,
-                                          max_features='auto'),
+                                          max_features='sqrt'),
             'parameters': {'n_estimators': list(range(5, 20))}}
 
     if 'Logistic Regression' not in exclude:
