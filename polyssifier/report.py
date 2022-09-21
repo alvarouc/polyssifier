@@ -143,7 +143,7 @@ def plot_scores(scores, scoring='auc', file_name='temp', min_val=None):
             break
         ax1.text(rect.get_x() - rect.get_width() / 2., ymin + (1 - ymin) * .01,
                  data.index[n], ha='center', va='bottom',
-                 rotation='90', color='black', fontsize=15)
+                 rotation=90, color='black', fontsize=15)
     plt.tight_layout()
     plt.savefig(file_name + '.pdf')
     plt.savefig(file_name + '.svg', transparent=False)
